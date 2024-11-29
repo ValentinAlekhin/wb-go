@@ -1,0 +1,41 @@
+package {{.PackageName}}
+
+import (
+	"fmt"
+    "wb-go/pkg/mqtt"
+    "sync"
+)
+
+type {{.DeviceControlsStructName}} struct {
+{{range .Controls}} {{.Name}} *{{.StructName}}
+{{end}}}
+
+type {{.DeviceStructName}} struct {
+	Name          string
+	ModbusAddress int32
+	Controls      *{{.DeviceControlsStructName}}
+}
+
+var (
+	once{{.DeviceStructName}}    sync.Once
+	instance{{.DeviceStructName}} *{{.DeviceStructName}}
+)
+
+func New{{.DeviceStructName}}(client *mqtt.Client) *{{.DeviceStructName}} {
+	once{{.DeviceStructName}}.Do(func() {
+        name := "{{.DeviceName}}"
+        deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "{{.ModbusAddress}}")
+        controls := &{{.DeviceControlsStructName}}{
+        {{range .Controls}} {{.Name}}: New{{.StructName}}(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "{{.Mqtt}}")),
+        {{end}}}
+
+
+        instance{{.DeviceStructName}} = &{{.DeviceStructName}}{
+            Name:      name,
+            Controls:  controls,
+        }
+    })
+
+
+	return instance{{.DeviceStructName}}
+}

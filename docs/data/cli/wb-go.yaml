@@ -1,0 +1,10 @@
+name: wb-go
+synopsis: |
+    CLI утилита для генерации Golang-кода управления устройствами Wiren Board.
+options:
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for wb-go
+see_also:
+    - wb-go generate - Генерирует код для работы с устройствами
