@@ -2,8 +2,8 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
-	"wb-go/pkg/mqtt"
 )
 
 type WbMs235Controls struct {

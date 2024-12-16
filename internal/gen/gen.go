@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/iancoleman/strcase"
 	"go/format"
@@ -14,7 +15,6 @@ import (
 	"strings"
 	"text/template"
 	"time"
-	wb "wb-go/pkg/mqtt"
 )
 
 type GenerateService struct {

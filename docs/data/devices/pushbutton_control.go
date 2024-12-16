@@ -1,7 +1,7 @@
 package devices
 
 import (
-	wb "wb-go/pkg/mqtt"
+	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 )
 
 type PushbuttonControl struct {

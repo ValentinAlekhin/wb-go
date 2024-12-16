@@ -2,9 +2,9 @@ package devices
 
 import (
 	"fmt"
+	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"go.uber.org/atomic"
-	wb "wb-go/pkg/mqtt"
 )
 
 type ControlWatcherPayload struct {

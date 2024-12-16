@@ -2,7 +2,7 @@ package {{.PackageName}}
 
 import (
 	"fmt"
-    "wb-go/pkg/mqtt"
+    "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
     "sync"
 )
 

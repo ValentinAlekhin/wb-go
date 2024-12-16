@@ -1,12 +1,9 @@
-/*
-Copyright © 2024 Valentin Alekhin <alekhin.dev@yandex.ru>
-*/
 package cmd
 
 import (
+	"github.com/ValentinAlekhin/wb-go/internal/gen"
+	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/spf13/cobra"
-	"wb-go/internal/gen"
-	"wb-go/pkg/mqtt"
 )
 
 var broker string

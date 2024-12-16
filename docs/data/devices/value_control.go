@@ -1,9 +1,9 @@
 package devices
 
 import (
+	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"strconv"
 	"strings"
-	wb "wb-go/pkg/mqtt"
 )
 
 type ValueControl struct {

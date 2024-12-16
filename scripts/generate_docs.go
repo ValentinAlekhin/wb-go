@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/ValentinAlekhin/wb-go/cmd"
 	"github.com/spf13/cobra/doc"
 	"os"
-	"wb-go/cmd"
 )
 
 func main() {

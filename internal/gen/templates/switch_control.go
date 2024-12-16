@@ -1,8 +1,8 @@
 package devices
 
 import (
+	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"strconv"
-	wb "wb-go/pkg/mqtt"
 )
 
 type SwitchControl struct {

@@ -1,4 +1,4 @@
-module wb-go
+module github.com/ValentinAlekhin/wb-go
 
 go 1.23
 

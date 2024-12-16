@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/docs/data/devices"
+	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"os"
 	"os/signal"
 	"syscall"
-	"wb-go/docs/data/devices"
-	wb "wb-go/pkg/mqtt"
 )
 
 func main() {
