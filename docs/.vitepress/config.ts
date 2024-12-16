@@ -4,7 +4,7 @@ export default defineConfig({
     title: 'wb-go',
     lang: 'ru-RU',
     base: '/wb-go',
-    description: 'Библиотека для работы с устройствами Wirenboard.',
+    description: 'Библиотека для работы с устройствами Wiren Board.',
     themeConfig: {
         search: {
             provider: 'local'
@@ -25,7 +25,6 @@ export default defineConfig({
                         link: '/guide/install'
                     }
                 ]
-
             },
             {
                 text: 'Команды',
