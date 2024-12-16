@@ -3,6 +3,7 @@ import {defineConfig} from 'vitepress'
 export default defineConfig({
     title: 'wb-go',
     lang: 'ru-RU',
+    base: '/wb-go',
     description: 'Библиотека для работы с устройствами Wirenboard.',
     themeConfig: {
         search: {
