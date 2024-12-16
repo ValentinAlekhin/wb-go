@@ -9,7 +9,7 @@
 ### Утановка
 
 ```shell
-go get -u github.com/ValentinAlekhin/wb-go
+go get github.com/ValentinAlekhin/wb-go
 ```
 
 ### Использование
