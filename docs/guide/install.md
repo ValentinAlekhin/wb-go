@@ -2,7 +2,7 @@
 
 ### Требования
 
-- [Go](https://go.dev/doc/install) версии 1.23.3 или выше.
+- [Go](https://go.dev/doc/install) версии 1.23 или выше.
 - Терминал для работы с CLI утилитой.
 - Текстовый редактор с поддержкой Go. Рекомендуется [VSCode](https://code.visualstudio.com/download) и [GoLand](https://www.jetbrains.com/help/go/installation-guide.html).
 
