@@ -29,9 +29,9 @@ func main() {
 		fmt.Printf("Получено новое сообщение: %f\n", payload.NewValue)
 
 		if payload.NewValue > 100 {
-			WbMr6Cu145.Controls.K1.SetValue(true)
+			WbMr6Cu145.Controls.K1.TurnOff()
 		} else {
-			WbMr6Cu145.Controls.K1.SetValue(false)
+			WbMr6Cu145.Controls.K1.TurnOn()
 		}
 	})
 

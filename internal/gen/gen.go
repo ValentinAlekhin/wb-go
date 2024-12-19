@@ -93,7 +93,7 @@ func (g GenerateService) collectData() []watchResultItem {
 	var list []watchResultItem
 
 	watcher := g.getTopicWatcher(&list)
-	g.client.Subscribe("/devices/+/controls/+/meta", watcher)
+	g.client.Subscribe(mqttTopic, watcher)
 	time.Sleep(1 * time.Second)
 
 	return list
@@ -175,7 +175,7 @@ func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*
 
 func (g GenerateService) getControlTemplate(control watchResultItem) deviceControlTemplateData {
 	typeName := control.Meta.Type
-	for key, val := range ControlValueTypeMap {
+	for key, val := range controlValueTypeMap {
 		if !slices.Contains(val, control.Meta.Type) {
 			continue
 		}
@@ -239,7 +239,7 @@ func (g *GenerateService) getOutputDir() string {
 }
 
 func (g *GenerateService) generateFile(data *deviceTemplateData, outputDir string) {
-	tmpl, err := template.ParseFS(embedFs, "templates/device.txt")
+	tmpl, err := template.ParseFS(embedFs, deviceTemplateFile)
 	if err != nil {
 		panic(err)
 	}
@@ -269,8 +269,7 @@ func (g *GenerateService) generateFile(data *deviceTemplateData, outputDir strin
 func (g *GenerateService) copyControls() {
 	outputDir := g.getOutputDir()
 
-	controls := []string{"control", "pushbutton_control", "range_control", "switch_control", "text_control", "value_control"}
-	for _, control := range controls {
+	for _, control := range controlFileNames {
 		src := fmt.Sprintf("templates/%s.go", control)
 		data, err := embedFs.ReadFile(src)
 		if err != nil {
