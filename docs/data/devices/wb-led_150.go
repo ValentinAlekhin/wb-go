@@ -27,9 +27,8 @@ type WbLed150Controls struct {
 }
 
 type WbLed150 struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *WbLed150Controls
+	Name     string
+	Controls *WbLed150Controls
 }
 
 var (

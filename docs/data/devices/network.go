@@ -28,9 +28,8 @@ type NetworkControls struct {
 }
 
 type Network struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *NetworkControls
+	Name     string
+	Controls *NetworkControls
 }
 
 var (

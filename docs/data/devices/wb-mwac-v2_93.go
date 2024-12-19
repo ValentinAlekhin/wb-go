@@ -7,6 +7,7 @@ import (
 )
 
 type WbMwacV293Controls struct {
+	P1Volume       *ValueControl
 	P2Volume       *ValueControl
 	InputF1        *SwitchControl
 	InputF1Counter *ValueControl
@@ -18,20 +19,18 @@ type WbMwacV293Controls struct {
 	InputF4Counter *ValueControl
 	InputF5        *SwitchControl
 	InputF5Counter *ValueControl
-	OutputK2       *SwitchControl
-	CleaningMode   *SwitchControl
-	P1Volume       *ValueControl
 	InputS6        *SwitchControl
 	InputS6Counter *ValueControl
 	OutputK1       *SwitchControl
+	OutputK2       *SwitchControl
 	LeakageMode    *SwitchControl
+	CleaningMode   *SwitchControl
 	Serial         *TextControl
 }
 
 type WbMwacV293 struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *WbMwacV293Controls
+	Name     string
+	Controls *WbMwacV293Controls
 }
 
 var (
@@ -44,6 +43,7 @@ func NewWbMwacV293(client *mqtt.Client) *WbMwacV293 {
 		name := "wb-mwac-v2"
 		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "93")
 		controls := &WbMwacV293Controls{
+			P1Volume:       NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "P1 Volume")),
 			P2Volume:       NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "P2 Volume")),
 			InputF1:        NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Input F1")),
 			InputF1Counter: NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Input F1 Counter")),
@@ -55,13 +55,12 @@ func NewWbMwacV293(client *mqtt.Client) *WbMwacV293 {
 			InputF4Counter: NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Input F4 Counter")),
 			InputF5:        NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Input F5")),
 			InputF5Counter: NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Input F5 Counter")),
-			OutputK2:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Output K2")),
-			CleaningMode:   NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Cleaning Mode")),
-			P1Volume:       NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "P1 Volume")),
 			InputS6:        NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Input S6")),
 			InputS6Counter: NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Input S6 Counter")),
 			OutputK1:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Output K1")),
+			OutputK2:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Output K2")),
 			LeakageMode:    NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Leakage Mode")),
+			CleaningMode:   NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Cleaning Mode")),
 			Serial:         NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Serial")),
 		}
 

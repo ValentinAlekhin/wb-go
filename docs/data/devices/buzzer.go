@@ -13,9 +13,8 @@ type BuzzerControls struct {
 }
 
 type Buzzer struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *BuzzerControls
+	Name     string
+	Controls *BuzzerControls
 }
 
 var (

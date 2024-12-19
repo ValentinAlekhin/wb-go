@@ -7,8 +7,9 @@ import (
 )
 
 var broker string
+var username string
+var password string
 var output string
-var devices []string
 var packageName string
 
 // generateCmd represents the generate command
@@ -20,10 +21,12 @@ var generateCmd = &cobra.Command{
 		opt := mqtt.Options{
 			Broker:   "192.168.1.150:1883",
 			ClientId: "wb-go-generator",
+			Username: username,
+			Password: password,
 		}
 		client := mqtt.NewClient(opt)
 
-		generateService := gen.NewGenerateService(client, output, devices, packageName)
+		generateService := gen.NewGenerateService(client, output, packageName)
 		generateService.Run()
 	},
 }
@@ -31,9 +34,10 @@ var generateCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&broker, "broker", "b", "", "Адрес MQTT брокера")
+	generateCmd.Flags().StringVarP(&username, "username", "u", "", "Имя пользователя")
+	generateCmd.Flags().StringVarP(&password, "password", "p", "", "Пароль пользователя")
 	generateCmd.Flags().StringVarP(&output, "output", "o", "", "Директория, куда будут сгенерированы файлы")
-	generateCmd.Flags().StringArrayVarP(&devices, "devices", "d", gen.DevicesToGenerate, "Имена устройств для генерации")
-	generateCmd.Flags().StringVarP(&packageName, "package", "p", "devices", "Имя пакета сгенерированных файлов")
+	generateCmd.Flags().StringVarP(&packageName, "package", "n", "devices", "Имя пакета сгенерированных файлов")
 	err := generateCmd.MarkFlagRequired("broker")
 	if err != nil {
 		panic(err)

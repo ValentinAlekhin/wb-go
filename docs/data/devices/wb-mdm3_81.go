@@ -43,9 +43,8 @@ type WbMdm381Controls struct {
 }
 
 type WbMdm381 struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *WbMdm381Controls
+	Name     string
+	Controls *WbMdm381Controls
 }
 
 var (

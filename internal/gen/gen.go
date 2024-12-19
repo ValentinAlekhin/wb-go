@@ -15,13 +15,13 @@ import (
 	"strings"
 	"text/template"
 	"time"
+	"unicode"
 )
 
 type GenerateService struct {
-	client            *wb.Client
-	outputDir         string
-	devicesToGenerate []string
-	packageName       string
+	client      *wb.Client
+	outputDir   string
+	packageName string
 }
 
 type deviceControlTemplateData struct {
@@ -72,12 +72,11 @@ type Enum struct {
 //go:embed templates/*
 var embedFs embed.FS
 
-func NewGenerateService(client *wb.Client, output string, devicesToGenerate []string, packageName string) *GenerateService {
+func NewGenerateService(client *wb.Client, output string, packageName string) *GenerateService {
 	service := &GenerateService{
-		client:            client,
-		outputDir:         output,
-		devicesToGenerate: devicesToGenerate,
-		packageName:       packageName,
+		client:      client,
+		outputDir:   output,
+		packageName: packageName,
 	}
 	return service
 }
@@ -120,23 +119,21 @@ func (g *GenerateService) getTopicWatcher(list *[]watchResultItem) func(client m
 
 		controlName := topicParts[4]
 
-		if slices.Contains(g.devicesToGenerate, device) {
-			controlMeta := ControlMeta{}
+		controlMeta := ControlMeta{}
 
-			err := json.Unmarshal([]byte(meta), &controlMeta)
-			if err != nil {
-				panic(err)
-			}
-
-			item := watchResultItem{
-				DeviceName:    device,
-				ModbusAddress: modbusAddress,
-				Control:       controlName,
-				Meta:          controlMeta,
-			}
-
-			*list = append(*list, item)
+		err := json.Unmarshal([]byte(meta), &controlMeta)
+		if err != nil {
+			panic(err)
 		}
+
+		item := watchResultItem{
+			DeviceName:    device,
+			ModbusAddress: modbusAddress,
+			Control:       controlName,
+			Meta:          controlMeta,
+		}
+
+		*list = append(*list, item)
 	}
 }
 
@@ -186,8 +183,13 @@ func (g GenerateService) getControlTemplate(control watchResultItem) deviceContr
 		typeName = key
 	}
 
+	name := strcase.ToCamel(control.Control)
+	if unicode.IsDigit(rune(name[0])) {
+		name = "C" + name
+	}
+
 	return deviceControlTemplateData{
-		Name:       strcase.ToCamel(control.Control),
+		Name:       name,
 		Mqtt:       control.Control,
 		ReadOnly:   control.Meta.ReadOnly,
 		Type:       typeName,
@@ -253,7 +255,6 @@ func (g *GenerateService) generateFile(data *deviceTemplateData, outputDir strin
 		fmt.Println("Ошибка форматирования:", err)
 		fmt.Println("Сгенерированный код до форматирования:")
 		fmt.Println(buf.String())
-		return
 	}
 
 	outputPath := fmt.Sprintf("%s/%s.go", outputDir, data.Filename)

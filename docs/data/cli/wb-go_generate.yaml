@@ -8,10 +8,6 @@ options:
     - name: broker
       shorthand: b
       usage: Адрес MQTT брокера
-    - name: devices
-      shorthand: d
-      default_value: '[wb-led,wb-msw-v4,wb-ms,wb-adc,wb-mwac-v2,wb-mr6cu,wb-mdm3,buzzer,network,hwmon,power_status]'
-      usage: Имена устройств для генерации
     - name: help
       shorthand: h
       default_value: "false"
@@ -21,9 +17,15 @@ options:
       usage: |
         Директория, куда будут сгенерированы файлы
     - name: package
-      shorthand: p
+      shorthand: "n"
       default_value: devices
       usage: |
         Имя пакета сгенерированных файлов
+    - name: password
+      shorthand: p
+      usage: Пароль пользователя
+    - name: username
+      shorthand: u
+      usage: Имя пользователя
 see_also:
     - wb-go - CLI утилита для генерации Golang-кода управления устройствами Wiren Board.

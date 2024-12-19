@@ -12,7 +12,6 @@ type {{.DeviceControlsStructName}} struct {
 
 type {{.DeviceStructName}} struct {
 	Name          string
-	ModbusAddress int32
 	Controls      *{{.DeviceControlsStructName}}
 }
 

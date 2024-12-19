@@ -19,9 +19,8 @@ type WbAdcControls struct {
 }
 
 type WbAdc struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *WbAdcControls
+	Name     string
+	Controls *WbAdcControls
 }
 
 var (

@@ -40,9 +40,8 @@ type WbMswV4151Controls struct {
 }
 
 type WbMswV4151 struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *WbMswV4151Controls
+	Name     string
+	Controls *WbMswV4151Controls
 }
 
 var (

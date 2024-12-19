@@ -17,9 +17,8 @@ type WbMr6Cu145Controls struct {
 }
 
 type WbMr6Cu145 struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *WbMr6Cu145Controls
+	Name     string
+	Controls *WbMr6Cu145Controls
 }
 
 var (

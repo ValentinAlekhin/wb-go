@@ -12,9 +12,8 @@ type HwmonControls struct {
 }
 
 type Hwmon struct {
-	Name          string
-	ModbusAddress int32
-	Controls      *HwmonControls
+	Name     string
+	Controls *HwmonControls
 }
 
 var (
