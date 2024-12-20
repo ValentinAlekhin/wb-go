@@ -2,12 +2,13 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type WbrulesControls struct {
-	RuleDebugging *SwitchControl
+	RuleDebugging *controls.SwitchControl
 }
 
 type Wbrules struct {
@@ -22,15 +23,14 @@ var (
 
 func NewWbrules(client *mqtt.Client) *Wbrules {
 	onceWbrules.Do(func() {
-		name := "wbrules"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &WbrulesControls{
-			RuleDebugging: NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Rule debugging")),
+		deviceName := fmt.Sprintf("%s_%s", "wbrules", "")
+		controlList := &WbrulesControls{
+			RuleDebugging: controls.NewSwitchControl(client, deviceName, "Rule debugging"),
 		}
 
 		instanceWbrules = &Wbrules{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

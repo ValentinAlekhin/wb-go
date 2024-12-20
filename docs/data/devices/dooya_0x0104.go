@@ -2,16 +2,17 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type Dooya0X0104Controls struct {
-	Position       *RangeControl
-	Open           *PushbuttonControl
-	Close          *PushbuttonControl
-	Stop           *PushbuttonControl
-	FactoryDefault *PushbuttonControl
+	Position       *controls.RangeControl
+	Open           *controls.PushbuttonControl
+	Close          *controls.PushbuttonControl
+	Stop           *controls.PushbuttonControl
+	FactoryDefault *controls.PushbuttonControl
 }
 
 type Dooya0X0104 struct {
@@ -26,19 +27,18 @@ var (
 
 func NewDooya0X0104(client *mqtt.Client) *Dooya0X0104 {
 	onceDooya0X0104.Do(func() {
-		name := "dooya"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "0x0104")
-		controls := &Dooya0X0104Controls{
-			Position:       NewRangeControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Position")),
-			Open:           NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Open")),
-			Close:          NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Close")),
-			Stop:           NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Stop")),
-			FactoryDefault: NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Factory Default")),
+		deviceName := fmt.Sprintf("%s_%s", "dooya", "0x0104")
+		controlList := &Dooya0X0104Controls{
+			Position:       controls.NewRangeControl(client, deviceName, "Position"),
+			Open:           controls.NewPushbuttonControl(client, deviceName, "Open"),
+			Close:          controls.NewPushbuttonControl(client, deviceName, "Close"),
+			Stop:           controls.NewPushbuttonControl(client, deviceName, "Stop"),
+			FactoryDefault: controls.NewPushbuttonControl(client, deviceName, "Factory Default"),
 		}
 
 		instanceDooya0X0104 = &Dooya0X0104{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

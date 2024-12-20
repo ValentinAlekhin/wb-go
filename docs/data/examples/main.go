@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/docs/data/devices"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"os"
 	"os/signal"
@@ -16,7 +17,7 @@ func main() {
 	// Подключение к брокеру
 	opt := wb.Options{
 		Broker:   "192.168.1.150:1883",
-		ClientId: "client-wb-go",
+		ClientId: "client-wb-go-test",
 	}
 	client := wb.NewClient(opt)
 
@@ -25,7 +26,7 @@ func main() {
 	WbMr6Cu145 := devices.NewWbMr6Cu145(client)
 
 	// Добавление скрипта
-	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload devices.ValueControlWatcherPayload) {
+	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload controls.ValueControlWatcherPayload) {
 		fmt.Printf("Получено новое сообщение: %f\n", payload.NewValue)
 
 		if payload.NewValue > 100 {

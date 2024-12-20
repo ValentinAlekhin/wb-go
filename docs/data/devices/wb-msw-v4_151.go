@@ -2,41 +2,42 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type WbMswV4151Controls struct {
-	Temperature       *ValueControl
-	Humidity          *ValueControl
-	Co2               *ValueControl
-	AirQualityVoc     *ValueControl
-	SoundLevel        *ValueControl
-	Illuminance       *ValueControl
-	MaxMotion         *ValueControl
-	CurrentMotion     *ValueControl
-	Buzzer            *SwitchControl
-	RedLed            *SwitchControl
-	GreenLed          *SwitchControl
-	LedPeriods        *RangeControl
-	LedGlowDurationms *RangeControl
-	LearnToRam        *SwitchControl
-	PlayFromRam       *PushbuttonControl
-	LearnToRom1       *SwitchControl
-	LearnToRom2       *SwitchControl
-	LearnToRom3       *SwitchControl
-	LearnToRom4       *SwitchControl
-	LearnToRom5       *SwitchControl
-	LearnToRom6       *SwitchControl
-	LearnToRom7       *SwitchControl
-	PlayFromRom1      *PushbuttonControl
-	PlayFromRom2      *PushbuttonControl
-	PlayFromRom3      *PushbuttonControl
-	PlayFromRom4      *PushbuttonControl
-	PlayFromRom5      *PushbuttonControl
-	PlayFromRom6      *PushbuttonControl
-	PlayFromRom7      *PushbuttonControl
-	Serial            *TextControl
+	Temperature       *controls.ValueControl
+	Humidity          *controls.ValueControl
+	Co2               *controls.ValueControl
+	AirQualityVoc     *controls.ValueControl
+	SoundLevel        *controls.ValueControl
+	Illuminance       *controls.ValueControl
+	MaxMotion         *controls.ValueControl
+	CurrentMotion     *controls.ValueControl
+	Buzzer            *controls.SwitchControl
+	RedLed            *controls.SwitchControl
+	GreenLed          *controls.SwitchControl
+	LedPeriods        *controls.RangeControl
+	LedGlowDurationms *controls.RangeControl
+	LearnToRam        *controls.SwitchControl
+	PlayFromRam       *controls.PushbuttonControl
+	LearnToRom1       *controls.SwitchControl
+	LearnToRom2       *controls.SwitchControl
+	LearnToRom3       *controls.SwitchControl
+	LearnToRom4       *controls.SwitchControl
+	LearnToRom5       *controls.SwitchControl
+	LearnToRom6       *controls.SwitchControl
+	LearnToRom7       *controls.SwitchControl
+	PlayFromRom1      *controls.PushbuttonControl
+	PlayFromRom2      *controls.PushbuttonControl
+	PlayFromRom3      *controls.PushbuttonControl
+	PlayFromRom4      *controls.PushbuttonControl
+	PlayFromRom5      *controls.PushbuttonControl
+	PlayFromRom6      *controls.PushbuttonControl
+	PlayFromRom7      *controls.PushbuttonControl
+	Serial            *controls.TextControl
 }
 
 type WbMswV4151 struct {
@@ -51,44 +52,43 @@ var (
 
 func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
 	onceWbMswV4151.Do(func() {
-		name := "wb-msw-v4"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "151")
-		controls := &WbMswV4151Controls{
-			Temperature:       NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Temperature")),
-			Humidity:          NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Humidity")),
-			Co2:               NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "CO2")),
-			AirQualityVoc:     NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Air Quality (VOC)")),
-			SoundLevel:        NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Sound Level")),
-			Illuminance:       NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Illuminance")),
-			MaxMotion:         NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Max Motion")),
-			CurrentMotion:     NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Current Motion")),
-			Buzzer:            NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Buzzer")),
-			RedLed:            NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Red LED")),
-			GreenLed:          NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Green LED")),
-			LedPeriods:        NewRangeControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "LED Period (s)")),
-			LedGlowDurationms: NewRangeControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "LED Glow Duration (ms)")),
-			LearnToRam:        NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to RAM")),
-			PlayFromRam:       NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from RAM")),
-			LearnToRom1:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to ROM1")),
-			LearnToRom2:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to ROM2")),
-			LearnToRom3:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to ROM3")),
-			LearnToRom4:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to ROM4")),
-			LearnToRom5:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to ROM5")),
-			LearnToRom6:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to ROM6")),
-			LearnToRom7:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Learn to ROM7")),
-			PlayFromRom1:      NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from ROM1")),
-			PlayFromRom2:      NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from ROM2")),
-			PlayFromRom3:      NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from ROM3")),
-			PlayFromRom4:      NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from ROM4")),
-			PlayFromRom5:      NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from ROM5")),
-			PlayFromRom6:      NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from ROM6")),
-			PlayFromRom7:      NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Play from ROM7")),
-			Serial:            NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Serial")),
+		deviceName := fmt.Sprintf("%s_%s", "wb-msw-v4", "151")
+		controlList := &WbMswV4151Controls{
+			Temperature:       controls.NewValueControl(client, deviceName, "Temperature"),
+			Humidity:          controls.NewValueControl(client, deviceName, "Humidity"),
+			Co2:               controls.NewValueControl(client, deviceName, "CO2"),
+			AirQualityVoc:     controls.NewValueControl(client, deviceName, "Air Quality (VOC)"),
+			SoundLevel:        controls.NewValueControl(client, deviceName, "Sound Level"),
+			Illuminance:       controls.NewValueControl(client, deviceName, "Illuminance"),
+			MaxMotion:         controls.NewValueControl(client, deviceName, "Max Motion"),
+			CurrentMotion:     controls.NewValueControl(client, deviceName, "Current Motion"),
+			Buzzer:            controls.NewSwitchControl(client, deviceName, "Buzzer"),
+			RedLed:            controls.NewSwitchControl(client, deviceName, "Red LED"),
+			GreenLed:          controls.NewSwitchControl(client, deviceName, "Green LED"),
+			LedPeriods:        controls.NewRangeControl(client, deviceName, "LED Period (s)"),
+			LedGlowDurationms: controls.NewRangeControl(client, deviceName, "LED Glow Duration (ms)"),
+			LearnToRam:        controls.NewSwitchControl(client, deviceName, "Learn to RAM"),
+			PlayFromRam:       controls.NewPushbuttonControl(client, deviceName, "Play from RAM"),
+			LearnToRom1:       controls.NewSwitchControl(client, deviceName, "Learn to ROM1"),
+			LearnToRom2:       controls.NewSwitchControl(client, deviceName, "Learn to ROM2"),
+			LearnToRom3:       controls.NewSwitchControl(client, deviceName, "Learn to ROM3"),
+			LearnToRom4:       controls.NewSwitchControl(client, deviceName, "Learn to ROM4"),
+			LearnToRom5:       controls.NewSwitchControl(client, deviceName, "Learn to ROM5"),
+			LearnToRom6:       controls.NewSwitchControl(client, deviceName, "Learn to ROM6"),
+			LearnToRom7:       controls.NewSwitchControl(client, deviceName, "Learn to ROM7"),
+			PlayFromRom1:      controls.NewPushbuttonControl(client, deviceName, "Play from ROM1"),
+			PlayFromRom2:      controls.NewPushbuttonControl(client, deviceName, "Play from ROM2"),
+			PlayFromRom3:      controls.NewPushbuttonControl(client, deviceName, "Play from ROM3"),
+			PlayFromRom4:      controls.NewPushbuttonControl(client, deviceName, "Play from ROM4"),
+			PlayFromRom5:      controls.NewPushbuttonControl(client, deviceName, "Play from ROM5"),
+			PlayFromRom6:      controls.NewPushbuttonControl(client, deviceName, "Play from ROM6"),
+			PlayFromRom7:      controls.NewPushbuttonControl(client, deviceName, "Play from ROM7"),
+			Serial:            controls.NewTextControl(client, deviceName, "Serial"),
 		}
 
 		instanceWbMswV4151 = &WbMswV4151{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

@@ -2,14 +2,15 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type BuzzerControls struct {
-	Enabled   *SwitchControl
-	Frequency *RangeControl
-	Volume    *RangeControl
+	Enabled   *controls.SwitchControl
+	Frequency *controls.RangeControl
+	Volume    *controls.RangeControl
 }
 
 type Buzzer struct {
@@ -24,17 +25,16 @@ var (
 
 func NewBuzzer(client *mqtt.Client) *Buzzer {
 	onceBuzzer.Do(func() {
-		name := "buzzer"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &BuzzerControls{
-			Enabled:   NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "enabled")),
-			Frequency: NewRangeControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "frequency")),
-			Volume:    NewRangeControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "volume")),
+		deviceName := fmt.Sprintf("%s_%s", "buzzer", "")
+		controlList := &BuzzerControls{
+			Enabled:   controls.NewSwitchControl(client, deviceName, "enabled"),
+			Frequency: controls.NewRangeControl(client, deviceName, "frequency"),
+			Volume:    controls.NewRangeControl(client, deviceName, "volume"),
 		}
 
 		instanceBuzzer = &Buzzer{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

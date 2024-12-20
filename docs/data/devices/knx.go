@@ -2,12 +2,13 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type KnxControls struct {
-	Data *TextControl
+	Data *controls.TextControl
 }
 
 type Knx struct {
@@ -22,15 +23,14 @@ var (
 
 func NewKnx(client *mqtt.Client) *Knx {
 	onceKnx.Do(func() {
-		name := "knx"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &KnxControls{
-			Data: NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "data")),
+		deviceName := fmt.Sprintf("%s_%s", "knx", "")
+		controlList := &KnxControls{
+			Data: controls.NewTextControl(client, deviceName, "data"),
 		}
 
 		instanceKnx = &Knx{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

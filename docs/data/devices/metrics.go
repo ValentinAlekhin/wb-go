@@ -2,24 +2,25 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type MetricsControls struct {
-	LoadAverage1Min   *ValueControl
-	LoadAverage5Min   *ValueControl
-	LoadAverage15Min  *ValueControl
-	RamAvailable      *ValueControl
-	RamUsed           *ValueControl
-	RamTotal          *ValueControl
-	SwapTotal         *ValueControl
-	SwapUsed          *ValueControl
-	DevRootUsedSpace  *ValueControl
-	DevRootTotalSpace *ValueControl
-	DevRootLinkedOn   *TextControl
-	DataUsedSpace     *ValueControl
-	DataTotalSpace    *ValueControl
+	LoadAverage1Min   *controls.ValueControl
+	LoadAverage5Min   *controls.ValueControl
+	LoadAverage15Min  *controls.ValueControl
+	RamAvailable      *controls.ValueControl
+	RamUsed           *controls.ValueControl
+	RamTotal          *controls.ValueControl
+	SwapTotal         *controls.ValueControl
+	SwapUsed          *controls.ValueControl
+	DevRootUsedSpace  *controls.ValueControl
+	DevRootTotalSpace *controls.ValueControl
+	DevRootLinkedOn   *controls.TextControl
+	DataUsedSpace     *controls.ValueControl
+	DataTotalSpace    *controls.ValueControl
 }
 
 type Metrics struct {
@@ -34,27 +35,26 @@ var (
 
 func NewMetrics(client *mqtt.Client) *Metrics {
 	onceMetrics.Do(func() {
-		name := "metrics"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &MetricsControls{
-			LoadAverage1Min:   NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "load_average_1min")),
-			LoadAverage5Min:   NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "load_average_5min")),
-			LoadAverage15Min:  NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "load_average_15min")),
-			RamAvailable:      NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "ram_available")),
-			RamUsed:           NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "ram_used")),
-			RamTotal:          NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "ram_total")),
-			SwapTotal:         NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "swap_total")),
-			SwapUsed:          NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "swap_used")),
-			DevRootUsedSpace:  NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "dev_root_used_space")),
-			DevRootTotalSpace: NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "dev_root_total_space")),
-			DevRootLinkedOn:   NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "dev_root_linked_on")),
-			DataUsedSpace:     NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "data_used_space")),
-			DataTotalSpace:    NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "data_total_space")),
+		deviceName := fmt.Sprintf("%s_%s", "metrics", "")
+		controlList := &MetricsControls{
+			LoadAverage1Min:   controls.NewValueControl(client, deviceName, "load_average_1min"),
+			LoadAverage5Min:   controls.NewValueControl(client, deviceName, "load_average_5min"),
+			LoadAverage15Min:  controls.NewValueControl(client, deviceName, "load_average_15min"),
+			RamAvailable:      controls.NewValueControl(client, deviceName, "ram_available"),
+			RamUsed:           controls.NewValueControl(client, deviceName, "ram_used"),
+			RamTotal:          controls.NewValueControl(client, deviceName, "ram_total"),
+			SwapTotal:         controls.NewValueControl(client, deviceName, "swap_total"),
+			SwapUsed:          controls.NewValueControl(client, deviceName, "swap_used"),
+			DevRootUsedSpace:  controls.NewValueControl(client, deviceName, "dev_root_used_space"),
+			DevRootTotalSpace: controls.NewValueControl(client, deviceName, "dev_root_total_space"),
+			DevRootLinkedOn:   controls.NewTextControl(client, deviceName, "dev_root_linked_on"),
+			DataUsedSpace:     controls.NewValueControl(client, deviceName, "data_used_space"),
+			DataTotalSpace:    controls.NewValueControl(client, deviceName, "data_total_space"),
 		}
 
 		instanceMetrics = &Metrics{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

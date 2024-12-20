@@ -2,13 +2,14 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type PowerstatusControls struct {
-	Vin              *ValueControl
-	WorkingOnBattery *SwitchControl
+	Vin              *controls.ValueControl
+	WorkingOnBattery *controls.SwitchControl
 }
 
 type Powerstatus struct {
@@ -23,16 +24,15 @@ var (
 
 func NewPowerstatus(client *mqtt.Client) *Powerstatus {
 	oncePowerstatus.Do(func() {
-		name := "power"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "status")
-		controls := &PowerstatusControls{
-			Vin:              NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Vin")),
-			WorkingOnBattery: NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "working on battery")),
+		deviceName := fmt.Sprintf("%s_%s", "power", "status")
+		controlList := &PowerstatusControls{
+			Vin:              controls.NewValueControl(client, deviceName, "Vin"),
+			WorkingOnBattery: controls.NewSwitchControl(client, deviceName, "working on battery"),
 		}
 
 		instancePowerstatus = &Powerstatus{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

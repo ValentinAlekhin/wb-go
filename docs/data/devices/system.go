@@ -2,36 +2,37 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type SystemControls struct {
-	BatchNo            *TextControl
-	CurrentUptime      *TextControl
-	DtsVersion         *TextControl
-	HwRevision         *TextControl
-	ManufacturingDate  *TextControl
-	Reboot             *PushbuttonControl
-	ReleaseName        *TextControl
-	ReleaseSuite       *TextControl
-	ShortSn            *TextControl
-	TemperatureGrade   *TextControl
-	Status             *TextControl
-	ActivationLink     *TextControl
-	CloudBaseUrl       *TextControl
-	Name               *TextControl
-	Uuid               *TextControl
-	Type               *TextControl
-	Active             *SwitchControl
-	Device             *TextControl
-	State              *TextControl
-	Address            *TextControl
-	Connectivity       *SwitchControl
-	UpDown             *PushbuttonControl
-	Operator           *TextControl
-	SignalQuality      *TextControl
-	AccessTechnologies *TextControl
+	BatchNo            *controls.TextControl
+	CurrentUptime      *controls.TextControl
+	DtsVersion         *controls.TextControl
+	HwRevision         *controls.TextControl
+	ManufacturingDate  *controls.TextControl
+	Reboot             *controls.PushbuttonControl
+	ReleaseName        *controls.TextControl
+	ReleaseSuite       *controls.TextControl
+	ShortSn            *controls.TextControl
+	TemperatureGrade   *controls.TextControl
+	Status             *controls.TextControl
+	ActivationLink     *controls.TextControl
+	CloudBaseUrl       *controls.TextControl
+	Name               *controls.TextControl
+	Uuid               *controls.TextControl
+	Type               *controls.TextControl
+	Active             *controls.SwitchControl
+	Device             *controls.TextControl
+	State              *controls.TextControl
+	Address            *controls.TextControl
+	Connectivity       *controls.SwitchControl
+	UpDown             *controls.PushbuttonControl
+	Operator           *controls.TextControl
+	SignalQuality      *controls.TextControl
+	AccessTechnologies *controls.TextControl
 }
 
 type System struct {
@@ -46,39 +47,38 @@ var (
 
 func NewSystem(client *mqtt.Client) *System {
 	onceSystem.Do(func() {
-		name := "system"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &SystemControls{
-			BatchNo:            NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Batch No")),
-			CurrentUptime:      NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Current uptime")),
-			DtsVersion:         NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "DTS Version")),
-			HwRevision:         NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "HW Revision")),
-			ManufacturingDate:  NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Manufacturing Date")),
-			Reboot:             NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Reboot")),
-			ReleaseName:        NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Release name")),
-			ReleaseSuite:       NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Release suite")),
-			ShortSn:            NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Short SN")),
-			TemperatureGrade:   NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Temperature Grade")),
-			Status:             NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "status")),
-			ActivationLink:     NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "activation_link")),
-			CloudBaseUrl:       NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "cloud_base_url")),
-			Name:               NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Name")),
-			Uuid:               NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "UUID")),
-			Type:               NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Type")),
-			Active:             NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Active")),
-			Device:             NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Device")),
-			State:              NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "State")),
-			Address:            NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Address")),
-			Connectivity:       NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Connectivity")),
-			UpDown:             NewPushbuttonControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "UpDown")),
-			Operator:           NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Operator")),
-			SignalQuality:      NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "SignalQuality")),
-			AccessTechnologies: NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "AccessTechnologies")),
+		deviceName := fmt.Sprintf("%s_%s", "system", "")
+		controlList := &SystemControls{
+			BatchNo:            controls.NewTextControl(client, deviceName, "Batch No"),
+			CurrentUptime:      controls.NewTextControl(client, deviceName, "Current uptime"),
+			DtsVersion:         controls.NewTextControl(client, deviceName, "DTS Version"),
+			HwRevision:         controls.NewTextControl(client, deviceName, "HW Revision"),
+			ManufacturingDate:  controls.NewTextControl(client, deviceName, "Manufacturing Date"),
+			Reboot:             controls.NewPushbuttonControl(client, deviceName, "Reboot"),
+			ReleaseName:        controls.NewTextControl(client, deviceName, "Release name"),
+			ReleaseSuite:       controls.NewTextControl(client, deviceName, "Release suite"),
+			ShortSn:            controls.NewTextControl(client, deviceName, "Short SN"),
+			TemperatureGrade:   controls.NewTextControl(client, deviceName, "Temperature Grade"),
+			Status:             controls.NewTextControl(client, deviceName, "status"),
+			ActivationLink:     controls.NewTextControl(client, deviceName, "activation_link"),
+			CloudBaseUrl:       controls.NewTextControl(client, deviceName, "cloud_base_url"),
+			Name:               controls.NewTextControl(client, deviceName, "Name"),
+			Uuid:               controls.NewTextControl(client, deviceName, "UUID"),
+			Type:               controls.NewTextControl(client, deviceName, "Type"),
+			Active:             controls.NewSwitchControl(client, deviceName, "Active"),
+			Device:             controls.NewTextControl(client, deviceName, "Device"),
+			State:              controls.NewTextControl(client, deviceName, "State"),
+			Address:            controls.NewTextControl(client, deviceName, "Address"),
+			Connectivity:       controls.NewSwitchControl(client, deviceName, "Connectivity"),
+			UpDown:             controls.NewPushbuttonControl(client, deviceName, "UpDown"),
+			Operator:           controls.NewTextControl(client, deviceName, "Operator"),
+			SignalQuality:      controls.NewTextControl(client, deviceName, "SignalQuality"),
+			AccessTechnologies: controls.NewTextControl(client, deviceName, "AccessTechnologies"),
 		}
 
 		instanceSystem = &System{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

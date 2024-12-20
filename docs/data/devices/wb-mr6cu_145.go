@@ -2,18 +2,19 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type WbMr6Cu145Controls struct {
-	K1     *SwitchControl
-	K2     *SwitchControl
-	K3     *SwitchControl
-	K4     *SwitchControl
-	K5     *SwitchControl
-	K6     *SwitchControl
-	Serial *TextControl
+	K1     *controls.SwitchControl
+	K2     *controls.SwitchControl
+	K3     *controls.SwitchControl
+	K4     *controls.SwitchControl
+	K5     *controls.SwitchControl
+	K6     *controls.SwitchControl
+	Serial *controls.TextControl
 }
 
 type WbMr6Cu145 struct {
@@ -28,21 +29,20 @@ var (
 
 func NewWbMr6Cu145(client *mqtt.Client) *WbMr6Cu145 {
 	onceWbMr6Cu145.Do(func() {
-		name := "wb-mr6cu"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "145")
-		controls := &WbMr6Cu145Controls{
-			K1:     NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "K1")),
-			K2:     NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "K2")),
-			K3:     NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "K3")),
-			K4:     NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "K4")),
-			K5:     NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "K5")),
-			K6:     NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "K6")),
-			Serial: NewTextControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Serial")),
+		deviceName := fmt.Sprintf("%s_%s", "wb-mr6cu", "145")
+		controlList := &WbMr6Cu145Controls{
+			K1:     controls.NewSwitchControl(client, deviceName, "K1"),
+			K2:     controls.NewSwitchControl(client, deviceName, "K2"),
+			K3:     controls.NewSwitchControl(client, deviceName, "K3"),
+			K4:     controls.NewSwitchControl(client, deviceName, "K4"),
+			K5:     controls.NewSwitchControl(client, deviceName, "K5"),
+			K6:     controls.NewSwitchControl(client, deviceName, "K6"),
+			Serial: controls.NewTextControl(client, deviceName, "Serial"),
 		}
 
 		instanceWbMr6Cu145 = &WbMr6Cu145{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

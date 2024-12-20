@@ -2,13 +2,14 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type HwmonControls struct {
-	BoardTemperature *ValueControl
-	CpuTemperature   *ValueControl
+	BoardTemperature *controls.ValueControl
+	CpuTemperature   *controls.ValueControl
 }
 
 type Hwmon struct {
@@ -23,16 +24,15 @@ var (
 
 func NewHwmon(client *mqtt.Client) *Hwmon {
 	onceHwmon.Do(func() {
-		name := "hwmon"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &HwmonControls{
-			BoardTemperature: NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Board Temperature")),
-			CpuTemperature:   NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "CPU Temperature")),
+		deviceName := fmt.Sprintf("%s_%s", "hwmon", "")
+		controlList := &HwmonControls{
+			BoardTemperature: controls.NewValueControl(client, deviceName, "Board Temperature"),
+			CpuTemperature:   controls.NewValueControl(client, deviceName, "CPU Temperature"),
 		}
 
 		instanceHwmon = &Hwmon{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

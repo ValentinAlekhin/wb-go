@@ -2,20 +2,21 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type WbAdcControls struct {
-	A1          *ValueControl
-	A2          *ValueControl
-	A3          *ValueControl
-	A4          *ValueControl
-	Vin         *ValueControl
-	V33         *ValueControl
-	V50         *ValueControl
-	VbusDebug   *ValueControl
-	VbusNetwork *ValueControl
+	A1          *controls.ValueControl
+	A2          *controls.ValueControl
+	A3          *controls.ValueControl
+	A4          *controls.ValueControl
+	Vin         *controls.ValueControl
+	V33         *controls.ValueControl
+	V50         *controls.ValueControl
+	VbusDebug   *controls.ValueControl
+	VbusNetwork *controls.ValueControl
 }
 
 type WbAdc struct {
@@ -30,23 +31,22 @@ var (
 
 func NewWbAdc(client *mqtt.Client) *WbAdc {
 	onceWbAdc.Do(func() {
-		name := "wb-adc"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &WbAdcControls{
-			A1:          NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "A1")),
-			A2:          NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "A2")),
-			A3:          NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "A3")),
-			A4:          NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "A4")),
-			Vin:         NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Vin")),
-			V33:         NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "V3_3")),
-			V50:         NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "V5_0")),
-			VbusDebug:   NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Vbus_debug")),
-			VbusNetwork: NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "Vbus_network")),
+		deviceName := fmt.Sprintf("%s_%s", "wb-adc", "")
+		controlList := &WbAdcControls{
+			A1:          controls.NewValueControl(client, deviceName, "A1"),
+			A2:          controls.NewValueControl(client, deviceName, "A2"),
+			A3:          controls.NewValueControl(client, deviceName, "A3"),
+			A4:          controls.NewValueControl(client, deviceName, "A4"),
+			Vin:         controls.NewValueControl(client, deviceName, "Vin"),
+			V33:         controls.NewValueControl(client, deviceName, "V3_3"),
+			V50:         controls.NewValueControl(client, deviceName, "V5_0"),
+			VbusDebug:   controls.NewValueControl(client, deviceName, "Vbus_debug"),
+			VbusNetwork: controls.NewValueControl(client, deviceName, "Vbus_network"),
 		}
 
 		instanceWbAdc = &WbAdc{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

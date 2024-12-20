@@ -1,4 +1,4 @@
-package devices
+package controls
 
 import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -24,10 +24,9 @@ func (c *ValueControl) GetValue() float64 {
 func (c *ValueControl) AddWatcher(f func(payload ValueControlWatcherPayload)) {
 	c.control.AddWatcher(func(p ControlWatcherPayload) {
 		f(ValueControlWatcherPayload{
-			NewValue:    c.decode(p.NewValue),
-			OldValue:    c.decode(p.OldValue),
-			Topic:       p.Topic,
-			ControlName: p.ControlName,
+			NewValue: c.decode(p.NewValue),
+			OldValue: c.decode(p.OldValue),
+			Topic:    p.Topic,
 		})
 	})
 }
@@ -41,7 +40,7 @@ func (c *ValueControl) decode(value string) float64 {
 	return v
 }
 
-func NewValueControl(client *wb.Client, topic string) *ValueControl {
-	control := NewControl(client, topic)
-	return &ValueControl{control: control}
+func NewValueControl(client *wb.Client, device, control string) *ValueControl {
+	c := NewControl(client, device, control)
+	return &ValueControl{c}
 }

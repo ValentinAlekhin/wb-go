@@ -2,13 +2,14 @@ package devices
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"sync"
 )
 
 type LightModeControls struct {
-	Enabled *SwitchControl
-	State   *ValueControl
+	Enabled *controls.SwitchControl
+	State   *controls.ValueControl
 }
 
 type LightMode struct {
@@ -23,16 +24,15 @@ var (
 
 func NewLightMode(client *mqtt.Client) *LightMode {
 	onceLightMode.Do(func() {
-		name := "light-mode"
-		deviceTopic := fmt.Sprintf("/devices/%s_%s", name, "")
-		controls := &LightModeControls{
-			Enabled: NewSwitchControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "enabled")),
-			State:   NewValueControl(client, fmt.Sprintf("%s/controls/%s", deviceTopic, "state")),
+		deviceName := fmt.Sprintf("%s_%s", "light-mode", "")
+		controlList := &LightModeControls{
+			Enabled: controls.NewSwitchControl(client, deviceName, "enabled"),
+			State:   controls.NewValueControl(client, deviceName, "state"),
 		}
 
 		instanceLightMode = &LightMode{
-			Name:     name,
-			Controls: controls,
+			Name:     deviceName,
+			Controls: controlList,
 		}
 	})
 

@@ -86,7 +86,6 @@ func (g *GenerateService) Run() {
 	filteredResults := g.filterUnique(watchResults)
 	templatesData := g.generateTemplates(filteredResults)
 	g.generateFiles(templatesData)
-	g.copyControls()
 }
 
 func (g GenerateService) collectData() []watchResultItem {
@@ -264,22 +263,4 @@ func (g *GenerateService) generateFile(data *deviceTemplateData, outputDir strin
 	}
 
 	fmt.Printf("Сгененирован файл %s\n", outputPath)
-}
-
-func (g *GenerateService) copyControls() {
-	outputDir := g.getOutputDir()
-
-	for _, control := range controlFileNames {
-		src := fmt.Sprintf("templates/%s.go", control)
-		data, err := embedFs.ReadFile(src)
-		if err != nil {
-			panic(err)
-		}
-
-		dst := fmt.Sprintf("%s/%s.go", outputDir, control)
-		err = os.WriteFile(dst, data, 0644)
-		if err != nil {
-			panic(err)
-		}
-	}
 }

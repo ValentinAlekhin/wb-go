@@ -1,4 +1,4 @@
-package devices
+package controls
 
 import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -15,10 +15,9 @@ func (tc *TextControl) GetValue() string {
 func (tc *TextControl) AddWatcher(f func(payload ControlWatcherPayload)) {
 	tc.control.AddWatcher(func(p ControlWatcherPayload) {
 		f(ControlWatcherPayload{
-			NewValue:    p.NewValue,
-			OldValue:    p.OldValue,
-			Topic:       p.Topic,
-			ControlName: p.ControlName,
+			NewValue: p.NewValue,
+			OldValue: p.OldValue,
+			Topic:    p.Topic,
 		})
 	})
 }
@@ -27,7 +26,7 @@ func (tc *TextControl) SetValue(value string) {
 	tc.control.SetValue(value)
 }
 
-func NewTextControl(client *wb.Client, topic string) *TextControl {
-	control := NewControl(client, topic)
-	return &TextControl{control: control}
+func NewTextControl(client *wb.Client, device, control string) *TextControl {
+	c := NewControl(client, device, control)
+	return &TextControl{control: c}
 }

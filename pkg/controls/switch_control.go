@@ -1,6 +1,7 @@
-package devices
+package controls
 
 import (
+	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"strconv"
 )
@@ -23,10 +24,9 @@ func (sw *SwitchControl) GetValue() bool {
 func (sw *SwitchControl) AddWatcher(f func(payload SwitchControlWatcherPayload)) {
 	sw.control.AddWatcher(func(p ControlWatcherPayload) {
 		f(SwitchControlWatcherPayload{
-			NewValue:    sw.decode(p.NewValue),
-			OldValue:    sw.decode(p.OldValue),
-			Topic:       p.Topic,
-			ControlName: p.ControlName,
+			NewValue: sw.decode(p.NewValue),
+			OldValue: sw.decode(p.OldValue),
+			Topic:    p.Topic,
 		})
 	})
 }
@@ -52,9 +52,9 @@ func (sw *SwitchControl) TurnOn() {
 
 func (sw *SwitchControl) encode(value bool) string {
 	if value {
-		return "1"
+		return conventions.CONV_SWITCH_VALUE_TRUE
 	} else {
-		return "0"
+		return conventions.CONV_SWITCH_VALUE_FALSE
 	}
 }
 
@@ -67,7 +67,7 @@ func (sw *SwitchControl) decode(value string) bool {
 	return v
 }
 
-func NewSwitchControl(client *wb.Client, topic string) *SwitchControl {
-	control := NewControl(client, topic)
-	return &SwitchControl{control: control}
+func NewSwitchControl(client *wb.Client, device, control string) *SwitchControl {
+	c := NewControl(client, device, control)
+	return &SwitchControl{control: c}
 }
