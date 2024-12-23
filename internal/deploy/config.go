@@ -65,8 +65,6 @@ func loadConfig(configPath string) (*Config, error) {
 
 	setBuildDirs(&config)
 
-	fmt.Println(config.Build.OutDir)
-
 	return &config, nil
 }
 

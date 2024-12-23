@@ -82,10 +82,10 @@ func uploadToDevice(client *ssh.Client, file *os.File, remotePath string) error 
 	return nil
 }
 
-func stopService(client *ssh.Client, config *Config, device Device) error {
+func stopService(client *ssh.Client, config *Config) error {
 	execRemote := createExecRemote(client)
 
-	_, err := execRemote(fmt.Sprintf("systemctl stop %s.service", config.AppName))
+	_, err := execRemote(fmt.Sprintf("systemctl stop %s.service || true", config.AppName))
 	if err != nil {
 		return fmt.Errorf("ошибка при остановке сервиса: %v", err)
 	}
@@ -118,7 +118,7 @@ func createAndStartService(client *ssh.Client, config *Config, device Device) er
 		return fmt.Errorf("ошибка при создании systemd-сервиса: %v", err)
 	}
 
-	msg, err := execRemote("sudo systemctl daemon-reload")
+	msg, err := execRemote("systemctl daemon-reload")
 	if err != nil {
 		return fmt.Errorf("ошибка при остановке systemd-сервиса: %v", err)
 	}
@@ -182,7 +182,7 @@ func Run(config *Config) error {
 			return fmt.Errorf("Ошибка при подключении по SSH: %v\n", err)
 		}
 
-		err = stopService(client, config, device)
+		err = stopService(client, config)
 		if err != nil {
 			return err
 		}
