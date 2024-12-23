@@ -96,7 +96,7 @@ func stopService(client *ssh.Client, config *Config) error {
 func createAndStartService(client *ssh.Client, config *Config, device Device) error {
 	systedConfig := systemdFileConfig{
 		Description:      fmt.Sprintf("%s Service", config.AppName),
-		ExecStart:        device.AppDir + "/" + config.AppName,
+		ExecStart:        device.AppDir + config.AppName,
 		WorkingDirectory: device.AppDir,
 	}
 
