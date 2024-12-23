@@ -23,6 +23,10 @@ export default defineConfig({
                     {
                         text: 'Установка',
                         link: '/guide/install'
+                    },
+                    {
+                        text: 'Развертывание приложения',
+                        link: '/guide/deploy'
                     }
                 ]
             },
@@ -30,6 +34,7 @@ export default defineConfig({
                 text: 'Команды',
                 items: [
                     {text: 'Generate', link: '/guide/commands/generate'},
+                    {text: 'Deploy', link: '/guide/commands/deploy'},
                 ]
             },
         ]

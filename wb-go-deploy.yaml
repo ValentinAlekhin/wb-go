@@ -1,0 +1,6 @@
+app_name: "example-app"
+build:
+  src_dir: "./docs/data/examples"
+  out_dir: "./bin"
+devices:
+  - host: "192.168.1.150"

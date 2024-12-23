@@ -14,11 +14,6 @@
 
 ::: code-group
 <<< @/data/devices/wb-led_150.go
-<<< @/data/devices/range_control.go
-<<< @/data/devices/switch_control.go
-<<< @/data/devices/value_control.go
-<<< @/data/devices/text_control.go
-<<< @/data/devices/control.go
 :::
 
 

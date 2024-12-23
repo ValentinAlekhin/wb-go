@@ -1,0 +1,14 @@
+[Unit]
+Description={{.Description}}
+After=network.target
+
+[Service]
+ExecStart={{.ExecStart}}
+WorkingDirectory={{.WorkingDirectory}}
+Restart=always
+RestartSec=1
+User=root
+Environment=MY_ENV_VAR=value
+
+[Install]
+WantedBy=multi-user.target
