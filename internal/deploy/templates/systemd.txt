@@ -1,6 +1,6 @@
 [Unit]
 Description={{.Description}}
-After=network.target
+After=network.target mosquitto.service wb-mqtt-serial
 
 [Service]
 ExecStart={{.ExecStart}}

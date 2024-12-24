@@ -30,6 +30,7 @@ func (sw *SwitchControl) AddWatcher(f func(payload SwitchControlWatcherPayload))
 		})
 	})
 }
+
 func (sw *SwitchControl) SetValue(value bool) {
 	sw.control.SetValue(sw.encode(value))
 }

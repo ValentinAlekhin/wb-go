@@ -8,21 +8,21 @@ import (
 	"go.uber.org/atomic"
 )
 
-type ControlWatcherPayload struct {
-	NewValue string
-	OldValue string
-	Topic    string
-}
-
 type Control struct {
 	client       *wb.Client
 	value        atomic.String
 	valueTopic   string
 	commandTopic string
-	addChan      chan func(payload ControlWatcherPayload) // Канал для добавления новых подписчиков
+	addChan      chan func(payload ControlWatcherPayload)
 	eventChan    chan ControlWatcherPayload
 	setChan      chan string
 	stopChan     chan struct{}
+}
+
+type ControlWatcherPayload struct {
+	NewValue string
+	OldValue string
+	Topic    string
 }
 
 func (c *Control) GetValue() string {
