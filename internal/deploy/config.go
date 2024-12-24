@@ -3,30 +3,31 @@ package deploy
 import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"path/filepath"
 )
 
 type BuildConfig struct {
-	SrcDir string `mapstructure:"src_dir" validate:"required,dirpath"`
-	OutDir string `mapstructure:"out_dir" validate:"required,dirpath"`
+	SrcDir string `yaml:"src_dir" validate:"required,dirpath"`
+	OutDir string `yaml:"out_dir" validate:"required,dirpath"`
 }
 
 type Device struct {
-	Host     string `mapstructure:"host" validate:"required"`
-	User     string `mapstructure:"user" validate:"required"`
-	Password string `mapstructure:"password" validate:"required"`
-	SshPort  int    `mapstructure:"ssh_port" validate:"required,min=1,max=65535"`
-	AppDir   string `mapstructure:"app_dir" validate:"required"`
+	Host     string `yaml:"host" validate:"required"`
+	User     string `yaml:"user" validate:"required"`
+	Password string `yaml:"password" validate:"required"`
+	SshPort  int    `yaml:"ssh_port" validate:"required,min=1,max=65535"`
+	AppDir   string `yaml:"app_dir" validate:"required"`
 }
 
 type Config struct {
-	AppName    string      `mapstructure:"app_name" validate:"required"`
-	Build      BuildConfig `mapstructure:"build" validate:"required"`
-	Devices    []Device    `mapstructure:"devices" validate:"required,min=1,dive"`
-	WorkingDir string
+	AppName     string            `yaml:"app_name" validate:"required"`
+	Build       BuildConfig       `yaml:"build" validate:"required"`
+	Environment map[string]string `yaml:"environment"`
+	Devices     []Device          `yaml:"devices" validate:"required,min=1,dive"`
+	WorkingDir  string
 }
 
 func getConfigPath(configPath string) (string, error) {
@@ -42,19 +43,18 @@ func getConfigPath(configPath string) (string, error) {
 	return dir + "/" + DefaultConfigName, nil
 }
 
-// Функция для загрузки конфигурации с использованием Viper
 func loadConfig(configPath string) (*Config, error) {
-	v := viper.New()
-	v.SetConfigFile(configPath)
-	v.SetConfigType("yaml")
-
-	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("ошибка чтения конфигурации: %w", err)
+	file, err := os.Open(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка при открытии файла: %w", err)
 	}
+	defer file.Close()
 
 	var config Config
-	if err := v.Unmarshal(&config); err != nil {
-		return nil, fmt.Errorf("ошибка распаковки конфигурации: %w", err)
+	decoder := yaml.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		return nil, fmt.Errorf("ошбика при декодировании конфигурации: %w", err)
 	}
 
 	applyDefaults(&config)

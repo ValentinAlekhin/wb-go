@@ -15,8 +15,8 @@ func TestValidateConfig(t *testing.T) {
 			input: Config{
 				AppName: "test-app",
 				Build: BuildConfig{
-					Src: "./src",
-					Out: "./out",
+					SrcDir: "./src",
+					OutDir: "./out",
 				},
 				Devices: []Device{
 					{
@@ -35,8 +35,8 @@ func TestValidateConfig(t *testing.T) {
 			input: Config{
 				AppName: "",
 				Build: BuildConfig{
-					Src: "./src",
-					Out: "./out",
+					SrcDir: "./src",
+					OutDir: "./out",
 				},
 				Devices: []Device{
 					{
@@ -55,8 +55,8 @@ func TestValidateConfig(t *testing.T) {
 			input: Config{
 				AppName: "test-app",
 				Build: BuildConfig{
-					Src: "./src",
-					Out: "./out",
+					SrcDir: "./src",
+					OutDir: "./out",
 				},
 				Devices: []Device{
 					{
@@ -75,8 +75,8 @@ func TestValidateConfig(t *testing.T) {
 			input: Config{
 				AppName: "test-app",
 				Build: BuildConfig{
-					Src: "./src",
-					Out: "./out",
+					SrcDir: "./src",
+					OutDir: "./out",
 				},
 				Devices: []Device{}, // Пустой список устройств
 			},
@@ -106,8 +106,8 @@ func TestApplyDefaults(t *testing.T) {
 			input: Config{
 				AppName: "name",
 				Build: BuildConfig{
-					Src: "./default-src",
-					Out: "./default-out",
+					SrcDir: "./default-src",
+					OutDir: "./default-out",
 				},
 				Devices: []Device{
 					{
@@ -122,8 +122,8 @@ func TestApplyDefaults(t *testing.T) {
 			expected: Config{
 				AppName: "name",
 				Build: BuildConfig{
-					Src: "./default-src",
-					Out: "./default-out",
+					SrcDir: "./default-src",
+					OutDir: "./default-out",
 				},
 				Devices: []Device{
 					{
@@ -141,8 +141,8 @@ func TestApplyDefaults(t *testing.T) {
 			input: Config{
 				AppName: "custom_app",
 				Build: BuildConfig{
-					Src: "./custom-src",
-					Out: "./custom-out",
+					SrcDir: "./custom-src",
+					OutDir: "./custom-out",
 				},
 				Devices: []Device{
 					{
@@ -157,8 +157,8 @@ func TestApplyDefaults(t *testing.T) {
 			expected: Config{
 				AppName: "custom_app",
 				Build: BuildConfig{
-					Src: "./custom-src",
-					Out: "./custom-out",
+					SrcDir: "./custom-src",
+					OutDir: "./custom-out",
 				},
 				Devices: []Device{
 					{
@@ -176,8 +176,8 @@ func TestApplyDefaults(t *testing.T) {
 			input: Config{
 				AppName: "custom_app",
 				Build: BuildConfig{
-					Src: "./custom-src",
-					Out: "./custom-out",
+					SrcDir: "./custom-src",
+					OutDir: "./custom-out",
 				},
 				Devices: []Device{
 					{
@@ -192,8 +192,8 @@ func TestApplyDefaults(t *testing.T) {
 			expected: Config{
 				AppName: "custom_app",
 				Build: BuildConfig{
-					Src: "./custom-src",
-					Out: "./custom-out",
+					SrcDir: "./custom-src",
+					OutDir: "./custom-out",
 				},
 				Devices: []Device{
 					{
@@ -225,7 +225,7 @@ func equalConfig(c1, c2 Config) bool {
 	if c1.AppName != c2.AppName {
 		return false
 	}
-	if c1.Build.Src != c2.Build.Src || c1.Build.Out != c2.Build.Out {
+	if c1.Build.SrcDir != c2.Build.SrcDir || c1.Build.OutDir != c2.Build.OutDir {
 		return false
 	}
 	if len(c1.Devices) != len(c2.Devices) {

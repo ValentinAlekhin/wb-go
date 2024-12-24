@@ -18,6 +18,12 @@ type systemdFileConfig struct {
 	Description      string
 	ExecStart        string
 	WorkingDirectory string
+	Environment      []systemdFileConfigEnvironment
+}
+
+type systemdFileConfigEnvironment struct {
+	Key   string
+	Value string
 }
 
 //go:embed templates/*
@@ -94,10 +100,19 @@ func stopService(client *ssh.Client, config *Config) error {
 }
 
 func createAndStartService(client *ssh.Client, config *Config, device Device) error {
-	systedConfig := systemdFileConfig{
+	systedConfig := &systemdFileConfig{
 		Description:      fmt.Sprintf("%s Service", config.AppName),
 		ExecStart:        device.AppDir + config.AppName,
 		WorkingDirectory: device.AppDir,
+		Environment:      []systemdFileConfigEnvironment{},
+	}
+
+	for key, value := range config.Environment {
+		envRecord := systemdFileConfigEnvironment{
+			Key:   key,
+			Value: value,
+		}
+		systedConfig.Environment = append(systedConfig.Environment, envRecord)
 	}
 
 	tmpl, err := template.ParseFS(embedFs, systemdTemplateFile)
