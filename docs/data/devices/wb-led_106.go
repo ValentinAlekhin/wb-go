@@ -8,6 +8,7 @@ import (
 )
 
 type WbLed106Controls struct {
+	Overcurrent        *controls.SwitchControl
 	RgbStrip           *controls.SwitchControl
 	RgbPalette         *controls.RgbControl
 	RgbStripHue        *controls.RangeControl
@@ -19,7 +20,6 @@ type WbLed106Controls struct {
 	Channel4Brightness *controls.RangeControl
 	BoardTemperature   *controls.ValueControl
 	AllowedPower       *controls.ValueControl
-	Overcurrent        *controls.SwitchControl
 	Input1             *controls.SwitchControl
 	Input1Counter      *controls.ValueControl
 	Input2             *controls.SwitchControl
@@ -45,6 +45,7 @@ func NewWbLed106(client *mqtt.Client) *WbLed106 {
 	onceWbLed106.Do(func() {
 		deviceName := fmt.Sprintf("%s_%s", "wb-led", "106")
 		controlList := &WbLed106Controls{
+			Overcurrent:        controls.NewSwitchControl(client, deviceName, "Overcurrent"),
 			RgbStrip:           controls.NewSwitchControl(client, deviceName, "RGB Strip"),
 			RgbPalette:         controls.NewRgbControl(client, deviceName, "RGB Palette"),
 			RgbStripHue:        controls.NewRangeControl(client, deviceName, "RGB Strip Hue"),
@@ -56,7 +57,6 @@ func NewWbLed106(client *mqtt.Client) *WbLed106 {
 			Channel4Brightness: controls.NewRangeControl(client, deviceName, "Channel 4 Brightness"),
 			BoardTemperature:   controls.NewValueControl(client, deviceName, "Board Temperature"),
 			AllowedPower:       controls.NewValueControl(client, deviceName, "Allowed Power"),
-			Overcurrent:        controls.NewSwitchControl(client, deviceName, "Overcurrent"),
 			Input1:             controls.NewSwitchControl(client, deviceName, "Input 1"),
 			Input1Counter:      controls.NewValueControl(client, deviceName, "Input 1 Counter"),
 			Input2:             controls.NewSwitchControl(client, deviceName, "Input 2"),

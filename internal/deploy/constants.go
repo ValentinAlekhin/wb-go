@@ -6,5 +6,5 @@ var (
 	SshUser             = "root"
 	SshPassword         = "wirenboard"
 	DefaultAppDir       = "/mnt/data/"
-	systemdTemplateFile = "templates/systemd.txt"
+	systemdTemplateFile = "templates/systemd.gotmpl"
 )

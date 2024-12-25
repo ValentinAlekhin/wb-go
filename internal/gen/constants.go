@@ -5,7 +5,7 @@ import (
 )
 
 const mqttTopic = "/devices/+/controls/+/meta"
-const deviceTemplateFile = "templates/device.txt"
+const deviceTemplateFile = "templates/device.gotmpl"
 
 var controlValueTypeMap = map[string][]string{
 	"value": {
