@@ -56,6 +56,10 @@ func (c *RgbControl) AddWatcher(f func(payload RgbControlWatcherPayload)) {
 	})
 }
 
+func (c *RgbControl) GetInfo() ControlInfo {
+	return c.control.GetInfo()
+}
+
 func (c *RgbControl) decode(value string) (RgbValue, error) {
 	stringsValues := strings.Split(value, ";")
 

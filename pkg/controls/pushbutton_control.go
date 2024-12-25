@@ -9,8 +9,12 @@ type PushbuttonControl struct {
 	control *Control
 }
 
-func (pbc *PushbuttonControl) Push() {
-	pbc.control.SetValue(conventions.CONV_META_BOOL_TRUE)
+func (c *PushbuttonControl) Push() {
+	c.control.SetValue(conventions.CONV_META_BOOL_TRUE)
+}
+
+func (c *PushbuttonControl) GetInfo() ControlInfo {
+	return c.control.GetInfo()
 }
 
 func NewPushbuttonControl(client *wb.Client, device, control string) *PushbuttonControl {

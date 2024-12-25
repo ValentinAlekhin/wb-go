@@ -17,41 +17,45 @@ type SwitchControlWatcherPayload struct {
 	ControlName string
 }
 
-func (sw *SwitchControl) GetValue() bool {
-	return sw.decode(sw.control.GetValue())
+func (c *SwitchControl) GetValue() bool {
+	return c.decode(c.control.GetValue())
 }
 
-func (sw *SwitchControl) AddWatcher(f func(payload SwitchControlWatcherPayload)) {
-	sw.control.AddWatcher(func(p ControlWatcherPayload) {
+func (c *SwitchControl) AddWatcher(f func(payload SwitchControlWatcherPayload)) {
+	c.control.AddWatcher(func(p ControlWatcherPayload) {
 		f(SwitchControlWatcherPayload{
-			NewValue: sw.decode(p.NewValue),
-			OldValue: sw.decode(p.OldValue),
+			NewValue: c.decode(p.NewValue),
+			OldValue: c.decode(p.OldValue),
 			Topic:    p.Topic,
 		})
 	})
 }
 
-func (sw *SwitchControl) SetValue(value bool) {
-	sw.control.SetValue(sw.encode(value))
+func (c *SwitchControl) SetValue(value bool) {
+	c.control.SetValue(c.encode(value))
 }
 
-func (sw *SwitchControl) Toggle() {
-	if sw.GetValue() {
-		sw.SetValue(false)
+func (c *SwitchControl) Toggle() {
+	if c.GetValue() {
+		c.SetValue(false)
 	} else {
-		sw.SetValue(true)
+		c.SetValue(true)
 	}
 }
 
-func (sw *SwitchControl) TurnOff() {
-	sw.SetValue(false)
+func (c *SwitchControl) TurnOff() {
+	c.SetValue(false)
 }
 
-func (sw *SwitchControl) TurnOn() {
-	sw.SetValue(true)
+func (c *SwitchControl) TurnOn() {
+	c.SetValue(true)
 }
 
-func (sw *SwitchControl) encode(value bool) string {
+func (c *SwitchControl) GetInfo() ControlInfo {
+	return c.control.GetInfo()
+}
+
+func (c *SwitchControl) encode(value bool) string {
 	if value {
 		return conventions.CONV_SWITCH_VALUE_TRUE
 	} else {
@@ -59,7 +63,7 @@ func (sw *SwitchControl) encode(value bool) string {
 	}
 }
 
-func (sw *SwitchControl) decode(value string) bool {
+func (c *SwitchControl) decode(value string) bool {
 	v, err := strconv.ParseBool(value)
 	if err != nil {
 		return false

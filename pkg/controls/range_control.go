@@ -16,8 +16,8 @@ type RangeControlWatcherPayload struct {
 	ControlName string
 }
 
-func (rc *RangeControl) GetValue() int {
-	value, err := strconv.Atoi(rc.control.GetValue())
+func (c *RangeControl) GetValue() int {
+	value, err := strconv.Atoi(c.control.GetValue())
 	if err != nil {
 		return 0
 	}
@@ -25,25 +25,29 @@ func (rc *RangeControl) GetValue() int {
 	return value
 }
 
-func (rc *RangeControl) AddWatcher(f func(payload RangeControlWatcherPayload)) {
-	rc.control.AddWatcher(func(p ControlWatcherPayload) {
+func (c *RangeControl) AddWatcher(f func(payload RangeControlWatcherPayload)) {
+	c.control.AddWatcher(func(p ControlWatcherPayload) {
 		f(RangeControlWatcherPayload{
-			NewValue: rc.decode(p.NewValue),
-			OldValue: rc.decode(p.OldValue),
+			NewValue: c.decode(p.NewValue),
+			OldValue: c.decode(p.OldValue),
 			Topic:    p.Topic,
 		})
 	})
 }
 
-func (rc *RangeControl) SetValue(value int) {
-	rc.control.SetValue(rc.encode(value))
+func (c *RangeControl) SetValue(value int) {
+	c.control.SetValue(c.encode(value))
 }
 
-func (rc *RangeControl) encode(value int) string {
+func (c *RangeControl) GetInfo() ControlInfo {
+	return c.control.GetInfo()
+}
+
+func (c *RangeControl) encode(value int) string {
 	return strconv.Itoa(value)
 }
 
-func (rc *RangeControl) decode(value string) int {
+func (c *RangeControl) decode(value string) int {
 	v, err := strconv.Atoi(value)
 	if err != nil {
 		return 0

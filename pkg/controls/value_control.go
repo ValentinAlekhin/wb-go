@@ -31,6 +31,10 @@ func (c *ValueControl) AddWatcher(f func(payload ValueControlWatcherPayload)) {
 	})
 }
 
+func (c *ValueControl) GetInfo() ControlInfo {
+	return c.control.GetInfo()
+}
+
 func (c *ValueControl) decode(value string) float64 {
 	v, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
 	if err != nil {

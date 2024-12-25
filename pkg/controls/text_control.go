@@ -8,12 +8,12 @@ type TextControl struct {
 	control *Control
 }
 
-func (tc *TextControl) GetValue() string {
-	return tc.control.GetValue()
+func (c *TextControl) GetValue() string {
+	return c.control.GetValue()
 }
 
-func (tc *TextControl) AddWatcher(f func(payload ControlWatcherPayload)) {
-	tc.control.AddWatcher(func(p ControlWatcherPayload) {
+func (c *TextControl) AddWatcher(f func(payload ControlWatcherPayload)) {
+	c.control.AddWatcher(func(p ControlWatcherPayload) {
 		f(ControlWatcherPayload{
 			NewValue: p.NewValue,
 			OldValue: p.OldValue,
@@ -22,8 +22,12 @@ func (tc *TextControl) AddWatcher(f func(payload ControlWatcherPayload)) {
 	})
 }
 
-func (tc *TextControl) SetValue(value string) {
-	tc.control.SetValue(value)
+func (c *TextControl) GetInfo() ControlInfo {
+	return c.control.GetInfo()
+}
+
+func (c *TextControl) SetValue(value string) {
+	c.control.SetValue(value)
 }
 
 func NewTextControl(client *wb.Client, device, control string) *TextControl {

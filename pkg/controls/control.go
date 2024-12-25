@@ -9,6 +9,7 @@ import (
 )
 
 type Control struct {
+	name         string
 	client       *wb.Client
 	value        atomic.String
 	valueTopic   string
@@ -35,6 +36,14 @@ func (c *Control) AddWatcher(f func(payload ControlWatcherPayload)) {
 
 func (c *Control) SetValue(value string) {
 	c.setChan <- value
+}
+
+func (c *Control) GetInfo() ControlInfo {
+	return ControlInfo{
+		Name:         c.name,
+		ValueTopic:   c.valueTopic,
+		CommandTopic: c.commandTopic,
+	}
 }
 
 func (c *Control) publish(value string) {
@@ -98,6 +107,7 @@ func (c *Control) runSetValueHandler() {
 
 func NewControl(client *wb.Client, device, control string) *Control {
 	sw := &Control{
+		name:         control,
 		client:       client,
 		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, control),
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, device, control),
