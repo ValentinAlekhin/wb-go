@@ -5,8 +5,92 @@ import (
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/iancoleman/strcase"
+	"regexp"
 	"strings"
 )
+
+var DeviceConfigMap = map[string]*DeviceConfig{
+	"wb-led": {
+		ignoreRegexpStr: []string{"Brightness", "Temperature", "RGB Palette"},
+		getters: []*ConfigGetter{
+			{
+				regexpStr: `^CCT\d+$`,
+				getter:    getCctLightConfig,
+				domain:    "light",
+			},
+			{
+				regexpStr: `^Channels? [0-9_]{1,3}`,
+				getter:    getDimLightConfig,
+				domain:    "light",
+			},
+			{
+				regexpStr: `^RGB Strip`,
+				getter:    getRgbLightConfig,
+				domain:    "light",
+			},
+		},
+	},
+}
+
+type DeviceConfig struct {
+	getters         []*ConfigGetter
+	ignoreRegexpStr []string
+	ignoreRegexp    []*regexp.Regexp
+}
+
+type ConfigGetter struct {
+	regexpStr string
+	regexp    *regexp.Regexp
+	getter    ConfigGetterFn
+	domain    string
+}
+
+type ConfigGetterFn func(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig
+
+func init() {
+	for _, devConfig := range DeviceConfigMap {
+		devConfig.ignoreRegexp = make([]*regexp.Regexp, len(devConfig.ignoreRegexpStr))
+
+		for i, regexpSrt := range devConfig.ignoreRegexpStr {
+			devConfig.ignoreRegexp[i] = regexp.MustCompile(regexpSrt)
+		}
+
+		for _, handler := range devConfig.getters {
+			handler.regexp = regexp.MustCompile(handler.regexpStr)
+		}
+	}
+}
+
+func getConfigAndDomain(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) (config MqttDiscoveryConfig, domain string, ignore bool) {
+	config = getAnyControlConfig(deviceInfo, controlInfo)
+	domain = getAnyDomain(controlInfo)
+	ignore = false
+
+	for dev, devConfig := range DeviceConfigMap {
+		if dev != deviceInfo.Device {
+			continue
+		}
+
+		for _, ignoreRegexp := range devConfig.ignoreRegexp {
+			if ignoreRegexp.MatchString(controlInfo.Name) {
+				ignore = true
+				return
+			}
+		}
+
+		for _, getter := range devConfig.getters {
+			if !getter.regexp.MatchString(controlInfo.Name) {
+				continue
+			}
+
+			config = getter.getter(deviceInfo, controlInfo)
+			domain = getter.domain
+			break
+		}
+	}
+
+	return
+}
 
 func getAnyDomain(info controls.ControlInfo) string {
 	domain := "sensor"
@@ -64,8 +148,8 @@ func getRgbLightConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.Co
 
 	return GetConfig(MqttDiscoveryConfig{
 		Device:                 getDevice(deviceInfo),
-		RGBStateTopic:          fmt.Sprintf(RgbStateTopicFmt, deviceInfo.Name),
-		RGBCommandTopic:        fmt.Sprintf(RgbCommandTopicFmt, deviceInfo.Name),
+		RGBStateTopic:          fmt.Sprintf("/devices/%s/controls/RGB Palette", deviceInfo.Name),
+		RGBCommandTopic:        fmt.Sprintf("/devices/%s/controls/RGB Palette/on", deviceInfo.Name),
 		BrightnessStateTopic:   fmt.Sprintf("/devices/%s/controls/RGB Strip Brightness", deviceInfo.Name),
 		BrightnessCommandTopic: fmt.Sprintf("/devices/%s/controls/RGB Strip Brightness/on", deviceInfo.Name),
 		RGBValueTemplate:       "{{ value.split(';') | join(',') }}",

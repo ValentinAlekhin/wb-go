@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/examples/devices"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	"github.com/ValentinAlekhin/wb-go/pkg/homeassistant"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"os"
@@ -22,17 +23,36 @@ func main() {
 	client := wb.NewClient(opt)
 
 	// Создание устройств
-	wbMsw := devices.NewWbMswV4151(client)
+	WbMswV4151 := devices.NewWbMswV4151(client)
+	WbMr6Cu145 := devices.NewWbMr6Cu145(client)
 	rgbLed := devices.NewWbLed106(client)
 	cctLed := devices.NewWbLed150(client)
 
 	// Создание конфигурации Home Assistant
-	discovery := homeassistant.NewDiscovery("homeassistant", client)
+	discoveryOpt := homeassistant.DiscoveryOptions{
+		Client: client,
+		Prefix: "homeassistant",
+	}
+	discovery := homeassistant.NewDiscovery(discoveryOpt)
+
+	// Удаление всех устройств из Home Assistant, добавленных с помощью wb-go
+	discovery.Clear()
 
 	// Добавление устройств в Home Assistant
-	discovery.AddDevice(wbMsw.GetInfo())
+	discovery.AddDevice(WbMswV4151.GetInfo())
 	discovery.AddDevice(rgbLed.GetInfo())
 	discovery.AddDevice(cctLed.GetInfo())
+
+	// Добавление скрипта
+	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload controls.ValueControlWatcherPayload) {
+		fmt.Printf("Получено новое сообщение: %f\n", payload.NewValue)
+
+		if payload.NewValue > 100 {
+			WbMr6Cu145.Controls.K1.TurnOff()
+		} else {
+			WbMr6Cu145.Controls.K1.TurnOn()
+		}
+	})
 
 	<-stop
 

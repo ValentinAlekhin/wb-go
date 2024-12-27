@@ -5,14 +5,28 @@ import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/iancoleman/strcase"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Discovery struct {
-	client    *wb.Client
-	baseTopic string
+	client *wb.Client
+	prefix string
+	name   string
+}
+
+type DiscoveryOptions struct {
+	Client *wb.Client
+	Prefix string
+	Name   string
+}
+
+type DiscoveryMeta struct {
+	ClientName string    `json:"client_name"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 func (d *Discovery) AddDevice(info deviceInfo.DeviceInfo) {
@@ -23,52 +37,32 @@ func (d *Discovery) AddDevice(info deviceInfo.DeviceInfo) {
 		go func() {
 			defer wg.Done()
 
-			var config MqttDiscoveryConfig
-			domain := getAnyDomain(controlInfo)
-
-			switch controlInfo.Name {
-			case "RGB Strip":
-				config = getRgbLightConfig(info, controlInfo)
-				domain = "light"
-
-			case "Channel 1":
-				config = getDimLightConfig(info, controlInfo)
-				domain = "light"
-
-			case "Channel 2":
-				config = getDimLightConfig(info, controlInfo)
-				domain = "light"
-
-			case "Channel 3":
-				config = getDimLightConfig(info, controlInfo)
-				domain = "light"
-
-			case "Channel 4":
-				config = getDimLightConfig(info, controlInfo)
-				domain = "light"
-
-			case "CCT1":
-				config = getCctLightConfig(info, controlInfo)
-				domain = "light"
-
-			case "CCT2":
-				config = getCctLightConfig(info, controlInfo)
-				domain = "light"
-
-			default:
-				if d.skipControl(controlInfo.Name) {
-					return
-				}
-				config = getAnyControlConfig(info, controlInfo)
+			config, domain, ignore := getConfigAndDomain(info, controlInfo)
+			if ignore {
+				return
 			}
 
 			byteConfig, _ := json.Marshal(config)
 			haControlTopic := d.getHaControlTopic(controlInfo.Name)
-			topic := fmt.Sprintf("%s/%s/%s/%s/config", d.baseTopic, domain, info.Name, haControlTopic)
+			baseTopic := fmt.Sprintf("%s/%s/%s/%s", d.prefix, domain, info.Name, haControlTopic)
+			configTopic := baseTopic + "/config"
+			metaTopic := fmt.Sprintf("%s/%s", baseTopic, DiscoveryMetaTopic)
+			meta := DiscoveryMeta{
+				ClientName: d.name,
+				CreatedAt:  time.Now(),
+			}
+			jsonMeta, _ := json.Marshal(meta)
 
 			d.client.Publish(wb.PublishPayload{
-				Topic:    topic,
+				Topic:    configTopic,
 				Value:    string(byteConfig),
+				Retained: true,
+				QOS:      2,
+			})
+
+			d.client.Publish(wb.PublishPayload{
+				Topic:    metaTopic,
+				Value:    string(jsonMeta),
 				Retained: true,
 				QOS:      2,
 			})
@@ -79,20 +73,6 @@ func (d *Discovery) AddDevice(info deviceInfo.DeviceInfo) {
 	fmt.Printf("Устроство %s добавлено в Home Assistant\n", info.Name)
 }
 
-func (d *Discovery) skipControl(name string) bool {
-	subStrings := []string{"rgb", "cct", "channel"}
-
-	lowName := strings.ToLower(name)
-
-	for _, subString := range subStrings {
-		if strings.Contains(lowName, subString) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (d *Discovery) getHaControlTopic(name string) string {
 	topic := strcase.ToSnake(name)
 	topic = clearControlName(topic)
@@ -100,6 +80,88 @@ func (d *Discovery) getHaControlTopic(name string) string {
 	return topic
 }
 
-func NewDiscovery(baseTopic string, client *wb.Client) *Discovery {
-	return &Discovery{baseTopic: baseTopic, client: client}
+func (d *Discovery) applyDefaultOptions() {
+	if d.name == "" {
+		d.name = DefaultDiscoveryName
+	}
+}
+
+// Clear all devices, added by wb-go
+func (d *Discovery) Clear() {
+	eventChannel := make(chan struct{})
+	timeoutDuration := 1 * time.Second
+	done := make(chan bool)
+
+	go func() {
+		timer := time.NewTimer(timeoutDuration)
+		defer timer.Stop()
+
+		for {
+			select {
+			case <-eventChannel:
+				if !timer.Stop() {
+					<-timer.C
+				}
+				timer.Reset(timeoutDuration)
+
+			case <-timer.C:
+				done <- true
+				return
+			}
+		}
+	}()
+
+	result := map[string]DiscoveryMeta{}
+
+	topicName := fmt.Sprintf("%s/+/+/+/%s", d.prefix, DiscoveryMetaTopic)
+	handler := func(client mqtt.Client, msg mqtt.Message) {
+		topic := msg.Topic()
+		payload := msg.Payload()
+		var meta DiscoveryMeta
+		err := json.Unmarshal(payload, &meta)
+		if err != nil {
+			return
+		}
+
+		result[topic] = meta
+		eventChannel <- struct{}{}
+	}
+	d.client.Subscribe(topicName, handler)
+
+	<-done
+
+	d.client.Unsubscribe(topicName)
+
+	for topic, meta := range result {
+		if meta.ClientName != d.name {
+			continue
+		}
+
+		configTopic := strings.Replace(topic, DiscoveryMetaTopic, "config", 1)
+		d.client.Publish(wb.PublishPayload{
+			Topic:    configTopic,
+			Value:    "",
+			QOS:      1,
+			Retained: true,
+		})
+
+		d.client.Publish(wb.PublishPayload{
+			Topic:    topic,
+			Value:    "",
+			QOS:      1,
+			Retained: true,
+		})
+	}
+}
+
+func NewDiscovery(opt DiscoveryOptions) *Discovery {
+
+	discovery := &Discovery{
+		prefix: opt.Prefix,
+		client: opt.Client,
+		name:   opt.Name,
+	}
+	discovery.applyDefaultOptions()
+
+	return discovery
 }

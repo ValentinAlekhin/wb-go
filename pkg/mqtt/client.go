@@ -75,6 +75,10 @@ func (c *Client) Publish(p PublishPayload) {
 	c.publish(p.Topic, p.QOS, p.Retained, p.Value)
 }
 
+func (c *Client) Unsubscribe(topics ...string) {
+	c.client.Unsubscribe(topics...)
+}
+
 func (c *Client) publish(topic string, qos byte, retained bool, value string) {
 	if token := c.client.Publish(topic, qos, retained, value); token.Wait() && token.Error() != nil {
 		log.Printf("Ошибка публикации в топик %s: %v", topic, token.Error())
