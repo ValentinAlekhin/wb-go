@@ -44,7 +44,7 @@ func (c *ValueControl) decode(value string) float64 {
 	return v
 }
 
-func NewValueControl(client *wb.Client, device, control string) *ValueControl {
-	c := NewControl(client, device, control)
+func NewValueControl(client *wb.Client, device, control string, meta Meta) *ValueControl {
+	c := NewControl(client, device, control, meta)
 	return &ValueControl{c}
 }

@@ -20,6 +20,13 @@ type Client struct {
 	options Options
 }
 
+type PublishPayload struct {
+	Topic    string
+	Value    string
+	QOS      byte
+	Retained bool
+}
+
 // NewClient создает новый MQTT клиент
 func NewClient(opt Options) *Client {
 	fmt.Printf("Подключение к брокеру %s\n", opt.Broker)
@@ -64,8 +71,12 @@ func (c *Client) Subscribe(topic string, handler mqtt.MessageHandler) {
 }
 
 // Publish публикует сообщение в топик MQTT
-func (c *Client) Publish(topic string, value string) {
-	if token := c.client.Publish(topic, 0, false, value); token.Wait() && token.Error() != nil {
+func (c *Client) Publish(p PublishPayload) {
+	c.publish(p.Topic, p.QOS, p.Retained, p.Value)
+}
+
+func (c *Client) publish(topic string, qos byte, retained bool, value string) {
+	if token := c.client.Publish(topic, qos, retained, value); token.Wait() && token.Error() != nil {
 		log.Printf("Ошибка публикации в топик %s: %v", topic, token.Error())
 	}
 }

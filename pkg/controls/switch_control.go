@@ -72,7 +72,7 @@ func (c *SwitchControl) decode(value string) bool {
 	return v
 }
 
-func NewSwitchControl(client *wb.Client, device, control string) *SwitchControl {
-	c := NewControl(client, device, control)
+func NewSwitchControl(client *wb.Client, device, control string, meta Meta) *SwitchControl {
+	c := NewControl(client, device, control, meta)
 	return &SwitchControl{control: c}
 }

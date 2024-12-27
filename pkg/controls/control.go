@@ -10,6 +10,7 @@ import (
 
 type Control struct {
 	name         string
+	meta         Meta
 	client       *wb.Client
 	value        atomic.String
 	valueTopic   string
@@ -19,6 +20,25 @@ type Control struct {
 	setChan      chan string
 	stopChan     chan struct{}
 }
+
+type Meta struct {
+	Type      string                      `json:"type"`      // Тип контроля
+	Units     string                      `json:"units"`     // Единицы измерения (только для type="value")
+	Max       float64                     `json:"max"`       // Максимальное значение
+	Min       float64                     `json:"min"`       // Минимальное значение
+	Precision float64                     `json:"precision"` // Точность
+	Order     int                         `json:"order"`     // Порядок отображения
+	ReadOnly  bool                        `json:"readonly"`  // Только для чтения
+	Title     MultilingualText            `json:"title"`     // Название (разные языки)
+	Enum      map[string]MultilingualEnum `json:"enum"`      // Заголовки для enum
+}
+
+type MultilingualEnum struct {
+	Title MultilingualText `json:"title"` // Название enum на разных языках
+}
+
+// MultilingualText хранит текстовые значения на разных языках
+type MultilingualText map[string]string
 
 type ControlWatcherPayload struct {
 	NewValue string
@@ -43,11 +63,16 @@ func (c *Control) GetInfo() ControlInfo {
 		Name:         c.name,
 		ValueTopic:   c.valueTopic,
 		CommandTopic: c.commandTopic,
+		Meta:         c.meta,
 	}
 }
 
 func (c *Control) publish(value string) {
-	c.client.Publish(c.commandTopic, value)
+	c.client.Publish(wb.PublishPayload{
+		Value: value,
+		Topic: c.commandTopic,
+		QOS:   1,
+	})
 }
 
 func (c *Control) subscribe() {
@@ -105,9 +130,10 @@ func (c *Control) runSetValueHandler() {
 	}
 }
 
-func NewControl(client *wb.Client, device, control string) *Control {
+func NewControl(client *wb.Client, device, control string, meta Meta) *Control {
 	sw := &Control{
 		name:         control,
+		meta:         meta,
 		client:       client,
 		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, control),
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, device, control),

@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -13,9 +14,21 @@ type WbrulesControls struct {
 }
 
 type Wbrules struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *WbrulesControls
+}
+
+func (w *Wbrules) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Wbrules) GetControlsInfo() []controls.ControlInfo {
@@ -53,14 +66,23 @@ var (
 
 func NewWbrules(client *mqtt.Client) *Wbrules {
 	onceWbrules.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "wbrules", "")
+		device := "wbrules"
+		address := ""
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &WbrulesControls{
-			RuleDebugging: controls.NewSwitchControl(client, deviceName, "Rule debugging"),
+			RuleDebugging: controls.NewSwitchControl(client, name, "Rule debugging", controls.Meta{
+				Type: "switch",
+
+				Order:    1,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"en": `Rule debugging`, "ru": `Отладка правил`},
+			}),
 		}
 
 		instanceWbrules = &Wbrules{
-			Name:     deviceName,
-			Address:  "",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

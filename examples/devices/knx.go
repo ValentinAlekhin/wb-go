@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -13,9 +14,21 @@ type KnxControls struct {
 }
 
 type Knx struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *KnxControls
+}
+
+func (w *Knx) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Knx) GetControlsInfo() []controls.ControlInfo {
@@ -53,14 +66,23 @@ var (
 
 func NewKnx(client *mqtt.Client) *Knx {
 	onceKnx.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "knx", "")
+		device := "knx"
+		address := ""
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &KnxControls{
-			Data: controls.NewTextControl(client, deviceName, "data"),
+			Data: controls.NewTextControl(client, name, "data", controls.Meta{
+				Type: "text",
+
+				Order:    0,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"en": `Message`, "ru": `Сообщение`},
+			}),
 		}
 
 		instanceKnx = &Knx{
-			Name:     deviceName,
-			Address:  "",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

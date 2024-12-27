@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -14,9 +15,21 @@ type PowerstatusControls struct {
 }
 
 type Powerstatus struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *PowerstatusControls
+}
+
+func (w *Powerstatus) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Powerstatus) GetControlsInfo() []controls.ControlInfo {
@@ -54,15 +67,30 @@ var (
 
 func NewPowerstatus(client *mqtt.Client) *Powerstatus {
 	oncePowerstatus.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "power", "status")
+		device := "power"
+		address := "status"
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &PowerstatusControls{
-			Vin:              controls.NewValueControl(client, deviceName, "Vin"),
-			WorkingOnBattery: controls.NewSwitchControl(client, deviceName, "working on battery"),
+			Vin: controls.NewValueControl(client, name, "Vin", controls.Meta{
+				Type: "voltage",
+
+				Order:    1,
+				ReadOnly: true,
+				Title:    controls.MultilingualText{"en": `Input voltage`, "ru": `Входное напряжение`},
+			}),
+			WorkingOnBattery: controls.NewSwitchControl(client, name, "working on battery", controls.Meta{
+				Type: "switch",
+
+				Order:    2,
+				ReadOnly: true,
+				Title:    controls.MultilingualText{"en": `Working on battery`, "ru": `Работа от батареи`},
+			}),
 		}
 
 		instancePowerstatus = &Powerstatus{
-			Name:     deviceName,
-			Address:  "status",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

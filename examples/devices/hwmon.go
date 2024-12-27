@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -14,9 +15,21 @@ type HwmonControls struct {
 }
 
 type Hwmon struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *HwmonControls
+}
+
+func (w *Hwmon) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Hwmon) GetControlsInfo() []controls.ControlInfo {
@@ -54,15 +67,30 @@ var (
 
 func NewHwmon(client *mqtt.Client) *Hwmon {
 	onceHwmon.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "hwmon", "")
+		device := "hwmon"
+		address := ""
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &HwmonControls{
-			BoardTemperature: controls.NewValueControl(client, deviceName, "Board Temperature"),
-			CpuTemperature:   controls.NewValueControl(client, deviceName, "CPU Temperature"),
+			BoardTemperature: controls.NewValueControl(client, name, "Board Temperature", controls.Meta{
+				Type: "temperature",
+
+				Order:    1,
+				ReadOnly: true,
+				Title:    controls.MultilingualText{},
+			}),
+			CpuTemperature: controls.NewValueControl(client, name, "CPU Temperature", controls.Meta{
+				Type: "temperature",
+
+				Order:    2,
+				ReadOnly: true,
+				Title:    controls.MultilingualText{},
+			}),
 		}
 
 		instanceHwmon = &Hwmon{
-			Name:     deviceName,
-			Address:  "",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

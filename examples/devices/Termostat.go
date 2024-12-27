@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -15,9 +16,21 @@ type TermostatControls struct {
 }
 
 type Termostat struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *TermostatControls
+}
+
+func (w *Termostat) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Termostat) GetControlsInfo() []controls.ControlInfo {
@@ -55,16 +68,39 @@ var (
 
 func NewTermostat(client *mqtt.Client) *Termostat {
 	onceTermostat.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "Termostat", "")
+		device := "Termostat"
+		address := ""
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &TermostatControls{
-			R01Ts161Lock:     controls.NewSwitchControl(client, deviceName, "R01-TS16-1-lock"),
-			R01Ts161Mode:     controls.NewSwitchControl(client, deviceName, "R01-TS16-1-mode"),
-			R01Ts161Setpoint: controls.NewRangeControl(client, deviceName, "R01-TS16-1-setpoint"),
+			R01Ts161Lock: controls.NewSwitchControl(client, name, "R01-TS16-1-lock", controls.Meta{
+				Type: "switch",
+
+				Order:    1,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{},
+			}),
+			R01Ts161Mode: controls.NewSwitchControl(client, name, "R01-TS16-1-mode", controls.Meta{
+				Type: "switch",
+
+				Order:    2,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{},
+			}),
+			R01Ts161Setpoint: controls.NewRangeControl(client, name, "R01-TS16-1-setpoint", controls.Meta{
+				Type: "range",
+
+				Max: 30,
+
+				Order:    3,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{},
+			}),
 		}
 
 		instanceTermostat = &Termostat{
-			Name:     deviceName,
-			Address:  "",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

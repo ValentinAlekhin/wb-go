@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -15,9 +16,21 @@ type BuzzerControls struct {
 }
 
 type Buzzer struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *BuzzerControls
+}
+
+func (w *Buzzer) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Buzzer) GetControlsInfo() []controls.ControlInfo {
@@ -55,16 +68,41 @@ var (
 
 func NewBuzzer(client *mqtt.Client) *Buzzer {
 	onceBuzzer.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "buzzer", "")
+		device := "buzzer"
+		address := ""
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &BuzzerControls{
-			Enabled:   controls.NewSwitchControl(client, deviceName, "enabled"),
-			Frequency: controls.NewRangeControl(client, deviceName, "frequency"),
-			Volume:    controls.NewRangeControl(client, deviceName, "volume"),
+			Enabled: controls.NewSwitchControl(client, name, "enabled", controls.Meta{
+				Type: "switch",
+
+				Order:    1,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"en": `Enabled`, "ru": `Включен`},
+			}),
+			Frequency: controls.NewRangeControl(client, name, "frequency", controls.Meta{
+				Type: "range",
+
+				Max: 7000,
+
+				Order:    2,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"en": `Frequency`, "ru": `Частота`},
+			}),
+			Volume: controls.NewRangeControl(client, name, "volume", controls.Meta{
+				Type: "range",
+
+				Max: 100,
+
+				Order:    3,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"en": `Volume`, "ru": `Громкость`},
+			}),
 		}
 
 		instanceBuzzer = &Buzzer{
-			Name:     deviceName,
-			Address:  "",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/iancoleman/strcase"
@@ -30,6 +31,7 @@ type deviceControlTemplateData struct {
 	ReadOnly   bool
 	Type       string
 	StructName string
+	Meta       controls.Meta
 }
 
 type deviceTemplateData struct {
@@ -46,27 +48,7 @@ type watchResultItem struct {
 	DeviceName    string
 	ModbusAddress string
 	Control       string
-	Meta          ControlMeta
-}
-
-type ControlMeta struct {
-	Type      string           `json:"type"`      // Тип контроля
-	Units     string           `json:"units"`     // Единицы измерения (только для type="value")
-	Max       float64          `json:"max"`       // Максимальное значение
-	Min       float64          `json:"min"`       // Минимальное значение
-	Precision float64          `json:"precision"` // Точность
-	Order     int              `json:"order"`     // Порядок отображения
-	ReadOnly  bool             `json:"readonly"`  // Только для чтения
-	Title     MultilingualText `json:"title"`     // Название (разные языки)
-	Enum      map[string]Enum  `json:"enum"`      // Заголовки для enum
-}
-
-// MultilingualText хранит текстовые значения на разных языках
-type MultilingualText map[string]string
-
-// Enum хранит значения для enum (вложенные текстовые описания)
-type Enum struct {
-	Title MultilingualText `json:"title"` // Название enum на разных языках
+	Meta          controls.Meta
 }
 
 //go:embed templates/*
@@ -118,7 +100,7 @@ func (g *GenerateService) getTopicWatcher(list *[]watchResultItem) func(client m
 
 		controlName := topicParts[4]
 
-		controlMeta := ControlMeta{}
+		controlMeta := controls.Meta{}
 
 		err := json.Unmarshal([]byte(meta), &controlMeta)
 		if err != nil {
@@ -193,6 +175,7 @@ func (g GenerateService) getControlTemplate(control watchResultItem) deviceContr
 		ReadOnly:   control.Meta.ReadOnly,
 		Type:       typeName,
 		StructName: strcase.ToCamel(typeName) + "Control",
+		Meta:       control.Meta,
 	}
 }
 

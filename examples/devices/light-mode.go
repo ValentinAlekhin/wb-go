@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -14,9 +15,21 @@ type LightModeControls struct {
 }
 
 type LightMode struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *LightModeControls
+}
+
+func (w *LightMode) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *LightMode) GetControlsInfo() []controls.ControlInfo {
@@ -54,15 +67,30 @@ var (
 
 func NewLightMode(client *mqtt.Client) *LightMode {
 	onceLightMode.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "light-mode", "")
+		device := "light-mode"
+		address := ""
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &LightModeControls{
-			Enabled: controls.NewSwitchControl(client, deviceName, "enabled"),
-			State:   controls.NewValueControl(client, deviceName, "state"),
+			Enabled: controls.NewSwitchControl(client, name, "enabled", controls.Meta{
+				Type: "switch",
+
+				Order:    1,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{},
+			}),
+			State: controls.NewValueControl(client, name, "state", controls.Meta{
+				Type: "value",
+
+				Order:    2,
+				ReadOnly: true,
+				Title:    controls.MultilingualText{"en": `State`},
+			}),
 		}
 
 		instanceLightMode = &LightMode{
-			Name:     deviceName,
-			Address:  "",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

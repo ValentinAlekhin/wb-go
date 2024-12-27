@@ -5,6 +5,7 @@ package {{.PackageName}}
 import (
     "fmt"
     "github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
     "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
     "sync"
@@ -15,9 +16,21 @@ type {{.DeviceControlsStructName}} struct {
 {{end}}}
 
 type {{.DeviceStructName}} struct {
-	Name          string
-	Address       string
+	name          string
+	device 		  string
+	address       string
 	Controls      *{{.DeviceControlsStructName}}
+}
+
+func (w *{{.DeviceStructName}}) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *{{.DeviceStructName}}) GetControlsInfo() []controls.ControlInfo {
@@ -55,15 +68,27 @@ var (
 
 func New{{.DeviceStructName}}(client *mqtt.Client) *{{.DeviceStructName}} {
 	once{{.DeviceStructName}}.Do(func() {
-        deviceName := fmt.Sprintf("%s_%s", "{{.DeviceName}}", "{{.ModbusAddress}}")
+		device := "{{.DeviceName}}"
+		address := "{{.ModbusAddress}}"
+        name := fmt.Sprintf("%s_%s", device, address)
         controlList := &{{.DeviceControlsStructName}}{
-        {{range .Controls}} {{.Name}}: controls.New{{.StructName}}(client, deviceName, "{{.Mqtt}}"),
+        {{range .Controls}} {{.Name}}: controls.New{{.StructName}}(client, name, "{{.Mqtt}}", controls.Meta{
+			Type:      "{{.Meta.Type}}",
+			{{if .Meta.Units}} Units: "{{.Meta.Units}}", {{end}}
+			{{if .Meta.Max}} Max: {{.Meta.Max}}, {{ end }}
+			{{if .Meta.Min}} Min: {{.Meta.Min}}, {{ end }}
+			{{if .Meta.Precision}} Min: {{.Meta.Precision}}, {{ end }}
+			Order:     {{.Meta.Order}},
+			ReadOnly:  {{.Meta.ReadOnly}},
+			Title:     controls.MultilingualText{ {{range $key, $value := .Meta.Title}} "{{$key}}": `{{$value}}`, {{end}} },
+			}),
         {{end}}}
 
 
         instance{{.DeviceStructName}} = &{{.DeviceStructName}}{
-            Name:      deviceName,
-            Address:   "{{.ModbusAddress}}",
+            name:      name,
+			device:    device,
+            address:   address,
             Controls:  controlList,
         }
     })

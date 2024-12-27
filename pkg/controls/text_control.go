@@ -30,7 +30,7 @@ func (c *TextControl) SetValue(value string) {
 	c.control.SetValue(value)
 }
 
-func NewTextControl(client *wb.Client, device, control string) *TextControl {
-	c := NewControl(client, device, control)
+func NewTextControl(client *wb.Client, device, control string, meta Meta) *TextControl {
+	c := NewControl(client, device, control, meta)
 	return &TextControl{control: c}
 }

@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -13,9 +14,21 @@ type AlarmsControls struct {
 }
 
 type Alarms struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *AlarmsControls
+}
+
+func (w *Alarms) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Alarms) GetControlsInfo() []controls.ControlInfo {
@@ -53,14 +66,23 @@ var (
 
 func NewAlarms(client *mqtt.Client) *Alarms {
 	onceAlarms.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "alarms", "")
+		device := "alarms"
+		address := ""
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &AlarmsControls{
-			Log: controls.NewTextControl(client, deviceName, "log"),
+			Log: controls.NewTextControl(client, name, "log", controls.Meta{
+				Type: "text",
+
+				Order:    1,
+				ReadOnly: true,
+				Title:    controls.MultilingualText{"en": `Log`, "ru": `Лог`},
+			}),
 		}
 
 		instanceAlarms = &Alarms{
-			Name:     deviceName,
-			Address:  "",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

@@ -56,7 +56,7 @@ func (c *RangeControl) decode(value string) int {
 	return v
 }
 
-func NewRangeControl(client *wb.Client, device, control string) *RangeControl {
-	c := NewControl(client, device, control)
+func NewRangeControl(client *wb.Client, device, control string, meta Meta) *RangeControl {
+	c := NewControl(client, device, control, meta)
 	return &RangeControl{control: c}
 }

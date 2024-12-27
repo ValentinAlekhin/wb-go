@@ -89,7 +89,7 @@ func (c *RgbControl) encode(value RgbValue) string {
 	return fmt.Sprintf("%d;%d;%d", value.Red, value.Green, value.Blue)
 }
 
-func NewRgbControl(client *wb.Client, device, control string) *RgbControl {
-	c := NewControl(client, device, control)
+func NewRgbControl(client *wb.Client, device, control string, meta Meta) *RgbControl {
+	c := NewControl(client, device, control, meta)
 	return &RgbControl{c}
 }

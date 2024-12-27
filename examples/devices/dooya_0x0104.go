@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
 	"sync"
@@ -17,9 +18,21 @@ type Dooya0X0104Controls struct {
 }
 
 type Dooya0X0104 struct {
-	Name     string
-	Address  string
+	name     string
+	device   string
+	address  string
 	Controls *Dooya0X0104Controls
+}
+
+func (w *Dooya0X0104) GetInfo() deviceInfo.DeviceInfo {
+	controlsInfo := w.GetControlsInfo()
+
+	return deviceInfo.DeviceInfo{
+		Name:         w.name,
+		Device:       w.device,
+		Address:      w.address,
+		ControlsInfo: controlsInfo,
+	}
 }
 
 func (w *Dooya0X0104) GetControlsInfo() []controls.ControlInfo {
@@ -57,18 +70,53 @@ var (
 
 func NewDooya0X0104(client *mqtt.Client) *Dooya0X0104 {
 	onceDooya0X0104.Do(func() {
-		deviceName := fmt.Sprintf("%s_%s", "dooya", "0x0104")
+		device := "dooya"
+		address := "0x0104"
+		name := fmt.Sprintf("%s_%s", device, address)
 		controlList := &Dooya0X0104Controls{
-			Position:       controls.NewRangeControl(client, deviceName, "Position"),
-			Open:           controls.NewPushbuttonControl(client, deviceName, "Open"),
-			Close:          controls.NewPushbuttonControl(client, deviceName, "Close"),
-			Stop:           controls.NewPushbuttonControl(client, deviceName, "Stop"),
-			FactoryDefault: controls.NewPushbuttonControl(client, deviceName, "Factory Default"),
+			Position: controls.NewRangeControl(client, name, "Position", controls.Meta{
+				Type: "range",
+
+				Max: 100,
+
+				Order:    1,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"ru": `Позиция`},
+			}),
+			Open: controls.NewPushbuttonControl(client, name, "Open", controls.Meta{
+				Type: "pushbutton",
+
+				Order:    2,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"ru": `Открыть`},
+			}),
+			Close: controls.NewPushbuttonControl(client, name, "Close", controls.Meta{
+				Type: "pushbutton",
+
+				Order:    3,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"ru": `Закрыть`},
+			}),
+			Stop: controls.NewPushbuttonControl(client, name, "Stop", controls.Meta{
+				Type: "pushbutton",
+
+				Order:    4,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"ru": `Остановить`},
+			}),
+			FactoryDefault: controls.NewPushbuttonControl(client, name, "Factory Default", controls.Meta{
+				Type: "pushbutton",
+
+				Order:    5,
+				ReadOnly: false,
+				Title:    controls.MultilingualText{"ru": `Сбросить настройки`},
+			}),
 		}
 
 		instanceDooya0X0104 = &Dooya0X0104{
-			Name:     deviceName,
-			Address:  "0x0104",
+			name:     name,
+			device:   device,
+			address:  address,
 			Controls: controlList,
 		}
 	})

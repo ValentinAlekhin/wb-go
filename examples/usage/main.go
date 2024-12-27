@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ValentinAlekhin/wb-go/docs/data/devices"
+	"github.com/ValentinAlekhin/wb-go/examples/devices"
 	"github.com/ValentinAlekhin/wb-go/pkg/controls"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"os"
