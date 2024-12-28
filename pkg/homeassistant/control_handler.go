@@ -15,17 +15,27 @@ var DeviceConfigMap = map[string]*DeviceConfig{
 		getters: []*ConfigGetter{
 			{
 				regexpStr: `^CCT\d+$`,
-				getter:    getCctLightConfig,
+				getter:    getWbLedCctConfig,
 				domain:    "light",
 			},
 			{
 				regexpStr: `^Channels? [0-9_]{1,3}`,
-				getter:    getDimLightConfig,
+				getter:    getWbLedDimConfig,
 				domain:    "light",
 			},
 			{
 				regexpStr: `^RGB Strip`,
-				getter:    getRgbLightConfig,
+				getter:    getWbLEdRgbConfig,
+				domain:    "light",
+			},
+		},
+	},
+	"wb-mdm3": {
+		ignoreRegexpStr: []string{"^Channel [0-9]"},
+		getters: []*ConfigGetter{
+			{
+				regexpStr: `^K\d+$`,
+				getter:    getWbMdm3Config,
 				domain:    "light",
 			},
 		},
@@ -143,7 +153,7 @@ func getAnyControlConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.
 	return config
 }
 
-func getRgbLightConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+func getWbLEdRgbConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -163,23 +173,7 @@ func getRgbLightConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.Co
 
 }
 
-func getDimLightConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
-	id := getControlId(deviceInfo.Name, controlInfo.Name)
-
-	return GetConfig(MqttDiscoveryConfig{
-		Device:                 getDevice(deviceInfo),
-		BrightnessStateTopic:   fmt.Sprintf("/devices/%s/controls/%s Brightness", deviceInfo.Name, controlInfo.Name),
-		BrightnessCommandTopic: fmt.Sprintf("/devices/%s/controls/%s Brightness/on", deviceInfo.Name, controlInfo.Name),
-		Name:                   controlInfo.Name,
-		UniqueID:               id,
-		ObjectID:               id,
-		StateTopic:             fmt.Sprintf("/devices/%s/controls/%s", deviceInfo.Name, controlInfo.Name),
-		CommandTopic:           fmt.Sprintf("/devices/%s/controls/%s/on", deviceInfo.Name, controlInfo.Name),
-	})
-
-}
-
-func getCctLightConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+func getWbLedCctConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -199,6 +193,37 @@ func getCctLightConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.Co
 		CommandTopic:             fmt.Sprintf("/devices/%s/controls/%s/on", deviceInfo.Name, controlInfo.Name),
 	})
 
+}
+
+func getWbLedDimConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+	id := getControlId(deviceInfo.Name, controlInfo.Name)
+
+	return GetConfig(MqttDiscoveryConfig{
+		Device:                 getDevice(deviceInfo),
+		BrightnessStateTopic:   fmt.Sprintf("/devices/%s/controls/%s Brightness", deviceInfo.Name, controlInfo.Name),
+		BrightnessCommandTopic: fmt.Sprintf("/devices/%s/controls/%s Brightness/on", deviceInfo.Name, controlInfo.Name),
+		Name:                   controlInfo.Name,
+		UniqueID:               id,
+		ObjectID:               id,
+		StateTopic:             fmt.Sprintf("/devices/%s/controls/%s", deviceInfo.Name, controlInfo.Name),
+		CommandTopic:           fmt.Sprintf("/devices/%s/controls/%s/on", deviceInfo.Name, controlInfo.Name),
+	})
+}
+
+func getWbMdm3Config(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+	id := getControlId(deviceInfo.Name, controlInfo.Name)
+	channelNumber := strings.TrimPrefix(controlInfo.Name, "K")
+
+	return GetConfig(MqttDiscoveryConfig{
+		Device:                 getDevice(deviceInfo),
+		BrightnessStateTopic:   fmt.Sprintf("/devices/%s/controls/Channel %s", deviceInfo.Name, channelNumber),
+		BrightnessCommandTopic: fmt.Sprintf("/devices/%s/controls/Channel %s/on", deviceInfo.Name, channelNumber),
+		Name:                   controlInfo.Name,
+		UniqueID:               id,
+		ObjectID:               id,
+		StateTopic:             fmt.Sprintf("/devices/%s/controls/%s", deviceInfo.Name, controlInfo.Name),
+		CommandTopic:           fmt.Sprintf("/devices/%s/controls/%s/on", deviceInfo.Name, controlInfo.Name),
+	})
 }
 
 func getDevice(deviceInfo deviceInfo.DeviceInfo) MqttDiscoveryDevice {

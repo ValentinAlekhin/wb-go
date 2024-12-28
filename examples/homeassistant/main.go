@@ -27,6 +27,7 @@ func main() {
 	WbMr6Cu145 := devices.NewWbMr6Cu145(client)
 	rgbLed := devices.NewWbLed106(client)
 	cctLed := devices.NewWbLed150(client)
+	wbMdm := devices.NewWbMdm381(client)
 
 	// Создание конфигурации Home Assistant
 	discoveryOpt := homeassistant.DiscoveryOptions{
@@ -44,6 +45,7 @@ func main() {
 	discovery.AddDevice(WbMswV4151.GetInfo())
 	discovery.AddDevice(rgbLed.GetInfo())
 	discovery.AddDevice(cctLed.GetInfo())
+	discovery.AddDevice(wbMdm.GetInfo())
 
 	// Добавление скрипта
 	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload controls.ValueControlWatcherPayload) {
