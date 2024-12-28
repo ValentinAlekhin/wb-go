@@ -25,6 +25,10 @@ export default defineConfig({
                         link: '/guide/install'
                     },
                     {
+                        text: 'Home Assistant',
+                        link: '/guide/home_assistant'
+                    },
+                    {
                         text: 'Развертывание приложения',
                         link: '/guide/deploy'
                     }

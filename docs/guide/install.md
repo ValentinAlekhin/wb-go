@@ -24,4 +24,4 @@ go run github.com/ValentinAlekhin/wb-go generate -b 192.168.1.10:1883 -o ./inter
 
 ## Работа с устройствами
 
-<<< @/data/examples/main.go
+<<< @/../examples/usage/main.go

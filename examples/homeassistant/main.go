@@ -35,7 +35,9 @@ func main() {
 	}
 	discovery := homeassistant.NewDiscovery(discoveryOpt)
 
-	// Удаление всех устройств из Home Assistant, добавленных с помощью wb-go
+	// Удаление всех устройств из Home Assistant, добавленных с помощью wb-go.
+	// Нужно вызывать, если есть необходимость удалить из Home Assistant ранее добавленные устройства,
+	// но которые уже не используются
 	discovery.Clear()
 
 	// Добавление устройств в Home Assistant

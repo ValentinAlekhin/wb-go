@@ -18,7 +18,7 @@
 Создайте файл `wb-go-deploy.yaml`.
 
 ::: code-group
-<<< @/data/examples/wb-go-deploy.yaml
+<<< @/../examples/wb-go-deploy.yaml
 :::
 
 Команда запуска.

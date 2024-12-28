@@ -13,7 +13,7 @@
 Файлы, сгенерированные на основании топика `/devices/wb-led_150`.
 
 ::: code-group
-<<< @/data/devices/wb-led_150.go
+<<< @/../examples/devices/wb-led_150.go
 :::
 
 
