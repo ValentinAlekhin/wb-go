@@ -42,9 +42,6 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
 
-      - name: Install dependencies
-        run: go mod download
-
       - name: Run tests
         run: go test ./pkg/controls/ && go test ./pkg/mqtt/ && go test ./internal/deploy/
 
