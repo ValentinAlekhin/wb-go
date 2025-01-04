@@ -72,17 +72,13 @@ func (c *Client) Subscribe(topic string, handler mqtt.MessageHandler) {
 
 // Publish публикует сообщение в топик MQTT
 func (c *Client) Publish(p PublishPayload) {
-	c.publish(p.Topic, p.QOS, p.Retained, p.Value)
+	if token := c.client.Publish(p.Topic, p.QOS, p.Retained, p.Value); token.Wait() && token.Error() != nil {
+		log.Printf("Ошибка публикации в топик %s: %v", p.Topic, token.Error())
+	}
 }
 
 func (c *Client) Unsubscribe(topics ...string) {
 	c.client.Unsubscribe(topics...)
-}
-
-func (c *Client) publish(topic string, qos byte, retained bool, value string) {
-	if token := c.client.Publish(topic, qos, retained, value); token.Wait() && token.Error() != nil {
-		log.Printf("Ошибка публикации в топик %s: %v", topic, token.Error())
-	}
 }
 
 func (c *Client) GetClient() mqtt.Client {

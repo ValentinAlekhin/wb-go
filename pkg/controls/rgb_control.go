@@ -70,12 +70,12 @@ func (c *RgbControl) decode(value string) (RgbValue, error) {
 
 	green, err := strconv.Atoi(stringsValues[1])
 	if err != nil {
-		return RgbValue{}, fmt.Errorf("error converting green: %s", err)
+		return RgbValue{Red: red}, fmt.Errorf("error converting green: %s", err)
 	}
 
 	blue, err := strconv.Atoi(stringsValues[2])
 	if err != nil {
-		return RgbValue{}, fmt.Errorf("error converting blue: %s", err)
+		return RgbValue{Red: red, Green: green}, fmt.Errorf("error converting blue: %s", err)
 	}
 
 	return RgbValue{

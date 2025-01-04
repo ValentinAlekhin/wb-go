@@ -5,6 +5,11 @@ import (
 )
 
 func TestValidateConfig(t *testing.T) {
+	build := BuildConfig{
+		SrcDir: ".",
+		OutDir: ".",
+	}
+
 	tests := []struct {
 		name      string
 		input     Config
@@ -14,10 +19,7 @@ func TestValidateConfig(t *testing.T) {
 			name: "valid configuration",
 			input: Config{
 				AppName: "test-app",
-				Build: BuildConfig{
-					SrcDir: "./src",
-					OutDir: "./out",
-				},
+				Build:   build,
 				Devices: []Device{
 					{
 						Host:     "192.168.1.100",
@@ -34,10 +36,7 @@ func TestValidateConfig(t *testing.T) {
 			name: "missing app name",
 			input: Config{
 				AppName: "",
-				Build: BuildConfig{
-					SrcDir: "./src",
-					OutDir: "./out",
-				},
+				Build:   build,
 				Devices: []Device{
 					{
 						Host:     "192.168.1.100",
@@ -54,10 +53,7 @@ func TestValidateConfig(t *testing.T) {
 			name: "invalid SSH port",
 			input: Config{
 				AppName: "test-app",
-				Build: BuildConfig{
-					SrcDir: "./src",
-					OutDir: "./out",
-				},
+				Build:   build,
 				Devices: []Device{
 					{
 						Host:     "192.168.1.100",

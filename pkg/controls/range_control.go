@@ -17,12 +17,7 @@ type RangeControlWatcherPayload struct {
 }
 
 func (c *RangeControl) GetValue() int {
-	value, err := strconv.Atoi(c.control.GetValue())
-	if err != nil {
-		return 0
-	}
-
-	return value
+	return c.decode(c.control.GetValue())
 }
 
 func (c *RangeControl) AddWatcher(f func(payload RangeControlWatcherPayload)) {
