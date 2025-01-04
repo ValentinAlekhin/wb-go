@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/ValentinAlekhin/wb-go/examples/devices"
-	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/examples/device"
+	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/homeassistant"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"os"
@@ -23,11 +23,11 @@ func main() {
 	client := wb.NewClient(opt)
 
 	// Создание устройств
-	WbMswV4151 := devices.NewWbMswV4151(client)
-	WbMr6Cu145 := devices.NewWbMr6Cu145(client)
-	rgbLed := devices.NewWbLed106(client)
-	cctLed := devices.NewWbLed150(client)
-	wbMdm := devices.NewWbMdm381(client)
+	WbMswV4151 := device.NewWbMswV4151(client)
+	WbMr6Cu145 := device.NewWbMr6Cu145(client)
+	rgbLed := device.NewWbLed106(client)
+	cctLed := device.NewWbLed150(client)
+	wbMdm := device.NewWbMdm381(client)
 
 	// Создание конфигурации Home Assistant
 	discoveryOpt := homeassistant.DiscoveryOptions{
@@ -48,7 +48,7 @@ func main() {
 	discovery.AddDevice(wbMdm.GetInfo())
 
 	// Добавление скрипта
-	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload controls.ValueControlWatcherPayload) {
+	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload control.ValueControlWatcherPayload) {
 		fmt.Printf("Получено новое сообщение: %f\n", payload.NewValue)
 
 		if payload.NewValue > 100 {

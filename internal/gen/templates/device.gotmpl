@@ -4,15 +4,15 @@ package {{.PackageName}}
 
 import (
     "fmt"
-    "github.com/ValentinAlekhin/wb-go/pkg/controls"
-	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
+    "github.com/ValentinAlekhin/wb-go/pkg/control"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceinfo"
     "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"reflect"
     "sync"
 )
 
 type {{.DeviceControlsStructName}} struct {
-{{range .Controls}} {{.Name}} *controls.{{.StructName}}
+{{range .Controls}} {{.Name}} *control.{{.StructName}}
 {{end}}}
 
 type {{.DeviceStructName}} struct {
@@ -22,10 +22,10 @@ type {{.DeviceStructName}} struct {
 	Controls      *{{.DeviceControlsStructName}}
 }
 
-func (w *{{.DeviceStructName}}) GetInfo() deviceInfo.DeviceInfo {
+func (w *{{.DeviceStructName}}) GetInfo() deviceinfo.DeviceInfo {
 	controlsInfo := w.GetControlsInfo()
 
-	return deviceInfo.DeviceInfo{
+	return deviceinfo.DeviceInfo{
 		Name:         w.name,
 		Device:       w.device,
 		Address:      w.address,
@@ -33,8 +33,8 @@ func (w *{{.DeviceStructName}}) GetInfo() deviceInfo.DeviceInfo {
 	}
 }
 
-func (w *{{.DeviceStructName}}) GetControlsInfo() []controls.ControlInfo {
-	var infoList []controls.ControlInfo
+func (w *{{.DeviceStructName}}) GetControlsInfo() []control.ControlInfo {
+	var infoList []control.ControlInfo
 
 	// Получаем значение и тип структуры Controls
 	controlsValue := reflect.ValueOf(w.Controls).Elem()
@@ -50,7 +50,7 @@ func (w *{{.DeviceStructName}}) GetControlsInfo() []controls.ControlInfo {
 			method := field.MethodByName("GetInfo")
 			if method.IsValid() {
 				// Вызываем метод GetInfo
-				info := method.Call(nil)[0].Interface().(controls.ControlInfo)
+				info := method.Call(nil)[0].Interface().(control.ControlInfo)
 				infoList = append(infoList, info)
 			} else {
 				fmt.Printf("Field %s does not implement GetInfo\n", controlsType.Field(i).Name)
@@ -72,7 +72,7 @@ func New{{.DeviceStructName}}(client *mqtt.Client) *{{.DeviceStructName}} {
 		address := "{{.ModbusAddress}}"
         name := fmt.Sprintf("%s_%s", device, address)
         controlList := &{{.DeviceControlsStructName}}{
-        {{range .Controls}} {{.Name}}: controls.New{{.StructName}}(client, name, "{{.Mqtt}}", controls.Meta{
+        {{range .Controls}} {{.Name}}: control.New{{.StructName}}(client, name, "{{.Mqtt}}", control.Meta{
 			Type:      "{{.Meta.Type}}",
 			{{if .Meta.Units}} Units: "{{.Meta.Units}}", {{end}}
 			{{if .Meta.Max}} Max: {{.Meta.Max}}, {{ end }}
@@ -80,7 +80,7 @@ func New{{.DeviceStructName}}(client *mqtt.Client) *{{.DeviceStructName}} {
 			{{if .Meta.Precision}} Min: {{.Meta.Precision}}, {{ end }}
 			Order:     {{.Meta.Order}},
 			ReadOnly:  {{.Meta.ReadOnly}},
-			Title:     controls.MultilingualText{ {{range $key, $value := .Meta.Title}} "{{$key}}": `{{$value}}`, {{end}} },
+			Title:     control.MultilingualText{ {{range $key, $value := .Meta.Title}} "{{$key}}": `{{$value}}`, {{end}} },
 			}),
         {{end}}}
 

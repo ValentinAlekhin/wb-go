@@ -2,8 +2,8 @@ package homeassistant
 
 import (
 	"fmt"
-	"github.com/ValentinAlekhin/wb-go/pkg/controls"
-	"github.com/ValentinAlekhin/wb-go/pkg/deviceInfo"
+	"github.com/ValentinAlekhin/wb-go/pkg/control"
+	"github.com/ValentinAlekhin/wb-go/pkg/deviceinfo"
 	"github.com/iancoleman/strcase"
 	"regexp"
 	"strings"
@@ -55,7 +55,7 @@ type ConfigGetter struct {
 	domain    string
 }
 
-type ConfigGetterFn func(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig
+type ConfigGetterFn func(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig
 
 func init() {
 	for _, devConfig := range DeviceConfigMap {
@@ -71,38 +71,37 @@ func init() {
 	}
 }
 
-func getConfigAndDomain(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) (config MqttDiscoveryConfig, domain string, ignore bool) {
+func getConfigAndDomain(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) (config MqttDiscoveryConfig, domain string, ignore bool) {
 	config = getAnyControlConfig(deviceInfo, controlInfo)
 	domain = getAnyDomain(controlInfo)
 	ignore = false
 
-	for dev, devConfig := range DeviceConfigMap {
-		if dev != deviceInfo.Device {
+	devConfig, ok := DeviceConfigMap[deviceInfo.Device]
+	if !ok {
+		return
+	}
+
+	for _, ignoreRegexp := range devConfig.ignoreRegexp {
+		if ignoreRegexp.MatchString(controlInfo.Name) {
+			ignore = true
+			return
+		}
+	}
+
+	for _, configGetter := range devConfig.getters {
+		if !configGetter.regexp.MatchString(controlInfo.Name) {
 			continue
 		}
 
-		for _, ignoreRegexp := range devConfig.ignoreRegexp {
-			if ignoreRegexp.MatchString(controlInfo.Name) {
-				ignore = true
-				return
-			}
-		}
-
-		for _, getter := range devConfig.getters {
-			if !getter.regexp.MatchString(controlInfo.Name) {
-				continue
-			}
-
-			config = getter.getter(deviceInfo, controlInfo)
-			domain = getter.domain
-			break
-		}
+		config = configGetter.getter(deviceInfo, controlInfo)
+		domain = configGetter.domain
+		break
 	}
 
 	return
 }
 
-func getAnyDomain(info controls.ControlInfo) string {
+func getAnyDomain(info control.ControlInfo) string {
 	domain := "sensor"
 
 	switch info.Meta.Type {
@@ -123,7 +122,7 @@ func getAnyDomain(info controls.ControlInfo) string {
 	return domain
 }
 
-func getAnyControlConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+func getAnyControlConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	wbUnit := controlInfo.Meta.Units
@@ -153,7 +152,7 @@ func getAnyControlConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.
 	return config
 }
 
-func getWbLEdRgbConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+func getWbLEdRgbConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -173,7 +172,7 @@ func getWbLEdRgbConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.Co
 
 }
 
-func getWbLedCctConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+func getWbLedCctConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -195,7 +194,7 @@ func getWbLedCctConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.Co
 
 }
 
-func getWbLedDimConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+func getWbLedDimConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -210,7 +209,7 @@ func getWbLedDimConfig(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.Co
 	})
 }
 
-func getWbMdm3Config(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.ControlInfo) MqttDiscoveryConfig {
+func getWbMdm3Config(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 	channelNumber := strings.TrimPrefix(controlInfo.Name, "K")
 
@@ -226,7 +225,7 @@ func getWbMdm3Config(deviceInfo deviceInfo.DeviceInfo, controlInfo controls.Cont
 	})
 }
 
-func getDevice(deviceInfo deviceInfo.DeviceInfo) MqttDiscoveryDevice {
+func getDevice(deviceInfo deviceinfo.DeviceInfo) MqttDiscoveryDevice {
 	return MqttDiscoveryDevice{
 		Identifiers: deviceInfo.Name,
 		Model:       deviceInfo.Device,

@@ -6,7 +6,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/ValentinAlekhin/wb-go/pkg/controls"
+	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/iancoleman/strcase"
@@ -31,7 +31,7 @@ type deviceControlTemplateData struct {
 	ReadOnly   bool
 	Type       string
 	StructName string
-	Meta       controls.Meta
+	Meta       control.Meta
 }
 
 type deviceTemplateData struct {
@@ -48,7 +48,7 @@ type watchResultItem struct {
 	DeviceName    string
 	ModbusAddress string
 	Control       string
-	Meta          controls.Meta
+	Meta          control.Meta
 }
 
 //go:embed templates/*
@@ -70,7 +70,7 @@ func (g *GenerateService) Run() {
 	g.generateFiles(templatesData)
 }
 
-func (g GenerateService) collectData() []watchResultItem {
+func (g *GenerateService) collectData() []watchResultItem {
 	var list []watchResultItem
 
 	watcher := g.getTopicWatcher(&list)
@@ -100,7 +100,7 @@ func (g *GenerateService) getTopicWatcher(list *[]watchResultItem) func(client m
 
 		controlName := topicParts[4]
 
-		controlMeta := controls.Meta{}
+		controlMeta := control.Meta{}
 
 		err := json.Unmarshal([]byte(meta), &controlMeta)
 		if err != nil {
@@ -154,7 +154,7 @@ func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*
 
 }
 
-func (g GenerateService) getControlTemplate(control watchResultItem) deviceControlTemplateData {
+func (g *GenerateService) getControlTemplate(control watchResultItem) deviceControlTemplateData {
 	typeName := control.Meta.Type
 	for key, val := range controlValueTypeMap {
 		if !slices.Contains(val, control.Meta.Type) {
@@ -194,7 +194,7 @@ func (g *GenerateService) filterUnique(list []watchResultItem) []watchResultItem
 	return result
 }
 
-func (g GenerateService) generateFiles(data map[string]*deviceTemplateData) {
+func (g *GenerateService) generateFiles(data map[string]*deviceTemplateData) {
 	outputDir := g.getOutputDir()
 
 	err := os.MkdirAll(outputDir, os.ModePerm)
