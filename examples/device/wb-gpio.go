@@ -79,7 +79,8 @@ func NewWbGpio(client *mqtt.Client) *WbGpio {
 	onceWbGpio.Do(func() {
 		device := "wb-gpio"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &WbGpiocontrols{
 			A1Out: control.NewSwitchControl(client, name, "A1_OUT", control.Meta{
 				Type: "switch",

@@ -69,7 +69,8 @@ func NewHwmon(client *mqtt.Client) *Hwmon {
 	onceHwmon.Do(func() {
 		device := "hwmon"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Hwmoncontrols{
 			BoardTemperature: control.NewValueControl(client, name, "Board Temperature", control.Meta{
 				Type: "temperature",

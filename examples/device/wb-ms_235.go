@@ -76,6 +76,7 @@ func NewWbMs235(client *mqtt.Client) *WbMs235 {
 		device := "wb-ms"
 		address := "235"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &WbMs235controls{
 			Temperature: control.NewValueControl(client, name, "Temperature", control.Meta{
 				Type: "temperature",

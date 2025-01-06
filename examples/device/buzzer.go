@@ -70,7 +70,8 @@ func NewBuzzer(client *mqtt.Client) *Buzzer {
 	onceBuzzer.Do(func() {
 		device := "buzzer"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Buzzercontrols{
 			Enabled: control.NewSwitchControl(client, name, "enabled", control.Meta{
 				Type: "switch",

@@ -70,7 +70,8 @@ func NewTermostat(client *mqtt.Client) *Termostat {
 	onceTermostat.Do(func() {
 		device := "Termostat"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Termostatcontrols{
 			R01Ts161Lock: control.NewSwitchControl(client, name, "R01-TS16-1-lock", control.Meta{
 				Type: "switch",

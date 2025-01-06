@@ -87,6 +87,7 @@ func NewWbMwacV293(client *mqtt.Client) *WbMwacV293 {
 		device := "wb-mwac-v2"
 		address := "93"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &WbMwacV293controls{
 			P1Volume: control.NewValueControl(client, name, "P1 Volume", control.Meta{
 				Type:  "value",

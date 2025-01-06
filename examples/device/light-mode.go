@@ -69,7 +69,8 @@ func NewLightMode(client *mqtt.Client) *LightMode {
 	onceLightMode.Do(func() {
 		device := "light-mode"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &LightModecontrols{
 			Enabled: control.NewSwitchControl(client, name, "enabled", control.Meta{
 				Type: "switch",

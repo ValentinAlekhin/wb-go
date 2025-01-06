@@ -76,7 +76,8 @@ func NewWbAdc(client *mqtt.Client) *WbAdc {
 	onceWbAdc.Do(func() {
 		device := "wb-adc"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &WbAdccontrols{
 			A1: control.NewValueControl(client, name, "A1", control.Meta{
 				Type: "voltage",

@@ -85,6 +85,7 @@ func NewWbLed150(client *mqtt.Client) *WbLed150 {
 		device := "wb-led"
 		address := "150"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &WbLed150controls{
 			Cct1: control.NewSwitchControl(client, name, "CCT1", control.Meta{
 				Type: "switch",

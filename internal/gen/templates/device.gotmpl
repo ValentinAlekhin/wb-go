@@ -70,7 +70,10 @@ func New{{.DeviceStructName}}(client *mqtt.Client) *{{.DeviceStructName}} {
 	once{{.DeviceStructName}}.Do(func() {
 		device := "{{.DeviceName}}"
 		address := "{{.ModbusAddress}}"
-        name := fmt.Sprintf("%s_%s", device, address)
+		{{ if .ModbusAddress }}name := fmt.Sprintf("%s_%s", device, address)
+		{{else}}name := device
+		{{end}}
+
         controlList := &{{.DeviceControlsStructName}}{
         {{range .Controls}} {{.Name}}: control.New{{.StructName}}(client, name, "{{.Mqtt}}", control.Meta{
 			Type:      "{{.Meta.Type}}",

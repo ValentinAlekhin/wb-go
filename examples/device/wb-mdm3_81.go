@@ -101,6 +101,7 @@ func NewWbMdm381(client *mqtt.Client) *WbMdm381 {
 		device := "wb-mdm3"
 		address := "81"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &WbMdm381controls{
 			Input1: control.NewSwitchControl(client, name, "Input 1", control.Meta{
 				Type: "switch",

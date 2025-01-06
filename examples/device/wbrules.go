@@ -68,7 +68,8 @@ func NewWbrules(client *mqtt.Client) *Wbrules {
 	onceWbrules.Do(func() {
 		device := "wbrules"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Wbrulescontrols{
 			RuleDebugging: control.NewSwitchControl(client, name, "Rule debugging", control.Meta{
 				Type: "switch",

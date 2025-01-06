@@ -85,7 +85,8 @@ func NewNetwork(client *mqtt.Client) *Network {
 	onceNetwork.Do(func() {
 		device := "network"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Networkcontrols{
 			ActiveConnections: control.NewTextControl(client, name, "Active Connections", control.Meta{
 				Type: "text",

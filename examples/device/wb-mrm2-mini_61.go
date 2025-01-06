@@ -75,6 +75,7 @@ func NewWbMrm2Mini61(client *mqtt.Client) *WbMrm2Mini61 {
 		device := "wb-mrm2-mini"
 		address := "61"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &WbMrm2Mini61controls{
 			Input1: control.NewSwitchControl(client, name, "Input 1", control.Meta{
 				Type: "switch",

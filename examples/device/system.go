@@ -92,7 +92,8 @@ func NewSystem(client *mqtt.Client) *System {
 	onceSystem.Do(func() {
 		device := "system"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Systemcontrols{
 			BatchNo: control.NewTextControl(client, name, "Batch No", control.Meta{
 				Type: "text",

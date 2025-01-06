@@ -68,7 +68,8 @@ func NewAlarms(client *mqtt.Client) *Alarms {
 	onceAlarms.Do(func() {
 		device := "alarms"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Alarmscontrols{
 			Log: control.NewTextControl(client, name, "log", control.Meta{
 				Type: "text",

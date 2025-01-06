@@ -68,7 +68,8 @@ func NewKnx(client *mqtt.Client) *Knx {
 	onceKnx.Do(func() {
 		device := "knx"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Knxcontrols{
 			Data: control.NewTextControl(client, name, "data", control.Meta{
 				Type: "text",

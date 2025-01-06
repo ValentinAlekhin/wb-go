@@ -70,6 +70,7 @@ func NewPowerstatus(client *mqtt.Client) *Powerstatus {
 		device := "power"
 		address := "status"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &Powerstatuscontrols{
 			Vin: control.NewValueControl(client, name, "Vin", control.Meta{
 				Type: "voltage",

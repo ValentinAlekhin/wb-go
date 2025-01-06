@@ -80,7 +80,8 @@ func NewMetrics(client *mqtt.Client) *Metrics {
 	onceMetrics.Do(func() {
 		device := "metrics"
 		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := device
+
 		controlList := &Metricscontrols{
 			LoadAverage1Min: control.NewValueControl(client, name, "load_average_1min", control.Meta{
 				Type:  "value",

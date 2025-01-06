@@ -73,6 +73,7 @@ func NewDooya0X0104(client *mqtt.Client) *Dooya0X0104 {
 		device := "dooya"
 		address := "0x0104"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &Dooya0X0104controls{
 			Position: control.NewRangeControl(client, name, "Position", control.Meta{
 				Type: "range",

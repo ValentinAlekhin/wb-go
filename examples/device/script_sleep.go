@@ -74,6 +74,7 @@ func NewScriptsleep(client *mqtt.Client) *Scriptsleep {
 		device := "script"
 		address := "sleep"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &Scriptsleepcontrols{
 			Current: control.NewValueControl(client, name, "current", control.Meta{
 				Type: "temperature",

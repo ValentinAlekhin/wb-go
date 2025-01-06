@@ -75,6 +75,7 @@ func NewWbMr6Cu145(client *mqtt.Client) *WbMr6Cu145 {
 		device := "wb-mr6cu"
 		address := "145"
 		name := fmt.Sprintf("%s_%s", device, address)
+
 		controlList := &WbMr6Cu145controls{
 			K1: control.NewSwitchControl(client, name, "K1", control.Meta{
 				Type: "switch",
