@@ -16,22 +16,22 @@ type AdaptiveLight struct {
 	client    *wb.Client
 	meta      Meta
 	metaTopic string
-	controls  AdaptiveLightControls
+	Controls  AdaptiveLightControls
 	ticker    *time.Ticker
 }
 
 type AdaptiveLightControls struct {
-	enabled *virualcontrol.VirtualSwitchControl
+	Enabled *virualcontrol.VirtualSwitchControl
 
-	minTemp     *virualcontrol.VirtualRangeControl
-	maxTemp     *virualcontrol.VirtualRangeControl
-	currentTemp *virualcontrol.VirtualRangeControl
+	MinTemp     *virualcontrol.VirtualRangeControl
+	MaxTemp     *virualcontrol.VirtualRangeControl
+	CurrentTemp *virualcontrol.VirtualRangeControl
 
-	minBrightness     *virualcontrol.VirtualRangeControl
-	maxBrightness     *virualcontrol.VirtualRangeControl
-	currentBrightness *virualcontrol.VirtualRangeControl
+	MinBrightness     *virualcontrol.VirtualRangeControl
+	MaxBrightness     *virualcontrol.VirtualRangeControl
+	CurrentBrightness *virualcontrol.VirtualRangeControl
 
-	sleepMode *virualcontrol.VirtualSwitchControl
+	SleepMode *virualcontrol.VirtualSwitchControl
 
 	Sunrise *virualcontrol.VirtualTimeControl
 	Sunset  *virualcontrol.VirtualTimeControl
@@ -46,7 +46,7 @@ type AdaptiveLightConfig struct {
 }
 
 func (a *AdaptiveLight) update() {
-	if !a.controls.enabled.GetValue() {
+	if !a.Controls.Enabled.GetValue() {
 		return
 	}
 
@@ -58,41 +58,41 @@ func (a *AdaptiveLight) update() {
 }
 
 func (a *AdaptiveLight) setSleepMode(now carbon.Carbon) {
-	slipStart := carbon.CreateFromStdTime(a.controls.SleepStart.GetValue())
-	slipEnd := carbon.CreateFromStdTime(a.controls.SleepEnd.GetValue())
+	slipStart := carbon.CreateFromStdTime(a.Controls.SleepStart.GetValue())
+	slipEnd := carbon.CreateFromStdTime(a.Controls.SleepEnd.GetValue())
 
 	if now.Gte(slipStart) || now.Lte(slipEnd) {
-		a.controls.sleepMode.SetValue(true)
+		a.Controls.SleepMode.SetValue(true)
 	} else {
-		a.controls.sleepMode.SetValue(false)
+		a.Controls.SleepMode.SetValue(false)
 	}
 }
 
 func (a *AdaptiveLight) setBrightness() {
-	maxBrightness := a.controls.maxBrightness.GetValue()
-	minBrightness := a.controls.minBrightness.GetValue()
+	maxBrightness := a.Controls.MaxBrightness.GetValue()
+	minBrightness := a.Controls.MinBrightness.GetValue()
 
-	if a.controls.sleepMode.GetValue() {
-		a.controls.currentBrightness.SetValue(minBrightness)
+	if a.Controls.SleepMode.GetValue() {
+		a.Controls.CurrentBrightness.SetValue(minBrightness)
 	} else {
-		a.controls.currentBrightness.SetValue(maxBrightness)
+		a.Controls.CurrentBrightness.SetValue(maxBrightness)
 	}
 }
 
 func (a *AdaptiveLight) setColorTemp(now carbon.Carbon) {
-	maxTemp := a.controls.maxTemp.GetValue()
-	minTemp := a.controls.minTemp.GetValue()
+	maxTemp := a.Controls.MaxTemp.GetValue()
+	minTemp := a.Controls.MinTemp.GetValue()
 
-	if a.controls.sleepMode.GetValue() {
-		a.controls.currentTemp.SetValue(minTemp)
+	if a.Controls.SleepMode.GetValue() {
+		a.Controls.CurrentTemp.SetValue(minTemp)
 		return
 	}
 
-	sunrise := carbon.CreateFromStdTime(a.controls.Sunrise.GetValue())
-	sunset := carbon.CreateFromStdTime(a.controls.Sunset.GetValue())
+	sunrise := carbon.CreateFromStdTime(a.Controls.Sunrise.GetValue())
+	sunset := carbon.CreateFromStdTime(a.Controls.Sunset.GetValue())
 
 	if now.Gte(sunset) || now.Lte(sunrise) {
-		a.controls.currentTemp.SetValue(minTemp)
+		a.Controls.CurrentTemp.SetValue(minTemp)
 		return
 	}
 
@@ -106,9 +106,7 @@ func (a *AdaptiveLight) setColorTemp(now carbon.Carbon) {
 
 	temp := int(float64(maxTemp) + float64(minTemp-maxTemp)*math.Pow(2*ratio-1, 2))
 
-	fmt.Println("exp: ", temp)
-
-	a.controls.currentTemp.SetValue(temp)
+	a.Controls.CurrentTemp.SetValue(temp)
 }
 
 func (a *AdaptiveLight) runTicker() {
@@ -240,15 +238,15 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 		client:    config.Client,
 		metaTopic: fmt.Sprintf(conventions.CONV_DEVICE_META_V2_FMT, config.Device),
 		meta:      Meta{Name: config.Device, Driver: "wb-go"},
-		controls: AdaptiveLightControls{
-			enabled:           enabled,
-			minTemp:           minTemp,
-			maxTemp:           maxTemp,
-			currentTemp:       currentTemp,
-			minBrightness:     minBrightness,
-			maxBrightness:     maxBrightness,
-			currentBrightness: currentBrightness,
-			sleepMode:         sleepMode,
+		Controls: AdaptiveLightControls{
+			Enabled:           enabled,
+			MinTemp:           minTemp,
+			MaxTemp:           maxTemp,
+			CurrentTemp:       currentTemp,
+			MinBrightness:     minBrightness,
+			MaxBrightness:     maxBrightness,
+			CurrentBrightness: currentBrightness,
+			SleepMode:         sleepMode,
 			Sunrise:           sunrise,
 			Sunset:            sunset,
 			SleepEnd:          slipEnd,
