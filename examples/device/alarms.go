@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type AlarmsControls struct {
+type Alarmscontrols struct {
 	Log *control.TextControl
 }
 
@@ -17,7 +17,7 @@ type Alarms struct {
 	name     string
 	device   string
 	address  string
-	Controls *AlarmsControls
+	Controls *Alarmscontrols
 }
 
 func (w *Alarms) GetInfo() deviceinfo.DeviceInfo {
@@ -69,7 +69,7 @@ func NewAlarms(client *mqtt.Client) *Alarms {
 		device := "alarms"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &AlarmsControls{
+		controlList := &Alarmscontrols{
 			Log: control.NewTextControl(client, name, "log", control.Meta{
 				Type: "text",
 

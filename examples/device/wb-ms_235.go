@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbMs235Controls struct {
+type WbMs235controls struct {
 	Temperature     *control.ValueControl
 	Humidity        *control.ValueControl
 	AirQualityVoc   *control.ValueControl
@@ -24,7 +24,7 @@ type WbMs235 struct {
 	name     string
 	device   string
 	address  string
-	Controls *WbMs235Controls
+	Controls *WbMs235controls
 }
 
 func (w *WbMs235) GetInfo() deviceinfo.DeviceInfo {
@@ -76,7 +76,7 @@ func NewWbMs235(client *mqtt.Client) *WbMs235 {
 		device := "wb-ms"
 		address := "235"
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &WbMs235Controls{
+		controlList := &WbMs235controls{
 			Temperature: control.NewValueControl(client, name, "Temperature", control.Meta{
 				Type: "temperature",
 

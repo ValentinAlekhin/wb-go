@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type Dooya0X0104Controls struct {
+type Dooya0X0104controls struct {
 	Position       *control.RangeControl
 	Open           *control.PushbuttonControl
 	Close          *control.PushbuttonControl
@@ -21,7 +21,7 @@ type Dooya0X0104 struct {
 	name     string
 	device   string
 	address  string
-	Controls *Dooya0X0104Controls
+	Controls *Dooya0X0104controls
 }
 
 func (w *Dooya0X0104) GetInfo() deviceinfo.DeviceInfo {
@@ -73,7 +73,7 @@ func NewDooya0X0104(client *mqtt.Client) *Dooya0X0104 {
 		device := "dooya"
 		address := "0x0104"
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &Dooya0X0104Controls{
+		controlList := &Dooya0X0104controls{
 			Position: control.NewRangeControl(client, name, "Position", control.Meta{
 				Type: "range",
 

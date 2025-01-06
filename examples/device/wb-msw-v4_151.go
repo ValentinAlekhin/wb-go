@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbMswV4151Controls struct {
+type WbMswV4151controls struct {
 	Temperature       *control.ValueControl
 	Humidity          *control.ValueControl
 	Co2               *control.ValueControl
@@ -46,7 +46,7 @@ type WbMswV4151 struct {
 	name     string
 	device   string
 	address  string
-	Controls *WbMswV4151Controls
+	Controls *WbMswV4151controls
 }
 
 func (w *WbMswV4151) GetInfo() deviceinfo.DeviceInfo {
@@ -98,7 +98,7 @@ func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
 		device := "wb-msw-v4"
 		address := "151"
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &WbMswV4151Controls{
+		controlList := &WbMswV4151controls{
 			Temperature: control.NewValueControl(client, name, "Temperature", control.Meta{
 				Type:  "value",
 				Units: "deg C",

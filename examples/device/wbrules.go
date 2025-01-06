@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbrulesControls struct {
+type Wbrulescontrols struct {
 	RuleDebugging *control.SwitchControl
 }
 
@@ -17,7 +17,7 @@ type Wbrules struct {
 	name     string
 	device   string
 	address  string
-	Controls *WbrulesControls
+	Controls *Wbrulescontrols
 }
 
 func (w *Wbrules) GetInfo() deviceinfo.DeviceInfo {
@@ -69,7 +69,7 @@ func NewWbrules(client *mqtt.Client) *Wbrules {
 		device := "wbrules"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &WbrulesControls{
+		controlList := &Wbrulescontrols{
 			RuleDebugging: control.NewSwitchControl(client, name, "Rule debugging", control.Meta{
 				Type: "switch",
 

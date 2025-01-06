@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type LightModeControls struct {
+type LightModecontrols struct {
 	Enabled *control.SwitchControl
 	State   *control.ValueControl
 }
@@ -18,7 +18,7 @@ type LightMode struct {
 	name     string
 	device   string
 	address  string
-	Controls *LightModeControls
+	Controls *LightModecontrols
 }
 
 func (w *LightMode) GetInfo() deviceinfo.DeviceInfo {
@@ -70,7 +70,7 @@ func NewLightMode(client *mqtt.Client) *LightMode {
 		device := "light-mode"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &LightModeControls{
+		controlList := &LightModecontrols{
 			Enabled: control.NewSwitchControl(client, name, "enabled", control.Meta{
 				Type: "switch",
 

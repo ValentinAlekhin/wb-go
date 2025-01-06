@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type HwmonControls struct {
+type Hwmoncontrols struct {
 	BoardTemperature *control.ValueControl
 	CpuTemperature   *control.ValueControl
 }
@@ -18,7 +18,7 @@ type Hwmon struct {
 	name     string
 	device   string
 	address  string
-	Controls *HwmonControls
+	Controls *Hwmoncontrols
 }
 
 func (w *Hwmon) GetInfo() deviceinfo.DeviceInfo {
@@ -70,7 +70,7 @@ func NewHwmon(client *mqtt.Client) *Hwmon {
 		device := "hwmon"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &HwmonControls{
+		controlList := &Hwmoncontrols{
 			BoardTemperature: control.NewValueControl(client, name, "Board Temperature", control.Meta{
 				Type: "temperature",
 

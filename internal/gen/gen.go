@@ -125,7 +125,7 @@ func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*
 		key := fmt.Sprintf("%s_%s", item.DeviceName, item.ModbusAddress)
 		if val, ok := deviceMap[key]; !ok {
 			deviceStructName := strcase.ToCamel(item.DeviceName + item.ModbusAddress)
-			deviceControlsStructName := deviceStructName + "Controls"
+			deviceControlsStructName := deviceStructName + "controls"
 
 			filename := item.DeviceName
 			if item.ModbusAddress != "" {

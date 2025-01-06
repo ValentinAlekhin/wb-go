@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type BuzzerControls struct {
+type Buzzercontrols struct {
 	Enabled   *control.SwitchControl
 	Frequency *control.RangeControl
 	Volume    *control.RangeControl
@@ -19,7 +19,7 @@ type Buzzer struct {
 	name     string
 	device   string
 	address  string
-	Controls *BuzzerControls
+	Controls *Buzzercontrols
 }
 
 func (w *Buzzer) GetInfo() deviceinfo.DeviceInfo {
@@ -71,7 +71,7 @@ func NewBuzzer(client *mqtt.Client) *Buzzer {
 		device := "buzzer"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &BuzzerControls{
+		controlList := &Buzzercontrols{
 			Enabled: control.NewSwitchControl(client, name, "enabled", control.Meta{
 				Type: "switch",
 

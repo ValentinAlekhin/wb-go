@@ -9,19 +9,21 @@ import (
 	"sync"
 )
 
-type Powerstatuscontrols struct {
-	Vin              *control.ValueControl
-	WorkingOnBattery *control.SwitchControl
+type Thermostatcontrols struct {
+	TargetTemperature  *control.RangeControl
+	CurrentTemperature *control.ValueControl
+	Enabled            *control.SwitchControl
+	On                 *control.SwitchControl
 }
 
-type Powerstatus struct {
+type Thermostat struct {
 	name     string
 	device   string
 	address  string
-	Controls *Powerstatuscontrols
+	Controls *Thermostatcontrols
 }
 
-func (w *Powerstatus) GetInfo() deviceinfo.DeviceInfo {
+func (w *Thermostat) GetInfo() deviceinfo.DeviceInfo {
 	controlsInfo := w.GetControlsInfo()
 
 	return deviceinfo.DeviceInfo{
@@ -32,7 +34,7 @@ func (w *Powerstatus) GetInfo() deviceinfo.DeviceInfo {
 	}
 }
 
-func (w *Powerstatus) GetControlsInfo() []control.ControlInfo {
+func (w *Thermostat) GetControlsInfo() []control.ControlInfo {
 	var infoList []control.ControlInfo
 
 	// Получаем значение и тип структуры Controls
@@ -61,33 +63,50 @@ func (w *Powerstatus) GetControlsInfo() []control.ControlInfo {
 }
 
 var (
-	oncePowerstatus     sync.Once
-	instancePowerstatus *Powerstatus
+	onceThermostat     sync.Once
+	instanceThermostat *Thermostat
 )
 
-func NewPowerstatus(client *mqtt.Client) *Powerstatus {
-	oncePowerstatus.Do(func() {
-		device := "power"
-		address := "status"
+func NewThermostat(client *mqtt.Client) *Thermostat {
+	onceThermostat.Do(func() {
+		device := "thermostat"
+		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &Powerstatuscontrols{
-			Vin: control.NewValueControl(client, name, "Vin", control.Meta{
-				Type: "voltage",
+		controlList := &Thermostatcontrols{
+			TargetTemperature: control.NewRangeControl(client, name, "Target Temperature", control.Meta{
+				Type:  "range",
+				Units: "°C",
+				Max:   100,
 
 				Order:    1,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"en": `Input voltage`, "ru": `Входное напряжение`},
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Целевая температура`},
 			}),
-			WorkingOnBattery: control.NewSwitchControl(client, name, "working on battery", control.Meta{
-				Type: "switch",
+			CurrentTemperature: control.NewValueControl(client, name, "Current Temperature", control.Meta{
+				Type:  "value",
+				Units: "°C",
 
 				Order:    2,
 				ReadOnly: true,
-				Title:    control.MultilingualText{"en": `Working on battery`, "ru": `Работа от батареи`},
+				Title:    control.MultilingualText{"ru": `Текущая температура`},
+			}),
+			Enabled: control.NewSwitchControl(client, name, "Enabled", control.Meta{
+				Type: "switch",
+
+				Order:    3,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Термостат включен`},
+			}),
+			On: control.NewSwitchControl(client, name, "On", control.Meta{
+				Type: "switch",
+
+				Order:    4,
+				ReadOnly: true,
+				Title:    control.MultilingualText{"ru": `Нагрев`},
 			}),
 		}
 
-		instancePowerstatus = &Powerstatus{
+		instanceThermostat = &Thermostat{
 			name:     name,
 			device:   device,
 			address:  address,
@@ -95,5 +114,5 @@ func NewPowerstatus(client *mqtt.Client) *Powerstatus {
 		}
 	})
 
-	return instancePowerstatus
+	return instanceThermostat
 }

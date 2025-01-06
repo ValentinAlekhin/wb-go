@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type NetworkControls struct {
+type Networkcontrols struct {
 	ActiveConnections            *control.TextControl
 	DefaultInterface             *control.TextControl
 	Ethernet2Ip                  *control.TextControl
@@ -34,7 +34,7 @@ type Network struct {
 	name     string
 	device   string
 	address  string
-	Controls *NetworkControls
+	Controls *Networkcontrols
 }
 
 func (w *Network) GetInfo() deviceinfo.DeviceInfo {
@@ -86,7 +86,7 @@ func NewNetwork(client *mqtt.Client) *Network {
 		device := "network"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &NetworkControls{
+		controlList := &Networkcontrols{
 			ActiveConnections: control.NewTextControl(client, name, "Active Connections", control.Meta{
 				Type: "text",
 

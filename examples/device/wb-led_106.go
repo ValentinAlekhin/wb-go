@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbLed106Controls struct {
+type WbLed106controls struct {
 	Overcurrent        *control.SwitchControl
 	RgbStrip           *control.SwitchControl
 	RgbPalette         *control.RgbControl
@@ -37,7 +37,7 @@ type WbLed106 struct {
 	name     string
 	device   string
 	address  string
-	Controls *WbLed106Controls
+	Controls *WbLed106controls
 }
 
 func (w *WbLed106) GetInfo() deviceinfo.DeviceInfo {
@@ -89,7 +89,7 @@ func NewWbLed106(client *mqtt.Client) *WbLed106 {
 		device := "wb-led"
 		address := "106"
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &WbLed106Controls{
+		controlList := &WbLed106controls{
 			Overcurrent: control.NewSwitchControl(client, name, "Overcurrent", control.Meta{
 				Type: "switch",
 

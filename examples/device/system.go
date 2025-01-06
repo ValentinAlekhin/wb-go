@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type SystemControls struct {
+type Systemcontrols struct {
 	BatchNo            *control.TextControl
 	CurrentUptime      *control.TextControl
 	DtsVersion         *control.TextControl
@@ -41,7 +41,7 @@ type System struct {
 	name     string
 	device   string
 	address  string
-	Controls *SystemControls
+	Controls *Systemcontrols
 }
 
 func (w *System) GetInfo() deviceinfo.DeviceInfo {
@@ -93,7 +93,7 @@ func NewSystem(client *mqtt.Client) *System {
 		device := "system"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &SystemControls{
+		controlList := &Systemcontrols{
 			BatchNo: control.NewTextControl(client, name, "Batch No", control.Meta{
 				Type: "text",
 

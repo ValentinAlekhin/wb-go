@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbMr6Cu145Controls struct {
+type WbMr6Cu145controls struct {
 	K1     *control.SwitchControl
 	K2     *control.SwitchControl
 	K3     *control.SwitchControl
@@ -23,7 +23,7 @@ type WbMr6Cu145 struct {
 	name     string
 	device   string
 	address  string
-	Controls *WbMr6Cu145Controls
+	Controls *WbMr6Cu145controls
 }
 
 func (w *WbMr6Cu145) GetInfo() deviceinfo.DeviceInfo {
@@ -75,7 +75,7 @@ func NewWbMr6Cu145(client *mqtt.Client) *WbMr6Cu145 {
 		device := "wb-mr6cu"
 		address := "145"
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &WbMr6Cu145Controls{
+		controlList := &WbMr6Cu145controls{
 			K1: control.NewSwitchControl(client, name, "K1", control.Meta{
 				Type: "switch",
 

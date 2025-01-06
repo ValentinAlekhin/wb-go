@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type TermostatControls struct {
+type Termostatcontrols struct {
 	R01Ts161Lock     *control.SwitchControl
 	R01Ts161Mode     *control.SwitchControl
 	R01Ts161Setpoint *control.RangeControl
@@ -19,7 +19,7 @@ type Termostat struct {
 	name     string
 	device   string
 	address  string
-	Controls *TermostatControls
+	Controls *Termostatcontrols
 }
 
 func (w *Termostat) GetInfo() deviceinfo.DeviceInfo {
@@ -71,7 +71,7 @@ func NewTermostat(client *mqtt.Client) *Termostat {
 		device := "Termostat"
 		address := ""
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &TermostatControls{
+		controlList := &Termostatcontrols{
 			R01Ts161Lock: control.NewSwitchControl(client, name, "R01-TS16-1-lock", control.Meta{
 				Type: "switch",
 

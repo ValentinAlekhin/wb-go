@@ -22,15 +22,15 @@ type Control struct {
 }
 
 type Meta struct {
-	Type      string                      `json:"type"`      // Тип контроля
-	Units     string                      `json:"units"`     // Единицы измерения (только для type="value")
-	Max       float64                     `json:"max"`       // Максимальное значение
-	Min       float64                     `json:"min"`       // Минимальное значение
-	Precision float64                     `json:"precision"` // Точность
-	Order     int                         `json:"order"`     // Порядок отображения
-	ReadOnly  bool                        `json:"readonly"`  // Только для чтения
-	Title     MultilingualText            `json:"title"`     // Название (разные языки)
-	Enum      map[string]MultilingualEnum `json:"enum"`      // Заголовки для enum
+	Type      string                      `json:"type,omitempty"`      // Тип контроля
+	Units     string                      `json:"units,omitempty"`     // Единицы измерения (только для type="value")
+	Max       float64                     `json:"max,omitempty"`       // Максимальное значение
+	Min       float64                     `json:"min,omitempty"`       // Минимальное значение
+	Precision float64                     `json:"precision,omitempty"` // Точность
+	Order     int                         `json:"order"`               // Порядок отображения
+	ReadOnly  bool                        `json:"readonly"`            // Только для чтения
+	Title     MultilingualText            `json:"title"`               // Название (разные языки)
+	Enum      map[string]MultilingualEnum `json:"enum,omitempty"`      // Заголовки для enum
 }
 
 type MultilingualEnum struct {
@@ -131,7 +131,7 @@ func (c *Control) runSetValueHandler() {
 }
 
 func NewControl(client *wb.Client, device, control string, meta Meta) *Control {
-	sw := &Control{
+	c := &Control{
 		name:         control,
 		meta:         meta,
 		client:       client,
@@ -144,10 +144,10 @@ func NewControl(client *wb.Client, device, control string, meta Meta) *Control {
 		stopChan:     make(chan struct{}),
 	}
 
-	sw.value.Store("")
-	go sw.runWatchHandler()
-	go sw.runSetValueHandler()
-	sw.subscribe()
+	c.value.Store("")
+	go c.runWatchHandler()
+	go c.runSetValueHandler()
+	c.subscribe()
 
-	return sw
+	return c
 }

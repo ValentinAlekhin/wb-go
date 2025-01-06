@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbMwacV293Controls struct {
+type WbMwacV293controls struct {
 	P1Volume       *control.ValueControl
 	P2Volume       *control.ValueControl
 	InputF1        *control.SwitchControl
@@ -35,7 +35,7 @@ type WbMwacV293 struct {
 	name     string
 	device   string
 	address  string
-	Controls *WbMwacV293Controls
+	Controls *WbMwacV293controls
 }
 
 func (w *WbMwacV293) GetInfo() deviceinfo.DeviceInfo {
@@ -87,7 +87,7 @@ func NewWbMwacV293(client *mqtt.Client) *WbMwacV293 {
 		device := "wb-mwac-v2"
 		address := "93"
 		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &WbMwacV293Controls{
+		controlList := &WbMwacV293controls{
 			P1Volume: control.NewValueControl(client, name, "P1 Volume", control.Meta{
 				Type:  "value",
 				Units: "m^3",
