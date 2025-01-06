@@ -106,8 +106,6 @@ func (a *AdaptiveLight) setColorTemp(now carbon.Carbon) {
 
 	temp := int(float64(maxTemp) + float64(minTemp-maxTemp)*math.Pow(2*ratio-1, 2))
 
-	fmt.Println("exp: ", temp)
-
 	a.controls.currentTemp.SetValue(temp)
 }
 
