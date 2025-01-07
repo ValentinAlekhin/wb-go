@@ -2,8 +2,8 @@ package homeassistant
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	"github.com/ValentinAlekhin/wb-go/pkg/deviceinfo"
 	"github.com/iancoleman/strcase"
 	"regexp"
 	"strings"
@@ -55,7 +55,7 @@ type ConfigGetter struct {
 	domain    string
 }
 
-type ConfigGetterFn func(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig
+type ConfigGetterFn func(deviceInfo basedevice.Info, controlInfo control.ControlInfo) MqttDiscoveryConfig
 
 func init() {
 	for _, devConfig := range DeviceConfigMap {
@@ -71,7 +71,7 @@ func init() {
 	}
 }
 
-func GetConfigAndDomain(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) (config MqttDiscoveryConfig, domain string, ignore bool) {
+func GetConfigAndDomain(deviceInfo basedevice.Info, controlInfo control.ControlInfo) (config MqttDiscoveryConfig, domain string, ignore bool) {
 	config = GetAnyControlConfig(deviceInfo, controlInfo)
 	domain = GetAnyDomain(controlInfo)
 	ignore = false
@@ -123,7 +123,7 @@ func GetAnyDomain(info control.ControlInfo) string {
 	return domain
 }
 
-func GetAnyControlConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
+func GetAnyControlConfig(deviceInfo basedevice.Info, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	wbUnit := controlInfo.Meta.Units
@@ -153,7 +153,7 @@ func GetAnyControlConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.C
 	return config
 }
 
-func GetWbLedRgbConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
+func GetWbLedRgbConfig(deviceInfo basedevice.Info, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -173,7 +173,7 @@ func GetWbLedRgbConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.Con
 
 }
 
-func GetWbLedCctConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
+func GetWbLedCctConfig(deviceInfo basedevice.Info, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -195,7 +195,7 @@ func GetWbLedCctConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.Con
 
 }
 
-func GetWbLedDimConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
+func GetWbLedDimConfig(deviceInfo basedevice.Info, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
@@ -210,7 +210,7 @@ func GetWbLedDimConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.Con
 	})
 }
 
-func GetWbMdm3Config(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
+func GetWbMdm3Config(deviceInfo basedevice.Info, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 	channelNumber := strings.TrimPrefix(controlInfo.Name, "K")
 
@@ -226,7 +226,7 @@ func GetWbMdm3Config(deviceInfo deviceinfo.DeviceInfo, controlInfo control.Contr
 	})
 }
 
-func getDevice(deviceInfo deviceinfo.DeviceInfo) MqttDiscoveryDevice {
+func getDevice(deviceInfo basedevice.Info) MqttDiscoveryDevice {
 	return MqttDiscoveryDevice{
 		Identifiers: deviceInfo.Name,
 		Model:       deviceInfo.Name,

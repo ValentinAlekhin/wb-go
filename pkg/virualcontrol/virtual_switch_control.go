@@ -69,6 +69,10 @@ func (c *VirtualSwitchControl) AddWatcher(f func(payload control.SwitchControlWa
 	})
 }
 
+func (c *VirtualSwitchControl) GetInfo() control.ControlInfo {
+	return c.control.GetInfo()
+}
+
 func NewVirtualSwitchControl(client *wb.Client, device, control string, meta control.Meta, onSwitchHandler OnSwitchHandler) *VirtualSwitchControl {
 	vc := &VirtualSwitchControl{}
 	onHandler := func(payload OnHandlerPayload) {
@@ -81,8 +85,6 @@ func NewVirtualSwitchControl(client *wb.Client, device, control string, meta con
 
 		if onSwitchHandler != nil {
 			onSwitchHandler(newPayload)
-		} else {
-			vc.SetValue(value)
 		}
 	}
 	meta.Type = "switch"

@@ -2,7 +2,9 @@ package virtuladevice
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -14,6 +16,8 @@ import (
 
 type AdaptiveLight struct {
 	client    *wb.Client
+	name      string
+	fullName  string
 	meta      Meta
 	metaTopic string
 	Controls  AdaptiveLightControls
@@ -43,6 +47,13 @@ type AdaptiveLightControls struct {
 type AdaptiveLightConfig struct {
 	Client *wb.Client
 	Device string
+}
+
+func (a *AdaptiveLight) GetInfo() basedevice.Info {
+	return basedevice.Info{
+		Name:         a.fullName,
+		ControlsInfo: nil,
+	}
 }
 
 func (a *AdaptiveLight) update() {
@@ -132,15 +143,25 @@ func (a *AdaptiveLight) setMeta() {
 	})
 }
 
-func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
-	enabled := virualcontrol.NewVirtualSwitchControl(config.Client, config.Device, "Enabled", control.Meta{
+func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
+	if config.Client == nil {
+		return nil, errors.New("client is nil")
+	}
+
+	if config.Device == "" {
+		return nil, errors.New("device is empty")
+	}
+
+	deviceFullName := getDeviceFullName(config.Device)
+
+	enabled := virualcontrol.NewVirtualSwitchControl(config.Client, deviceFullName, "Enabled", control.Meta{
 		Order: 1,
 		Title: control.MultilingualText{"ru": "Включено"},
 	}, func(p virualcontrol.OnSwitchHandlerPayload) {
 		p.Set(p.Value)
 	})
 
-	minTemp := virualcontrol.NewVirtualRangeControl(config.Client, config.Device, "Min Temperature", control.Meta{
+	minTemp := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Min Temperature", control.Meta{
 		Order: 2,
 		Max:   100,
 		Min:   0,
@@ -149,7 +170,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 		p.Set(p.Value)
 	})
 
-	maxTemp := virualcontrol.NewVirtualRangeControl(config.Client, config.Device, "Max Temperature", control.Meta{
+	maxTemp := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Max Temperature", control.Meta{
 		Order: 3,
 		Max:   100,
 		Min:   0,
@@ -158,16 +179,15 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 		p.Set(p.Value)
 	})
 
-	currentTemp := virualcontrol.NewVirtualRangeControl(config.Client, config.Device, "Temperature", control.Meta{
+	currentTemp := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Temperature", control.Meta{
 		ReadOnly: true,
 		Order:    4,
 		Max:      100,
 		Min:      0,
 		Title:    control.MultilingualText{"ru": "Температура"},
-	}, func(p virualcontrol.OnRangeHandlerPayload) {
-	})
+	}, nil)
 
-	minBrightness := virualcontrol.NewVirtualRangeControl(config.Client, config.Device, "Min Brightness", control.Meta{
+	minBrightness := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Min Brightness", control.Meta{
 		Order: 5,
 		Max:   100,
 		Min:   0,
@@ -176,7 +196,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 		p.Set(p.Value)
 	})
 
-	maxBrightness := virualcontrol.NewVirtualRangeControl(config.Client, config.Device, "Max Brightness", control.Meta{
+	maxBrightness := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Max Brightness", control.Meta{
 		Order: 6,
 		Max:   100,
 		Min:   0,
@@ -185,16 +205,15 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 		p.Set(p.Value)
 	})
 
-	currentBrightness := virualcontrol.NewVirtualRangeControl(config.Client, config.Device, "Brightness", control.Meta{
+	currentBrightness := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Brightness", control.Meta{
 		ReadOnly: true,
 		Order:    7,
 		Max:      100,
 		Min:      0,
 		Title:    control.MultilingualText{"ru": "Яркость"},
-	}, func(p virualcontrol.OnRangeHandlerPayload) {
-	})
+	}, nil)
 
-	sleepMode := virualcontrol.NewVirtualSwitchControl(config.Client, config.Device, "Sleep Mode", control.Meta{
+	sleepMode := virualcontrol.NewVirtualSwitchControl(config.Client, deviceFullName, "Sleep Mode", control.Meta{
 		ReadOnly: true,
 		Order:    8,
 		Title:    control.MultilingualText{"ru": "Режим сна"},
@@ -202,28 +221,28 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 		p.Set(p.Value)
 	})
 
-	sunrise := virualcontrol.NewVirtualTimeValueControl(config.Client, config.Device, "Sunrise", control.Meta{
+	sunrise := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Sunrise", control.Meta{
 		Order: 9,
 		Title: control.MultilingualText{"ru": "Рассвет"},
 	}, func(p virualcontrol.OnTimeHandlerPayload) {
 		p.Set(p.Value)
 	})
 
-	sunset := virualcontrol.NewVirtualTimeValueControl(config.Client, config.Device, "Sunset", control.Meta{
+	sunset := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Sunset", control.Meta{
 		Order: 10,
 		Title: control.MultilingualText{"ru": "Закат"},
 	}, func(p virualcontrol.OnTimeHandlerPayload) {
 		p.Set(p.Value)
 	})
 
-	slipStart := virualcontrol.NewVirtualTimeValueControl(config.Client, config.Device, "Slip Start", control.Meta{
+	slipStart := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Slip Start", control.Meta{
 		Order: 11,
 		Title: control.MultilingualText{"ru": "Начало сна"},
 	}, func(p virualcontrol.OnTimeHandlerPayload) {
 		p.Set(p.Value)
 	})
 
-	slipEnd := virualcontrol.NewVirtualTimeValueControl(config.Client, config.Device, "Slip End", control.Meta{
+	slipEnd := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Slip End", control.Meta{
 		Order: 12,
 		Title: control.MultilingualText{"ru": "Конец сна"},
 	}, func(p virualcontrol.OnTimeHandlerPayload) {
@@ -231,12 +250,13 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 			return
 		}
 		p.Set(p.Value)
-		fmt.Println(p.Value.String())
 	})
 
 	al := &AdaptiveLight{
 		client:    config.Client,
-		metaTopic: fmt.Sprintf(conventions.CONV_DEVICE_META_V2_FMT, config.Device),
+		name:      config.Device,
+		fullName:  deviceFullName,
+		metaTopic: fmt.Sprintf(conventions.CONV_DEVICE_META_V2_FMT, deviceFullName),
 		meta:      Meta{Name: config.Device, Driver: "wb-go"},
 		Controls: AdaptiveLightControls{
 			Enabled:           enabled,
@@ -257,5 +277,5 @@ func NewAdaptiveLight(config AdaptiveLightConfig) *AdaptiveLight {
 	al.setMeta()
 	al.runTicker()
 
-	return al
+	return al, nil
 }

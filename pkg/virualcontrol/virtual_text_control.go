@@ -34,6 +34,10 @@ func (c *VirtualTextControl) AddWatcher(f func(payload control.ControlWatcherPay
 	})
 }
 
+func (c *VirtualTextControl) GetInfo() control.ControlInfo {
+	return c.control.GetInfo()
+}
+
 func NewVirtualTextControl(client *wb.Client, device, control string, meta control.Meta, onTextHandler OnTextHandler) *VirtualTextControl {
 	vc := &VirtualTextControl{}
 	onHandler := func(payload OnHandlerPayload) {
@@ -44,8 +48,6 @@ func NewVirtualTextControl(client *wb.Client, device, control string, meta contr
 
 		if onTextHandler != nil {
 			onTextHandler(newPayload)
-		} else {
-			vc.SetValue(payload.Value)
 		}
 	}
 	meta.Type = "text"

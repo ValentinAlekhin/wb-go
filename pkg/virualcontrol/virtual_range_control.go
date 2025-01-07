@@ -48,6 +48,10 @@ func (c *VirtualRangeControl) AddWatcher(f func(payload control.RangeControlWatc
 	})
 }
 
+func (c *VirtualRangeControl) GetInfo() control.ControlInfo {
+	return c.control.GetInfo()
+}
+
 func NewVirtualRangeControl(client *wb.Client, device, control string, meta control.Meta, onRangeHandler OnRangeHandler) *VirtualRangeControl {
 	vc := &VirtualRangeControl{}
 	onHandler := func(payload OnHandlerPayload) {
@@ -60,8 +64,6 @@ func NewVirtualRangeControl(client *wb.Client, device, control string, meta cont
 
 		if onRangeHandler != nil {
 			onRangeHandler(newPayload)
-		} else {
-			vc.SetValue(value)
 		}
 	}
 	meta.Type = "range"

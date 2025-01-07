@@ -63,6 +63,10 @@ func (c *VirtualTimeControl) AddWatcher(f func(payload TimeControlWatcherPayload
 	})
 }
 
+func (c *VirtualTimeControl) GetInfo() control.ControlInfo {
+	return c.control.GetInfo()
+}
+
 func NewVirtualTimeValueControl(client *wb.Client, device, control string, meta control.Meta, onTimeHandler OnTimeHandler) *VirtualTimeControl {
 	vc := &VirtualTimeControl{}
 	onHandler := func(payload OnHandlerPayload) {
@@ -76,8 +80,6 @@ func NewVirtualTimeValueControl(client *wb.Client, device, control string, meta 
 
 		if onTimeHandler != nil {
 			onTimeHandler(newPayload)
-		} else {
-			vc.SetValue(value)
 		}
 	}
 	meta.Type = "text"

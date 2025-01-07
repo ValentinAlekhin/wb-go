@@ -2,6 +2,7 @@ package virtuladevice
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
@@ -106,8 +107,18 @@ func (t *Thermostat) setMeta() {
 	})
 }
 
-func NewThermostat(config ThermostatConfig) *Thermostat {
-	targetTemperature := virualcontrol.NewVirtualRangeControl(config.Client, config.Device, "Target Temperature", control.Meta{
+func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
+	if config.Client == nil {
+		return &Thermostat{}, errors.New("client is nil")
+	}
+
+	if config.Device == "" {
+		return &Thermostat{}, errors.New("device is empty")
+	}
+
+	deviceFullName := getDeviceFullName(config.Device)
+
+	targetTemperature := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Target Temperature", control.Meta{
 		Units:    "°C",
 		Order:    1,
 		ReadOnly: false,
@@ -118,15 +129,14 @@ func NewThermostat(config ThermostatConfig) *Thermostat {
 		p.Set(p.Value)
 	})
 
-	currentTemperature := virualcontrol.NewVirtualValueControl(config.Client, config.Device, "Current Temperature", control.Meta{
+	currentTemperature := virualcontrol.NewVirtualValueControl(config.Client, deviceFullName, "Current Temperature", control.Meta{
 		Units:    "°C",
 		Order:    2,
 		ReadOnly: true,
 		Title:    control.MultilingualText{"ru": "Текущая температура"},
-	}, func(p virualcontrol.OnValueHandlerPayload) {
-	})
+	}, nil)
 
-	enabled := virualcontrol.NewVirtualSwitchControl(config.Client, config.Device, "Enabled", control.Meta{
+	enabled := virualcontrol.NewVirtualSwitchControl(config.Client, deviceFullName, "Enabled", control.Meta{
 		ReadOnly: false,
 		Order:    3,
 		Title:    control.MultilingualText{"ru": "Термостат включен"},
@@ -134,12 +144,11 @@ func NewThermostat(config ThermostatConfig) *Thermostat {
 		p.Set(p.Value)
 	})
 
-	on := virualcontrol.NewVirtualSwitchControl(config.Client, config.Device, "On", control.Meta{
+	on := virualcontrol.NewVirtualSwitchControl(config.Client, deviceFullName, "On", control.Meta{
 		ReadOnly: true,
 		Order:    4,
 		Title:    control.MultilingualText{"ru": "Нагрев"},
-	}, func(p virualcontrol.OnSwitchHandlerPayload) {
-	})
+	}, nil)
 
 	t := &Thermostat{
 		client: config.Client,
@@ -149,7 +158,7 @@ func NewThermostat(config ThermostatConfig) *Thermostat {
 			enabled:            enabled,
 			heater:             on,
 		},
-		metaTopic:           fmt.Sprintf(conventions.CONV_DEVICE_META_V2_FMT, config.Device),
+		metaTopic:           fmt.Sprintf(conventions.CONV_DEVICE_META_V2_FMT, deviceFullName),
 		temperatureControls: config.TemperatureControls,
 		hysteresis:          config.Hysteresis,
 		meta:                Meta{Name: config.Device, Driver: "wb-go"},
@@ -158,5 +167,5 @@ func NewThermostat(config ThermostatConfig) *Thermostat {
 	t.setMeta()
 	t.runTicker()
 
-	return t
+	return t, nil
 }

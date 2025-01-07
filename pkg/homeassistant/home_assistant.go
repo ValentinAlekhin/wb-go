@@ -3,7 +3,7 @@ package homeassistant
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ValentinAlekhin/wb-go/pkg/deviceinfo"
+	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/iancoleman/strcase"
@@ -29,7 +29,7 @@ type DiscoveryMeta struct {
 	CreatedAt  time.Time `json:"created_at"`
 }
 
-func (d *Discovery) AddDevice(info deviceinfo.DeviceInfo) {
+func (d *Discovery) AddDevice(info basedevice.Info) {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(info.ControlsInfo))
 

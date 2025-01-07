@@ -172,7 +172,7 @@ func NewVirtualControl(client *wb.Client, device, controlName string, meta contr
 		onChan:       make(chan string),
 		addChan:      make(chan func(payload control.ControlWatcherPayload)),
 		eventChan:    make(chan control.ControlWatcherPayload),
-		onHandler:    func(payload OnHandlerPayload) { payload.Set(payload.Value) },
+		onHandler:    func(payload OnHandlerPayload) {},
 	}
 
 	if onHandler != nil {

@@ -6,6 +6,7 @@ import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/virtuladevice"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,7 +25,7 @@ func main() {
 
 	wbMsw := device.NewWbMswV4151(client)
 
-	thermostat := virtuladevice.NewThermostat(virtuladevice.ThermostatConfig{
+	thermostat, err := virtuladevice.NewThermostat(virtuladevice.ThermostatConfig{
 		Client:              client,
 		Device:              "thermostat",
 		TargetTemperature:   21,
@@ -32,14 +33,22 @@ func main() {
 		TemperatureControls: []*control.ValueControl{wbMsw.Controls.Temperature},
 	})
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	thermostat.AddHeaterWatcher(func(p control.SwitchControlWatcherPayload) {
 		fmt.Println("Heater: ", p.NewValue)
 	})
 
-	_ = virtuladevice.NewAdaptiveLight(virtuladevice.AdaptiveLightConfig{
+	_, err = virtuladevice.NewAdaptiveLight(virtuladevice.AdaptiveLightConfig{
 		Client: client,
 		Device: "adaptive-light",
 	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	<-stop
 

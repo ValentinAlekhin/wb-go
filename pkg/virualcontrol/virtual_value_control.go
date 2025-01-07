@@ -50,6 +50,10 @@ func (c *VirtualValueControl) AddWatcher(f func(payload control.ValueControlWatc
 	})
 }
 
+func (c *VirtualValueControl) GetInfo() control.ControlInfo {
+	return c.control.GetInfo()
+}
+
 func NewVirtualValueControl(client *wb.Client, device, control string, meta control.Meta, onValueHandler OnValueHandler) *VirtualValueControl {
 	vc := &VirtualValueControl{}
 	onHandler := func(payload OnHandlerPayload) {
@@ -62,8 +66,6 @@ func NewVirtualValueControl(client *wb.Client, device, control string, meta cont
 
 		if onValueHandler != nil {
 			onValueHandler(newPayload)
-		} else {
-			vc.SetValue(value)
 		}
 	}
 	meta.Type = "value"
