@@ -24,8 +24,8 @@ var DeviceConfigMap = map[string]*DeviceConfig{
 				domain:    "light",
 			},
 			{
-				regexpStr: `^RGB Strip`,
-				getter:    getWbLEdRgbConfig,
+				regexpStr: `^RGB Strip$`,
+				getter:    getWbLedRgbConfig,
 				domain:    "light",
 			},
 		},
@@ -153,7 +153,7 @@ func getAnyControlConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.C
 	return config
 }
 
-func getWbLEdRgbConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
+func getWbLedRgbConfig(deviceInfo deviceinfo.DeviceInfo, controlInfo control.ControlInfo) MqttDiscoveryConfig {
 	id := getControlId(deviceInfo.Name, controlInfo.Name)
 
 	return GetConfig(MqttDiscoveryConfig{
