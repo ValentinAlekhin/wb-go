@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type Scriptsleepcontrols struct {
+type ScriptSleepControls struct {
 	Current          *control.ValueControl
 	Enable           *control.SwitchControl
 	State            *control.TextControl
@@ -18,25 +18,21 @@ type Scriptsleepcontrols struct {
 	Zone1Status      *control.ValueControl
 }
 
-type Scriptsleep struct {
+type ScriptSleep struct {
 	name     string
-	device   string
-	address  string
-	Controls *Scriptsleepcontrols
+	Controls *ScriptSleepControls
 }
 
-func (w *Scriptsleep) GetInfo() deviceinfo.DeviceInfo {
+func (w *ScriptSleep) GetInfo() deviceinfo.DeviceInfo {
 	controlsInfo := w.GetControlsInfo()
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
 
-func (w *Scriptsleep) GetControlsInfo() []control.ControlInfo {
+func (w *ScriptSleep) GetControlsInfo() []control.ControlInfo {
 	var infoList []control.ControlInfo
 
 	// Получаем значение и тип структуры Controls
@@ -65,17 +61,15 @@ func (w *Scriptsleep) GetControlsInfo() []control.ControlInfo {
 }
 
 var (
-	onceScriptsleep     sync.Once
-	instanceScriptsleep *Scriptsleep
+	onceScriptSleep     sync.Once
+	instanceScriptSleep *ScriptSleep
 )
 
-func NewScriptsleep(client *mqtt.Client) *Scriptsleep {
-	onceScriptsleep.Do(func() {
-		device := "script"
-		address := "sleep"
-		name := fmt.Sprintf("%s_%s", device, address)
+func NewScriptSleep(client *mqtt.Client) *ScriptSleep {
+	onceScriptSleep.Do(func() {
+		name := "script_sleep"
 
-		controlList := &Scriptsleepcontrols{
+		controlList := &ScriptSleepControls{
 			Current: control.NewValueControl(client, name, "current", control.Meta{
 				Type: "temperature",
 
@@ -123,13 +117,11 @@ func NewScriptsleep(client *mqtt.Client) *Scriptsleep {
 			}),
 		}
 
-		instanceScriptsleep = &Scriptsleep{
+		instanceScriptSleep = &ScriptSleep{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})
 
-	return instanceScriptsleep
+	return instanceScriptSleep
 }

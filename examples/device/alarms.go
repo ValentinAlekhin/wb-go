@@ -9,15 +9,13 @@ import (
 	"sync"
 )
 
-type Alarmscontrols struct {
+type AlarmsControls struct {
 	Log *control.TextControl
 }
 
 type Alarms struct {
 	name     string
-	device   string
-	address  string
-	Controls *Alarmscontrols
+	Controls *AlarmsControls
 }
 
 func (w *Alarms) GetInfo() deviceinfo.DeviceInfo {
@@ -25,8 +23,6 @@ func (w *Alarms) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -66,11 +62,9 @@ var (
 
 func NewAlarms(client *mqtt.Client) *Alarms {
 	onceAlarms.Do(func() {
-		device := "alarms"
-		address := ""
-		name := device
+		name := "alarms"
 
-		controlList := &Alarmscontrols{
+		controlList := &AlarmsControls{
 			Log: control.NewTextControl(client, name, "log", control.Meta{
 				Type: "text",
 
@@ -82,8 +76,6 @@ func NewAlarms(client *mqtt.Client) *Alarms {
 
 		instanceAlarms = &Alarms{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

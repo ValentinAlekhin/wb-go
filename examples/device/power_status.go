@@ -9,30 +9,26 @@ import (
 	"sync"
 )
 
-type Powerstatuscontrols struct {
+type PowerStatusControls struct {
 	Vin              *control.ValueControl
 	WorkingOnBattery *control.SwitchControl
 }
 
-type Powerstatus struct {
+type PowerStatus struct {
 	name     string
-	device   string
-	address  string
-	Controls *Powerstatuscontrols
+	Controls *PowerStatusControls
 }
 
-func (w *Powerstatus) GetInfo() deviceinfo.DeviceInfo {
+func (w *PowerStatus) GetInfo() deviceinfo.DeviceInfo {
 	controlsInfo := w.GetControlsInfo()
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
 
-func (w *Powerstatus) GetControlsInfo() []control.ControlInfo {
+func (w *PowerStatus) GetControlsInfo() []control.ControlInfo {
 	var infoList []control.ControlInfo
 
 	// Получаем значение и тип структуры Controls
@@ -61,17 +57,15 @@ func (w *Powerstatus) GetControlsInfo() []control.ControlInfo {
 }
 
 var (
-	oncePowerstatus     sync.Once
-	instancePowerstatus *Powerstatus
+	oncePowerStatus     sync.Once
+	instancePowerStatus *PowerStatus
 )
 
-func NewPowerstatus(client *mqtt.Client) *Powerstatus {
-	oncePowerstatus.Do(func() {
-		device := "power"
-		address := "status"
-		name := fmt.Sprintf("%s_%s", device, address)
+func NewPowerStatus(client *mqtt.Client) *PowerStatus {
+	oncePowerStatus.Do(func() {
+		name := "power_status"
 
-		controlList := &Powerstatuscontrols{
+		controlList := &PowerStatusControls{
 			Vin: control.NewValueControl(client, name, "Vin", control.Meta{
 				Type: "voltage",
 
@@ -88,13 +82,11 @@ func NewPowerstatus(client *mqtt.Client) *Powerstatus {
 			}),
 		}
 
-		instancePowerstatus = &Powerstatus{
+		instancePowerStatus = &PowerStatus{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})
 
-	return instancePowerstatus
+	return instancePowerStatus
 }

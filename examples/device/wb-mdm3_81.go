@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbMdm381controls struct {
+type WbMdm381Controls struct {
 	Input1                   *control.SwitchControl
 	Input1Counter            *control.ValueControl
 	Input1SinglePressCounter *control.ValueControl
@@ -47,9 +47,7 @@ type WbMdm381controls struct {
 
 type WbMdm381 struct {
 	name     string
-	device   string
-	address  string
-	Controls *WbMdm381controls
+	Controls *WbMdm381Controls
 }
 
 func (w *WbMdm381) GetInfo() deviceinfo.DeviceInfo {
@@ -57,8 +55,6 @@ func (w *WbMdm381) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -98,11 +94,9 @@ var (
 
 func NewWbMdm381(client *mqtt.Client) *WbMdm381 {
 	onceWbMdm381.Do(func() {
-		device := "wb-mdm3"
-		address := "81"
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := "wb-mdm3_81"
 
-		controlList := &WbMdm381controls{
+		controlList := &WbMdm381Controls{
 			Input1: control.NewSwitchControl(client, name, "Input 1", control.Meta{
 				Type: "switch",
 
@@ -344,8 +338,6 @@ func NewWbMdm381(client *mqtt.Client) *WbMdm381 {
 
 		instanceWbMdm381 = &WbMdm381{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

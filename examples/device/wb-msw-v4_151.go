@@ -9,13 +9,21 @@ import (
 	"sync"
 )
 
-type WbMswV4151controls struct {
+type WbMswV4151Controls struct {
+	Illuminance       *control.ValueControl
+	LearnToRom4       *control.SwitchControl
+	LearnToRom5       *control.SwitchControl
+	LearnToRom6       *control.SwitchControl
+	LearnToRom7       *control.SwitchControl
+	PlayFromRom3      *control.PushbuttonControl
+	PlayFromRom4      *control.PushbuttonControl
+	PlayFromRom5      *control.PushbuttonControl
+	PlayFromRom6      *control.PushbuttonControl
 	Temperature       *control.ValueControl
 	Humidity          *control.ValueControl
 	Co2               *control.ValueControl
 	AirQualityVoc     *control.ValueControl
 	SoundLevel        *control.ValueControl
-	Illuminance       *control.ValueControl
 	MaxMotion         *control.ValueControl
 	CurrentMotion     *control.ValueControl
 	Buzzer            *control.SwitchControl
@@ -28,25 +36,15 @@ type WbMswV4151controls struct {
 	LearnToRom1       *control.SwitchControl
 	LearnToRom2       *control.SwitchControl
 	LearnToRom3       *control.SwitchControl
-	LearnToRom4       *control.SwitchControl
-	LearnToRom5       *control.SwitchControl
-	LearnToRom6       *control.SwitchControl
-	LearnToRom7       *control.SwitchControl
 	PlayFromRom1      *control.PushbuttonControl
 	PlayFromRom2      *control.PushbuttonControl
-	PlayFromRom3      *control.PushbuttonControl
-	PlayFromRom4      *control.PushbuttonControl
-	PlayFromRom5      *control.PushbuttonControl
-	PlayFromRom6      *control.PushbuttonControl
 	PlayFromRom7      *control.PushbuttonControl
 	Serial            *control.TextControl
 }
 
 type WbMswV4151 struct {
 	name     string
-	device   string
-	address  string
-	Controls *WbMswV4151controls
+	Controls *WbMswV4151Controls
 }
 
 func (w *WbMswV4151) GetInfo() deviceinfo.DeviceInfo {
@@ -54,8 +52,6 @@ func (w *WbMswV4151) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -95,11 +91,72 @@ var (
 
 func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
 	onceWbMswV4151.Do(func() {
-		device := "wb-msw-v4"
-		address := "151"
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := "wb-msw-v4_151"
 
-		controlList := &WbMswV4151controls{
+		controlList := &WbMswV4151Controls{
+			Illuminance: control.NewValueControl(client, name, "Illuminance", control.Meta{
+				Type: "lux",
+
+				Order:    6,
+				ReadOnly: true,
+				Title:    control.MultilingualText{"ru": `Освещенность`},
+			}),
+			LearnToRom4: control.NewSwitchControl(client, name, "Learn to ROM4", control.Meta{
+				Type: "switch",
+
+				Order:    19,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Записать команду в ROM4`},
+			}),
+			LearnToRom5: control.NewSwitchControl(client, name, "Learn to ROM5", control.Meta{
+				Type: "switch",
+
+				Order:    20,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Записать команду в ROM5`},
+			}),
+			LearnToRom6: control.NewSwitchControl(client, name, "Learn to ROM6", control.Meta{
+				Type: "switch",
+
+				Order:    21,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Записать команду в ROM6`},
+			}),
+			LearnToRom7: control.NewSwitchControl(client, name, "Learn to ROM7", control.Meta{
+				Type: "switch",
+
+				Order:    22,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Записать команду в ROM7`},
+			}),
+			PlayFromRom3: control.NewPushbuttonControl(client, name, "Play from ROM3", control.Meta{
+				Type: "pushbutton",
+
+				Order:    25,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM3`},
+			}),
+			PlayFromRom4: control.NewPushbuttonControl(client, name, "Play from ROM4", control.Meta{
+				Type: "pushbutton",
+
+				Order:    26,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM4`},
+			}),
+			PlayFromRom5: control.NewPushbuttonControl(client, name, "Play from ROM5", control.Meta{
+				Type: "pushbutton",
+
+				Order:    27,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM5`},
+			}),
+			PlayFromRom6: control.NewPushbuttonControl(client, name, "Play from ROM6", control.Meta{
+				Type: "pushbutton",
+
+				Order:    28,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM6`},
+			}),
 			Temperature: control.NewValueControl(client, name, "Temperature", control.Meta{
 				Type:  "value",
 				Units: "deg C",
@@ -137,13 +194,6 @@ func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
 				Order:    5,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Уровень шума`},
-			}),
-			Illuminance: control.NewValueControl(client, name, "Illuminance", control.Meta{
-				Type: "lux",
-
-				Order:    6,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Освещенность`},
 			}),
 			MaxMotion: control.NewValueControl(client, name, "Max Motion", control.Meta{
 				Type: "value",
@@ -233,34 +283,6 @@ func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM3`},
 			}),
-			LearnToRom4: control.NewSwitchControl(client, name, "Learn to ROM4", control.Meta{
-				Type: "switch",
-
-				Order:    19,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Записать команду в ROM4`},
-			}),
-			LearnToRom5: control.NewSwitchControl(client, name, "Learn to ROM5", control.Meta{
-				Type: "switch",
-
-				Order:    20,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Записать команду в ROM5`},
-			}),
-			LearnToRom6: control.NewSwitchControl(client, name, "Learn to ROM6", control.Meta{
-				Type: "switch",
-
-				Order:    21,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Записать команду в ROM6`},
-			}),
-			LearnToRom7: control.NewSwitchControl(client, name, "Learn to ROM7", control.Meta{
-				Type: "switch",
-
-				Order:    22,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Записать команду в ROM7`},
-			}),
 			PlayFromRom1: control.NewPushbuttonControl(client, name, "Play from ROM1", control.Meta{
 				Type: "pushbutton",
 
@@ -274,34 +296,6 @@ func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
 				Order:    24,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM2`},
-			}),
-			PlayFromRom3: control.NewPushbuttonControl(client, name, "Play from ROM3", control.Meta{
-				Type: "pushbutton",
-
-				Order:    25,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM3`},
-			}),
-			PlayFromRom4: control.NewPushbuttonControl(client, name, "Play from ROM4", control.Meta{
-				Type: "pushbutton",
-
-				Order:    26,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM4`},
-			}),
-			PlayFromRom5: control.NewPushbuttonControl(client, name, "Play from ROM5", control.Meta{
-				Type: "pushbutton",
-
-				Order:    27,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM5`},
-			}),
-			PlayFromRom6: control.NewPushbuttonControl(client, name, "Play from ROM6", control.Meta{
-				Type: "pushbutton",
-
-				Order:    28,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM6`},
 			}),
 			PlayFromRom7: control.NewPushbuttonControl(client, name, "Play from ROM7", control.Meta{
 				Type: "pushbutton",
@@ -321,8 +315,6 @@ func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
 
 		instanceWbMswV4151 = &WbMswV4151{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

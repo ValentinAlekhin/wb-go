@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbMrm2Mini61controls struct {
+type WbMrm2Mini61Controls struct {
 	Input1        *control.SwitchControl
 	Input1Counter *control.ValueControl
 	Input2        *control.SwitchControl
@@ -21,9 +21,7 @@ type WbMrm2Mini61controls struct {
 
 type WbMrm2Mini61 struct {
 	name     string
-	device   string
-	address  string
-	Controls *WbMrm2Mini61controls
+	Controls *WbMrm2Mini61Controls
 }
 
 func (w *WbMrm2Mini61) GetInfo() deviceinfo.DeviceInfo {
@@ -31,8 +29,6 @@ func (w *WbMrm2Mini61) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -72,11 +68,9 @@ var (
 
 func NewWbMrm2Mini61(client *mqtt.Client) *WbMrm2Mini61 {
 	onceWbMrm2Mini61.Do(func() {
-		device := "wb-mrm2-mini"
-		address := "61"
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := "wb-mrm2-mini_61"
 
-		controlList := &WbMrm2Mini61controls{
+		controlList := &WbMrm2Mini61Controls{
 			Input1: control.NewSwitchControl(client, name, "Input 1", control.Meta{
 				Type: "switch",
 
@@ -130,8 +124,6 @@ func NewWbMrm2Mini61(client *mqtt.Client) *WbMrm2Mini61 {
 
 		instanceWbMrm2Mini61 = &WbMrm2Mini61{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

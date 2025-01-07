@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbGpiocontrols struct {
+type WbGpioControls struct {
 	A1Out  *control.SwitchControl
 	A2Out  *control.SwitchControl
 	A3Out  *control.SwitchControl
@@ -26,9 +26,7 @@ type WbGpiocontrols struct {
 
 type WbGpio struct {
 	name     string
-	device   string
-	address  string
-	Controls *WbGpiocontrols
+	Controls *WbGpioControls
 }
 
 func (w *WbGpio) GetInfo() deviceinfo.DeviceInfo {
@@ -36,8 +34,6 @@ func (w *WbGpio) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -77,11 +73,9 @@ var (
 
 func NewWbGpio(client *mqtt.Client) *WbGpio {
 	onceWbGpio.Do(func() {
-		device := "wb-gpio"
-		address := ""
-		name := device
+		name := "wb-gpio"
 
-		controlList := &WbGpiocontrols{
+		controlList := &WbGpioControls{
 			A1Out: control.NewSwitchControl(client, name, "A1_OUT", control.Meta{
 				Type: "switch",
 
@@ -170,8 +164,6 @@ func NewWbGpio(client *mqtt.Client) *WbGpio {
 
 		instanceWbGpio = &WbGpio{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type Metricscontrols struct {
+type MetricsControls struct {
 	LoadAverage1Min   *control.ValueControl
 	LoadAverage5Min   *control.ValueControl
 	LoadAverage15Min  *control.ValueControl
@@ -27,9 +27,7 @@ type Metricscontrols struct {
 
 type Metrics struct {
 	name     string
-	device   string
-	address  string
-	Controls *Metricscontrols
+	Controls *MetricsControls
 }
 
 func (w *Metrics) GetInfo() deviceinfo.DeviceInfo {
@@ -37,8 +35,6 @@ func (w *Metrics) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -78,11 +74,9 @@ var (
 
 func NewMetrics(client *mqtt.Client) *Metrics {
 	onceMetrics.Do(func() {
-		device := "metrics"
-		address := ""
-		name := device
+		name := "metrics"
 
-		controlList := &Metricscontrols{
+		controlList := &MetricsControls{
 			LoadAverage1Min: control.NewValueControl(client, name, "load_average_1min", control.Meta{
 				Type:  "value",
 				Units: "tasks",
@@ -190,8 +184,6 @@ func NewMetrics(client *mqtt.Client) *Metrics {
 
 		instanceMetrics = &Metrics{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

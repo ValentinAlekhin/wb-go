@@ -39,16 +39,14 @@ type deviceTemplateData struct {
 	DeviceStructName         string
 	DeviceControlsStructName string
 	Filename                 string
-	ModbusAddress            string
 	Controls                 []deviceControlTemplateData
 	PackageName              string
 }
 
 type watchResultItem struct {
-	DeviceName    string
-	ModbusAddress string
-	Control       string
-	Meta          control.Meta
+	DeviceName string
+	Control    string
+	Meta       control.Meta
 }
 
 //go:embed templates/*
@@ -90,16 +88,8 @@ func (g *GenerateService) getTopicWatcher(list *[]watchResultItem) func(client m
 			return
 		}
 
-		modbusAddress := ""
 		device := topicParts[2]
-		deviceParts := strings.Split(device, "_")
-		if len(deviceParts) > 1 {
-			device = deviceParts[0]
-			modbusAddress = deviceParts[1]
-		}
-
 		controlName := topicParts[4]
-
 		controlMeta := control.Meta{}
 
 		err := json.Unmarshal([]byte(meta), &controlMeta)
@@ -108,10 +98,9 @@ func (g *GenerateService) getTopicWatcher(list *[]watchResultItem) func(client m
 		}
 
 		item := watchResultItem{
-			DeviceName:    device,
-			ModbusAddress: modbusAddress,
-			Control:       controlName,
-			Meta:          controlMeta,
+			DeviceName: device,
+			Control:    controlName,
+			Meta:       controlMeta,
 		}
 
 		*list = append(*list, item)
@@ -122,15 +111,12 @@ func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*
 	deviceMap := map[string]*deviceTemplateData{}
 
 	for _, item := range list {
-		key := fmt.Sprintf("%s_%s", item.DeviceName, item.ModbusAddress)
+		key := item.DeviceName
 		if val, ok := deviceMap[key]; !ok {
-			deviceStructName := strcase.ToCamel(item.DeviceName + item.ModbusAddress)
-			deviceControlsStructName := deviceStructName + "controls"
+			deviceStructName := strcase.ToCamel(item.DeviceName)
+			deviceControlsStructName := deviceStructName + "Controls"
 
 			filename := item.DeviceName
-			if item.ModbusAddress != "" {
-				filename = fmt.Sprintf("%s_%s", item.DeviceName, item.ModbusAddress)
-			}
 
 			controlTemplate := g.getControlTemplate(item)
 			newVal := &deviceTemplateData{
@@ -138,7 +124,6 @@ func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*
 				DeviceStructName:         deviceStructName,
 				DeviceControlsStructName: deviceControlsStructName,
 				Filename:                 filename,
-				ModbusAddress:            item.ModbusAddress,
 				PackageName:              g.packageName,
 				Controls:                 []deviceControlTemplateData{controlTemplate},
 			}
@@ -184,7 +169,7 @@ func (g *GenerateService) filterUnique(list []watchResultItem) []watchResultItem
 	var result []watchResultItem
 
 	for _, item := range list {
-		key := item.DeviceName + "|" + item.ModbusAddress + "|" + item.Control
+		key := item.DeviceName + "|" + item.Control
 		if _, exists := uniqueMap[key]; !exists {
 			uniqueMap[key] = struct{}{}
 			result = append(result, item)

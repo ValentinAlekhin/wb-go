@@ -76,7 +76,8 @@ func getConfigAndDomain(deviceInfo deviceinfo.DeviceInfo, controlInfo control.Co
 	domain = getAnyDomain(controlInfo)
 	ignore = false
 
-	devConfig, ok := DeviceConfigMap[deviceInfo.Device]
+	deviceModel := strings.Split(deviceInfo.Name, "_")[0]
+	devConfig, ok := DeviceConfigMap[deviceModel]
 	if !ok {
 		return
 	}
@@ -228,7 +229,7 @@ func getWbMdm3Config(deviceInfo deviceinfo.DeviceInfo, controlInfo control.Contr
 func getDevice(deviceInfo deviceinfo.DeviceInfo) MqttDiscoveryDevice {
 	return MqttDiscoveryDevice{
 		Identifiers: deviceInfo.Name,
-		Model:       deviceInfo.Device,
+		Model:       deviceInfo.Name,
 		Name:        deviceInfo.Name,
 	}
 }

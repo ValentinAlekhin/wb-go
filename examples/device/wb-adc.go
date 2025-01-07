@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbAdccontrols struct {
+type WbAdcControls struct {
 	A1          *control.ValueControl
 	A2          *control.ValueControl
 	A3          *control.ValueControl
@@ -23,9 +23,7 @@ type WbAdccontrols struct {
 
 type WbAdc struct {
 	name     string
-	device   string
-	address  string
-	Controls *WbAdccontrols
+	Controls *WbAdcControls
 }
 
 func (w *WbAdc) GetInfo() deviceinfo.DeviceInfo {
@@ -33,8 +31,6 @@ func (w *WbAdc) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -74,11 +70,9 @@ var (
 
 func NewWbAdc(client *mqtt.Client) *WbAdc {
 	onceWbAdc.Do(func() {
-		device := "wb-adc"
-		address := ""
-		name := device
+		name := "wb-adc"
 
-		controlList := &WbAdccontrols{
+		controlList := &WbAdcControls{
 			A1: control.NewValueControl(client, name, "A1", control.Meta{
 				Type: "voltage",
 
@@ -146,8 +140,6 @@ func NewWbAdc(client *mqtt.Client) *WbAdc {
 
 		instanceWbAdc = &WbAdc{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

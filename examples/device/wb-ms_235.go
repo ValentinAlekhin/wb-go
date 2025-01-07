@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type WbMs235controls struct {
+type WbMs235Controls struct {
 	Temperature     *control.ValueControl
 	Humidity        *control.ValueControl
 	AirQualityVoc   *control.ValueControl
@@ -22,9 +22,7 @@ type WbMs235controls struct {
 
 type WbMs235 struct {
 	name     string
-	device   string
-	address  string
-	Controls *WbMs235controls
+	Controls *WbMs235Controls
 }
 
 func (w *WbMs235) GetInfo() deviceinfo.DeviceInfo {
@@ -32,8 +30,6 @@ func (w *WbMs235) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -73,11 +69,9 @@ var (
 
 func NewWbMs235(client *mqtt.Client) *WbMs235 {
 	onceWbMs235.Do(func() {
-		device := "wb-ms"
-		address := "235"
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := "wb-ms_235"
 
-		controlList := &WbMs235controls{
+		controlList := &WbMs235Controls{
 			Temperature: control.NewValueControl(client, name, "Temperature", control.Meta{
 				Type: "temperature",
 
@@ -139,8 +133,6 @@ func NewWbMs235(client *mqtt.Client) *WbMs235 {
 
 		instanceWbMs235 = &WbMs235{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

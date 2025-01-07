@@ -9,40 +9,36 @@ import (
 	"sync"
 )
 
-type AdaptiveLightcontrols struct {
+type AdaptiveLightTestControls struct {
 	Enabled        *control.SwitchControl
 	MinTemperature *control.RangeControl
 	MaxTemperature *control.RangeControl
+	Temperature    *control.RangeControl
 	MinBrightness  *control.RangeControl
 	MaxBrightness  *control.RangeControl
+	Brightness     *control.RangeControl
 	SleepMode      *control.SwitchControl
 	Sunrise        *control.TextControl
 	Sunset         *control.TextControl
 	SlipStart      *control.TextControl
 	SlipEnd        *control.TextControl
-	Temperature    *control.RangeControl
-	Brightness     *control.RangeControl
 }
 
-type AdaptiveLight struct {
+type AdaptiveLightTest struct {
 	name     string
-	device   string
-	address  string
-	Controls *AdaptiveLightcontrols
+	Controls *AdaptiveLightTestControls
 }
 
-func (w *AdaptiveLight) GetInfo() deviceinfo.DeviceInfo {
+func (w *AdaptiveLightTest) GetInfo() deviceinfo.DeviceInfo {
 	controlsInfo := w.GetControlsInfo()
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
 
-func (w *AdaptiveLight) GetControlsInfo() []control.ControlInfo {
+func (w *AdaptiveLightTest) GetControlsInfo() []control.ControlInfo {
 	var infoList []control.ControlInfo
 
 	// Получаем значение и тип структуры Controls
@@ -71,16 +67,15 @@ func (w *AdaptiveLight) GetControlsInfo() []control.ControlInfo {
 }
 
 var (
-	onceAdaptiveLight     sync.Once
-	instanceAdaptiveLight *AdaptiveLight
+	onceAdaptiveLightTest     sync.Once
+	instanceAdaptiveLightTest *AdaptiveLightTest
 )
 
-func NewAdaptiveLight(client *mqtt.Client) *AdaptiveLight {
-	onceAdaptiveLight.Do(func() {
-		device := "adaptive-light"
-		address := ""
-		name := fmt.Sprintf("%s_%s", device, address)
-		controlList := &AdaptiveLightcontrols{
+func NewAdaptiveLightTest(client *mqtt.Client) *AdaptiveLightTest {
+	onceAdaptiveLightTest.Do(func() {
+		name := "adaptive-light-test"
+
+		controlList := &AdaptiveLightTestControls{
 			Enabled: control.NewSwitchControl(client, name, "Enabled", control.Meta{
 				Type: "switch",
 
@@ -106,6 +101,15 @@ func NewAdaptiveLight(client *mqtt.Client) *AdaptiveLight {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Максимальная температура`},
 			}),
+			Temperature: control.NewRangeControl(client, name, "Temperature", control.Meta{
+				Type: "range",
+
+				Max: 100,
+
+				Order:    4,
+				ReadOnly: true,
+				Title:    control.MultilingualText{"ru": `Температура`},
+			}),
 			MinBrightness: control.NewRangeControl(client, name, "Min Brightness", control.Meta{
 				Type: "range",
 
@@ -123,6 +127,15 @@ func NewAdaptiveLight(client *mqtt.Client) *AdaptiveLight {
 				Order:    6,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Максимальная яркость`},
+			}),
+			Brightness: control.NewRangeControl(client, name, "Brightness", control.Meta{
+				Type: "range",
+
+				Max: 100,
+
+				Order:    7,
+				ReadOnly: true,
+				Title:    control.MultilingualText{"ru": `Яркость`},
 			}),
 			SleepMode: control.NewSwitchControl(client, name, "Sleep Mode", control.Meta{
 				Type: "switch",
@@ -159,33 +172,13 @@ func NewAdaptiveLight(client *mqtt.Client) *AdaptiveLight {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Конец сна`},
 			}),
-			Temperature: control.NewRangeControl(client, name, "Temperature", control.Meta{
-				Type: "range",
-
-				Max: 100,
-
-				Order:    4,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Температура`},
-			}),
-			Brightness: control.NewRangeControl(client, name, "Brightness", control.Meta{
-				Type: "range",
-
-				Max: 100,
-
-				Order:    7,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Яркость`},
-			}),
 		}
 
-		instanceAdaptiveLight = &AdaptiveLight{
+		instanceAdaptiveLightTest = &AdaptiveLightTest{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})
 
-	return instanceAdaptiveLight
+	return instanceAdaptiveLightTest
 }

@@ -9,15 +9,13 @@ import (
 	"sync"
 )
 
-type Wbrulescontrols struct {
+type WbrulesControls struct {
 	RuleDebugging *control.SwitchControl
 }
 
 type Wbrules struct {
 	name     string
-	device   string
-	address  string
-	Controls *Wbrulescontrols
+	Controls *WbrulesControls
 }
 
 func (w *Wbrules) GetInfo() deviceinfo.DeviceInfo {
@@ -25,8 +23,6 @@ func (w *Wbrules) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -66,11 +62,9 @@ var (
 
 func NewWbrules(client *mqtt.Client) *Wbrules {
 	onceWbrules.Do(func() {
-		device := "wbrules"
-		address := ""
-		name := device
+		name := "wbrules"
 
-		controlList := &Wbrulescontrols{
+		controlList := &WbrulesControls{
 			RuleDebugging: control.NewSwitchControl(client, name, "Rule debugging", control.Meta{
 				Type: "switch",
 
@@ -82,8 +76,6 @@ func NewWbrules(client *mqtt.Client) *Wbrules {
 
 		instanceWbrules = &Wbrules{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

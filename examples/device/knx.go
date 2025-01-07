@@ -9,15 +9,13 @@ import (
 	"sync"
 )
 
-type Knxcontrols struct {
+type KnxControls struct {
 	Data *control.TextControl
 }
 
 type Knx struct {
 	name     string
-	device   string
-	address  string
-	Controls *Knxcontrols
+	Controls *KnxControls
 }
 
 func (w *Knx) GetInfo() deviceinfo.DeviceInfo {
@@ -25,8 +23,6 @@ func (w *Knx) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -66,11 +62,9 @@ var (
 
 func NewKnx(client *mqtt.Client) *Knx {
 	onceKnx.Do(func() {
-		device := "knx"
-		address := ""
-		name := device
+		name := "knx"
 
-		controlList := &Knxcontrols{
+		controlList := &KnxControls{
 			Data: control.NewTextControl(client, name, "data", control.Meta{
 				Type: "text",
 
@@ -82,8 +76,6 @@ func NewKnx(client *mqtt.Client) *Knx {
 
 		instanceKnx = &Knx{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})

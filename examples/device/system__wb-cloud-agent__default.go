@@ -9,17 +9,18 @@ import (
 	"sync"
 )
 
-type LightModeControls struct {
-	Enabled *control.SwitchControl
-	State   *control.ValueControl
+type SystemWbCloudAgentDefaultControls struct {
+	Status         *control.TextControl
+	ActivationLink *control.TextControl
+	CloudBaseUrl   *control.TextControl
 }
 
-type LightMode struct {
+type SystemWbCloudAgentDefault struct {
 	name     string
-	Controls *LightModeControls
+	Controls *SystemWbCloudAgentDefaultControls
 }
 
-func (w *LightMode) GetInfo() deviceinfo.DeviceInfo {
+func (w *SystemWbCloudAgentDefault) GetInfo() deviceinfo.DeviceInfo {
 	controlsInfo := w.GetControlsInfo()
 
 	return deviceinfo.DeviceInfo{
@@ -28,7 +29,7 @@ func (w *LightMode) GetInfo() deviceinfo.DeviceInfo {
 	}
 }
 
-func (w *LightMode) GetControlsInfo() []control.ControlInfo {
+func (w *SystemWbCloudAgentDefault) GetControlsInfo() []control.ControlInfo {
 	var infoList []control.ControlInfo
 
 	// Получаем значение и тип структуры Controls
@@ -57,36 +58,43 @@ func (w *LightMode) GetControlsInfo() []control.ControlInfo {
 }
 
 var (
-	onceLightMode     sync.Once
-	instanceLightMode *LightMode
+	onceSystemWbCloudAgentDefault     sync.Once
+	instanceSystemWbCloudAgentDefault *SystemWbCloudAgentDefault
 )
 
-func NewLightMode(client *mqtt.Client) *LightMode {
-	onceLightMode.Do(func() {
-		name := "light-mode"
+func NewSystemWbCloudAgentDefault(client *mqtt.Client) *SystemWbCloudAgentDefault {
+	onceSystemWbCloudAgentDefault.Do(func() {
+		name := "system__wb-cloud-agent__default"
 
-		controlList := &LightModeControls{
-			Enabled: control.NewSwitchControl(client, name, "enabled", control.Meta{
-				Type: "switch",
+		controlList := &SystemWbCloudAgentDefaultControls{
+			Status: control.NewTextControl(client, name, "status", control.Meta{
+				Type: "text",
 
 				Order:    1,
-				ReadOnly: false,
-				Title:    control.MultilingualText{},
+				ReadOnly: true,
+				Title:    control.MultilingualText{"en": `Status`},
 			}),
-			State: control.NewValueControl(client, name, "state", control.Meta{
-				Type: "value",
+			ActivationLink: control.NewTextControl(client, name, "activation_link", control.Meta{
+				Type: "text",
 
 				Order:    2,
 				ReadOnly: true,
-				Title:    control.MultilingualText{"en": `State`},
+				Title:    control.MultilingualText{"en": `Link`},
+			}),
+			CloudBaseUrl: control.NewTextControl(client, name, "cloud_base_url", control.Meta{
+				Type: "text",
+
+				Order:    3,
+				ReadOnly: true,
+				Title:    control.MultilingualText{"en": `URL`},
 			}),
 		}
 
-		instanceLightMode = &LightMode{
+		instanceSystemWbCloudAgentDefault = &SystemWbCloudAgentDefault{
 			name:     name,
 			Controls: controlList,
 		}
 	})
 
-	return instanceLightMode
+	return instanceSystemWbCloudAgentDefault
 }

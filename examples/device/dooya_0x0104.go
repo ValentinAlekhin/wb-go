@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type Dooya0X0104controls struct {
+type Dooya0X0104Controls struct {
 	Position       *control.RangeControl
 	Open           *control.PushbuttonControl
 	Close          *control.PushbuttonControl
@@ -19,9 +19,7 @@ type Dooya0X0104controls struct {
 
 type Dooya0X0104 struct {
 	name     string
-	device   string
-	address  string
-	Controls *Dooya0X0104controls
+	Controls *Dooya0X0104Controls
 }
 
 func (w *Dooya0X0104) GetInfo() deviceinfo.DeviceInfo {
@@ -29,8 +27,6 @@ func (w *Dooya0X0104) GetInfo() deviceinfo.DeviceInfo {
 
 	return deviceinfo.DeviceInfo{
 		Name:         w.name,
-		Device:       w.device,
-		Address:      w.address,
 		ControlsInfo: controlsInfo,
 	}
 }
@@ -70,11 +66,9 @@ var (
 
 func NewDooya0X0104(client *mqtt.Client) *Dooya0X0104 {
 	onceDooya0X0104.Do(func() {
-		device := "dooya"
-		address := "0x0104"
-		name := fmt.Sprintf("%s_%s", device, address)
+		name := "dooya_0x0104"
 
-		controlList := &Dooya0X0104controls{
+		controlList := &Dooya0X0104Controls{
 			Position: control.NewRangeControl(client, name, "Position", control.Meta{
 				Type: "range",
 
@@ -116,8 +110,6 @@ func NewDooya0X0104(client *mqtt.Client) *Dooya0X0104 {
 
 		instanceDooya0X0104 = &Dooya0X0104{
 			name:     name,
-			device:   device,
-			address:  address,
 			Controls: controlList,
 		}
 	})
