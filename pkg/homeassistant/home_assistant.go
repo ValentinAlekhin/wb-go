@@ -37,7 +37,7 @@ func (d *Discovery) AddDevice(info deviceinfo.DeviceInfo) {
 		go func() {
 			defer wg.Done()
 
-			config, domain, ignore := getConfigAndDomain(info, controlInfo)
+			config, domain, ignore := GetConfigAndDomain(info, controlInfo)
 			if ignore {
 				return
 			}
