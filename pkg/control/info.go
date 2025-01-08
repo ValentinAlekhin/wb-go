@@ -1,6 +1,6 @@
 package control
 
-type ControlInfo struct {
+type Info struct {
 	Name         string
 	ValueTopic   string
 	CommandTopic string

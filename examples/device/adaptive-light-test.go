@@ -39,7 +39,7 @@ var (
 	instanceAdaptiveLightTest *AdaptiveLightTest
 )
 
-func NewAdaptiveLightTest(client *mqtt.Client) *AdaptiveLightTest {
+func NewAdaptiveLightTest(client mqtt.ClientInterface) *AdaptiveLightTest {
 	onceAdaptiveLightTest.Do(func() {
 		name := "adaptive-light-test"
 

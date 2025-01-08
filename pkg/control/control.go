@@ -11,12 +11,12 @@ import (
 type Control struct {
 	name         string
 	meta         Meta
-	client       *wb.Client
+	client       wb.ClientInterface
 	value        atomic.String
 	valueTopic   string
 	commandTopic string
-	addChan      chan func(payload ControlWatcherPayload)
-	eventChan    chan ControlWatcherPayload
+	addChan      chan func(payload WatcherPayload)
+	eventChan    chan WatcherPayload
 	setChan      chan string
 	stopChan     chan struct{}
 }
@@ -40,7 +40,7 @@ type MultilingualEnum struct {
 // MultilingualText хранит текстовые значения на разных языках
 type MultilingualText map[string]string
 
-type ControlWatcherPayload struct {
+type WatcherPayload struct {
 	NewValue string
 	OldValue string
 	Topic    string
@@ -50,7 +50,7 @@ func (c *Control) GetValue() string {
 	return c.value.Load()
 }
 
-func (c *Control) AddWatcher(f func(payload ControlWatcherPayload)) {
+func (c *Control) AddWatcher(f func(payload WatcherPayload)) {
 	c.addChan <- f
 }
 
@@ -58,8 +58,8 @@ func (c *Control) SetValue(value string) {
 	c.setChan <- value
 }
 
-func (c *Control) GetInfo() ControlInfo {
-	return ControlInfo{
+func (c *Control) GetInfo() Info {
+	return Info{
 		Name:         c.name,
 		ValueTopic:   c.valueTopic,
 		CommandTopic: c.commandTopic,
@@ -68,7 +68,7 @@ func (c *Control) GetInfo() ControlInfo {
 }
 
 func (c *Control) publish(value string) {
-	c.client.Publish(wb.PublishPayload{
+	_ = c.client.Publish(wb.PublishPayload{
 		Value: value,
 		Topic: c.commandTopic,
 		QOS:   1,
@@ -81,14 +81,14 @@ func (c *Control) subscribe() {
 		c.handleValueUpdate(newValue)
 	}
 
-	c.client.Subscribe(c.valueTopic, callback)
+	_ = c.client.Subscribe(c.valueTopic, callback)
 }
 
 func (c *Control) handleValueUpdate(value string) {
 	oldValue := c.value.Load()
 	c.value.Swap(value)
 
-	payload := ControlWatcherPayload{
+	payload := WatcherPayload{
 		NewValue: value,
 		OldValue: oldValue,
 		Topic:    c.valueTopic,
@@ -98,7 +98,7 @@ func (c *Control) handleValueUpdate(value string) {
 }
 
 func (c *Control) runWatchHandler() {
-	listeners := make([]func(p ControlWatcherPayload), 0)
+	listeners := make([]func(p WatcherPayload), 0)
 
 	for {
 		select {
@@ -130,7 +130,7 @@ func (c *Control) runSetValueHandler() {
 	}
 }
 
-func NewControl(client *wb.Client, device, control string, meta Meta) *Control {
+func NewControl(client wb.ClientInterface, device, control string, meta Meta) *Control {
 	c := &Control{
 		name:         control,
 		meta:         meta,
@@ -138,8 +138,8 @@ func NewControl(client *wb.Client, device, control string, meta Meta) *Control {
 		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, control),
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, device, control),
 		value:        atomic.String{},
-		addChan:      make(chan func(payload ControlWatcherPayload)),
-		eventChan:    make(chan ControlWatcherPayload),
+		addChan:      make(chan func(payload WatcherPayload)),
+		eventChan:    make(chan WatcherPayload),
 		setChan:      make(chan string),
 		stopChan:     make(chan struct{}),
 	}

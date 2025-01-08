@@ -13,13 +13,13 @@ import (
 )
 
 type Discovery struct {
-	client *wb.Client
+	client wb.ClientInterface
 	prefix string
 	name   string
 }
 
 type DiscoveryOptions struct {
-	Client *wb.Client
+	Client wb.ClientInterface
 	Prefix string
 	Name   string
 }
@@ -53,14 +53,14 @@ func (d *Discovery) AddDevice(info basedevice.Info) {
 			}
 			jsonMeta, _ := json.Marshal(meta)
 
-			d.client.Publish(wb.PublishPayload{
+			_ = d.client.Publish(wb.PublishPayload{
 				Topic:    configTopic,
 				Value:    string(byteConfig),
 				Retained: true,
 				QOS:      2,
 			})
 
-			d.client.Publish(wb.PublishPayload{
+			_ = d.client.Publish(wb.PublishPayload{
 				Topic:    metaTopic,
 				Value:    string(jsonMeta),
 				Retained: true,
@@ -126,11 +126,11 @@ func (d *Discovery) Clear() {
 		result[topic] = meta
 		eventChannel <- struct{}{}
 	}
-	d.client.Subscribe(topicName, handler)
+	_ = d.client.Subscribe(topicName, handler)
 
 	<-done
 
-	d.client.Unsubscribe(topicName)
+	_ = d.client.Unsubscribe(topicName)
 
 	for topic, meta := range result {
 		if meta.ClientName != d.name {
@@ -138,14 +138,14 @@ func (d *Discovery) Clear() {
 		}
 
 		configTopic := strings.Replace(topic, DiscoveryMetaTopic, "config", 1)
-		d.client.Publish(wb.PublishPayload{
+		_ = d.client.Publish(wb.PublishPayload{
 			Topic:    configTopic,
 			Value:    "",
 			QOS:      1,
 			Retained: true,
 		})
 
-		d.client.Publish(wb.PublishPayload{
+		_ = d.client.Publish(wb.PublishPayload{
 			Topic:    topic,
 			Value:    "",
 			QOS:      1,

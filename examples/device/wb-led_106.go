@@ -48,7 +48,7 @@ var (
 	instanceWbLed106 *WbLed106
 )
 
-func NewWbLed106(client *mqtt.Client) *WbLed106 {
+func NewWbLed106(client mqtt.ClientInterface) *WbLed106 {
 	onceWbLed106.Do(func() {
 		name := "wb-led_106"
 

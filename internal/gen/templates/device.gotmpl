@@ -30,7 +30,7 @@ var (
 	instance{{.DeviceStructName}} *{{.DeviceStructName}}
 )
 
-func New{{.DeviceStructName}}(client *mqtt.Client) *{{.DeviceStructName}} {
+func New{{.DeviceStructName}}(client mqtt.ClientInterface) *{{.DeviceStructName}} {
 	once{{.DeviceStructName}}.Do(func() {
 		name := "{{.DeviceName}}"
 

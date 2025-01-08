@@ -29,7 +29,7 @@ var (
 	instanceLightMode *LightMode
 )
 
-func NewLightMode(client *mqtt.Client) *LightMode {
+func NewLightMode(client mqtt.ClientInterface) *LightMode {
 	onceLightMode.Do(func() {
 		name := "light-mode"
 

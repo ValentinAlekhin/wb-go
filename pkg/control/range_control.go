@@ -21,7 +21,7 @@ func (c *RangeControl) GetValue() int {
 }
 
 func (c *RangeControl) AddWatcher(f func(payload RangeControlWatcherPayload)) {
-	c.control.AddWatcher(func(p ControlWatcherPayload) {
+	c.control.AddWatcher(func(p WatcherPayload) {
 		f(RangeControlWatcherPayload{
 			NewValue: c.decode(p.NewValue),
 			OldValue: c.decode(p.OldValue),
@@ -34,7 +34,7 @@ func (c *RangeControl) SetValue(value int) {
 	c.control.SetValue(c.encode(value))
 }
 
-func (c *RangeControl) GetInfo() ControlInfo {
+func (c *RangeControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
@@ -51,7 +51,7 @@ func (c *RangeControl) decode(value string) int {
 	return v
 }
 
-func NewRangeControl(client *wb.Client, device, control string, meta Meta) *RangeControl {
+func NewRangeControl(client wb.ClientInterface, device, control string, meta Meta) *RangeControl {
 	c := NewControl(client, device, control, meta)
 	return &RangeControl{control: c}
 }

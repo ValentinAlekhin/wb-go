@@ -14,13 +14,13 @@ import (
 type VirtualControl struct {
 	name         string
 	meta         control.Meta
-	client       *wb.Client
+	client       wb.ClientInterface
 	value        atomic.String
 	valueTopic   string
 	commandTopic string
 	metaTopic    string
-	addChan      chan func(payload control.ControlWatcherPayload)
-	eventChan    chan control.ControlWatcherPayload
+	addChan      chan func(payload control.WatcherPayload)
+	eventChan    chan control.WatcherPayload
 	onChan       chan string
 	onHandler    OnHandler
 	stopChan     chan struct{}
@@ -45,14 +45,14 @@ func (c *VirtualControl) SetValue(value string) {
 		return
 	}
 
-	payload := control.ControlWatcherPayload{
+	payload := control.WatcherPayload{
 		NewValue: value,
 		OldValue: oldValue,
 		Topic:    c.valueTopic,
 	}
 	c.eventChan <- payload
 
-	c.client.Publish(wb.PublishPayload{
+	_ = c.client.Publish(wb.PublishPayload{
 		Topic:    c.valueTopic,
 		Value:    value,
 		QOS:      1,
@@ -60,8 +60,8 @@ func (c *VirtualControl) SetValue(value string) {
 	})
 }
 
-func (c *VirtualControl) GetInfo() control.ControlInfo {
-	return control.ControlInfo{
+func (c *VirtualControl) GetInfo() control.Info {
+	return control.Info{
 		Name:         c.name,
 		ValueTopic:   c.valueTopic,
 		CommandTopic: c.commandTopic,
@@ -69,12 +69,12 @@ func (c *VirtualControl) GetInfo() control.ControlInfo {
 	}
 }
 
-func (c *VirtualControl) AddWatcher(f func(payload control.ControlWatcherPayload)) {
+func (c *VirtualControl) AddWatcher(f func(payload control.WatcherPayload)) {
 	c.addChan <- f
 }
 
 func (c *VirtualControl) runWatchHandler() {
-	listeners := make([]func(p control.ControlWatcherPayload), 0)
+	listeners := make([]func(p control.WatcherPayload), 0)
 
 	for {
 		select {
@@ -108,7 +108,7 @@ func (c *VirtualControl) subscribeToOnTopic() {
 	callback := func(client mqtt.Client, msg mqtt.Message) {
 		c.onChan <- string(msg.Payload())
 	}
-	c.client.Subscribe(c.commandTopic, callback)
+	_ = c.client.Subscribe(c.commandTopic, callback)
 }
 
 func (c *VirtualControl) setMeta() {
@@ -117,7 +117,7 @@ func (c *VirtualControl) setMeta() {
 		fmt.Println(err)
 	}
 
-	c.client.Publish(wb.PublishPayload{
+	_ = c.client.Publish(wb.PublishPayload{
 		Topic:    c.metaTopic,
 		Value:    string(byteMeta),
 		QOS:      1,
@@ -152,14 +152,14 @@ func (c *VirtualControl) loadPrevValue() {
 		c.value.Swap(value)
 		eventChannel <- struct{}{}
 	}
-	c.client.Subscribe(c.valueTopic, callback)
+	_ = c.client.Subscribe(c.valueTopic, callback)
 
 	<-done
 
-	c.client.Unsubscribe(c.valueTopic)
+	_ = c.client.Unsubscribe(c.valueTopic)
 }
 
-func NewVirtualControl(client *wb.Client, device, controlName string, meta control.Meta, onHandler OnHandler) *VirtualControl {
+func NewVirtualControl(client wb.ClientInterface, device, controlName string, meta control.Meta, onHandler OnHandler) *VirtualControl {
 	vc := &VirtualControl{
 		name:         controlName,
 		meta:         meta,
@@ -170,8 +170,8 @@ func NewVirtualControl(client *wb.Client, device, controlName string, meta contr
 		value:        atomic.String{},
 		stopChan:     make(chan struct{}),
 		onChan:       make(chan string),
-		addChan:      make(chan func(payload control.ControlWatcherPayload)),
-		eventChan:    make(chan control.ControlWatcherPayload),
+		addChan:      make(chan func(payload control.WatcherPayload)),
+		eventChan:    make(chan control.WatcherPayload),
 		onHandler:    func(payload OnHandlerPayload) {},
 	}
 

@@ -33,7 +33,7 @@ func (w *SystemNetworks086F787D105F4E6BB4737Da4C73A3539) GetInfo() basedevice.In
 	}
 }
 
-func (w *SystemNetworks086F787D105F4E6BB4737Da4C73A3539) GetControlsInfo() []control.ControlInfo {
+func (w *SystemNetworks086F787D105F4E6BB4737Da4C73A3539) GetControlsInfo() []control.Info {
 	return basedevice.GetControlsInfo(w.Controls)
 }
 

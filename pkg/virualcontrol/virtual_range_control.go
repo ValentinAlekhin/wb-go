@@ -39,7 +39,7 @@ func (c *VirtualRangeControl) decode(value string) int {
 }
 
 func (c *VirtualRangeControl) AddWatcher(f func(payload control.RangeControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.ControlWatcherPayload) {
+	c.control.AddWatcher(func(p control.WatcherPayload) {
 		f(control.RangeControlWatcherPayload{
 			NewValue: c.decode(p.NewValue),
 			OldValue: c.decode(p.OldValue),
@@ -48,11 +48,11 @@ func (c *VirtualRangeControl) AddWatcher(f func(payload control.RangeControlWatc
 	})
 }
 
-func (c *VirtualRangeControl) GetInfo() control.ControlInfo {
+func (c *VirtualRangeControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualRangeControl(client *wb.Client, device, control string, meta control.Meta, onRangeHandler OnRangeHandler) *VirtualRangeControl {
+func NewVirtualRangeControl(client wb.ClientInterface, device, control string, meta control.Meta, onRangeHandler OnRangeHandler) *VirtualRangeControl {
 	vc := &VirtualRangeControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		value := vc.decode(payload.Value)

@@ -22,7 +22,7 @@ func (c *ValueControl) GetValue() float64 {
 }
 
 func (c *ValueControl) AddWatcher(f func(payload ValueControlWatcherPayload)) {
-	c.control.AddWatcher(func(p ControlWatcherPayload) {
+	c.control.AddWatcher(func(p WatcherPayload) {
 		f(ValueControlWatcherPayload{
 			NewValue: c.decode(p.NewValue),
 			OldValue: c.decode(p.OldValue),
@@ -31,7 +31,7 @@ func (c *ValueControl) AddWatcher(f func(payload ValueControlWatcherPayload)) {
 	})
 }
 
-func (c *ValueControl) GetInfo() ControlInfo {
+func (c *ValueControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
@@ -44,7 +44,7 @@ func (c *ValueControl) decode(value string) float64 {
 	return v
 }
 
-func NewValueControl(client *wb.Client, device, control string, meta Meta) *ValueControl {
+func NewValueControl(client wb.ClientInterface, device, control string, meta Meta) *ValueControl {
 	c := NewControl(client, device, control, meta)
 	return &ValueControl{c}
 }

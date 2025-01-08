@@ -30,7 +30,7 @@ var (
 	instanceBuzzer *Buzzer
 )
 
-func NewBuzzer(client *mqtt.Client) *Buzzer {
+func NewBuzzer(client mqtt.ClientInterface) *Buzzer {
 	onceBuzzer.Do(func() {
 		name := "buzzer"
 

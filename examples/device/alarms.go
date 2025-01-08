@@ -28,7 +28,7 @@ var (
 	instanceAlarms *Alarms
 )
 
-func NewAlarms(client *mqtt.Client) *Alarms {
+func NewAlarms(client mqtt.ClientInterface) *Alarms {
 	onceAlarms.Do(func() {
 		name := "alarms"
 

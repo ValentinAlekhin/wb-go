@@ -39,7 +39,7 @@ var (
 	instanceWbGpio *WbGpio
 )
 
-func NewWbGpio(client *mqtt.Client) *WbGpio {
+func NewWbGpio(client mqtt.ClientInterface) *WbGpio {
 	onceWbGpio.Do(func() {
 		name := "wb-gpio"
 

@@ -15,7 +15,7 @@ import (
 )
 
 type AdaptiveLight struct {
-	client    *wb.Client
+	client    wb.ClientInterface
 	name      string
 	fullName  string
 	meta      Meta
@@ -45,7 +45,7 @@ type AdaptiveLightControls struct {
 }
 
 type AdaptiveLightConfig struct {
-	Client *wb.Client
+	Client wb.ClientInterface
 	Device string
 }
 
@@ -135,7 +135,7 @@ func (a *AdaptiveLight) setMeta() {
 		fmt.Println(err)
 	}
 
-	a.client.Publish(wb.PublishPayload{
+	_ = a.client.Publish(wb.PublishPayload{
 		Topic:    a.metaTopic,
 		Value:    string(byteMeta),
 		QOS:      1,

@@ -22,7 +22,7 @@ func (c *SwitchControl) GetValue() bool {
 }
 
 func (c *SwitchControl) AddWatcher(f func(payload SwitchControlWatcherPayload)) {
-	c.control.AddWatcher(func(p ControlWatcherPayload) {
+	c.control.AddWatcher(func(p WatcherPayload) {
 		f(SwitchControlWatcherPayload{
 			NewValue: c.decode(p.NewValue),
 			OldValue: c.decode(p.OldValue),
@@ -51,7 +51,7 @@ func (c *SwitchControl) TurnOn() {
 	c.SetValue(true)
 }
 
-func (c *SwitchControl) GetInfo() ControlInfo {
+func (c *SwitchControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
@@ -72,7 +72,7 @@ func (c *SwitchControl) decode(value string) bool {
 	return v
 }
 
-func NewSwitchControl(client *wb.Client, device, control string, meta Meta) *SwitchControl {
+func NewSwitchControl(client wb.ClientInterface, device, control string, meta Meta) *SwitchControl {
 	c := NewControl(client, device, control, meta)
 	return &SwitchControl{control: c}
 }

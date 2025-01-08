@@ -4,6 +4,7 @@ import (
 	"github.com/ValentinAlekhin/wb-go/internal/gen"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 var broker string
@@ -24,7 +25,10 @@ var generateCmd = &cobra.Command{
 			Username: username,
 			Password: password,
 		}
-		client := mqtt.NewClient(opt)
+		client, err := mqtt.NewClient(opt)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		generateService := gen.NewGenerateService(client, output, packageName)
 		generateService.Run()

@@ -32,7 +32,11 @@ func TestClient(t *testing.T) {
 		QoS:      1,
 	}
 
-	client := NewClient(options)
+	client, err := NewClient(options)
+	if err != nil {
+		t.Error(err)
+	}
+
 	defer client.Disconnect(100)
 
 	payload := PublishPayload{
@@ -47,8 +51,14 @@ func TestClient(t *testing.T) {
 		receivedMessage = string(msg.Payload())
 	}
 
-	client.Subscribe(testTopic, handler)
-	client.Publish(payload)
+	err = client.Subscribe(testTopic, handler)
+	if err != nil {
+		t.Error(err)
+	}
+	err = client.Publish(payload)
+	if err != nil {
+		t.Error(err)
+	}
 
 	time.Sleep(100 * time.Millisecond)
 

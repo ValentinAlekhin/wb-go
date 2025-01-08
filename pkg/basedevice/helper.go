@@ -6,9 +6,9 @@ import (
 	"reflect"
 )
 
-// Общая функция для получения информации о контролах
-func GetControlsInfo(controls interface{}) []control.ControlInfo {
-	var infoList []control.ControlInfo
+// GetControlsInfo Общая функция для получения информации о контролах
+func GetControlsInfo(controls interface{}) []control.Info {
+	var infoList []control.Info
 
 	// Получаем значение и тип переданной структуры
 	controlsValue := reflect.ValueOf(controls).Elem()
@@ -24,7 +24,7 @@ func GetControlsInfo(controls interface{}) []control.ControlInfo {
 			method := field.MethodByName("GetInfo")
 			if method.IsValid() {
 				// Вызываем метод GetInfo
-				info := method.Call(nil)[0].Interface().(control.ControlInfo)
+				info := method.Call(nil)[0].Interface().(control.Info)
 				infoList = append(infoList, info)
 			} else {
 				fmt.Printf("Field %s does not implement GetInfo\n", controlsType.Field(i).Name)

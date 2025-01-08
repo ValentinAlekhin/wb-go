@@ -45,7 +45,7 @@ var (
 	instanceNetwork *Network
 )
 
-func NewNetwork(client *mqtt.Client) *Network {
+func NewNetwork(client mqtt.ClientInterface) *Network {
 	onceNetwork.Do(func() {
 		name := "network"
 

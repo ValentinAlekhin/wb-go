@@ -57,7 +57,7 @@ var (
 	instanceWbMswV4151 *WbMswV4151
 )
 
-func NewWbMswV4151(client *mqtt.Client) *WbMswV4151 {
+func NewWbMswV4151(client mqtt.ClientInterface) *WbMswV4151 {
 	onceWbMswV4151.Do(func() {
 		name := "wb-msw-v4_151"
 

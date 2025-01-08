@@ -28,7 +28,7 @@ var (
 	instanceKnx *Knx
 )
 
-func NewKnx(client *mqtt.Client) *Knx {
+func NewKnx(client mqtt.ClientInterface) *Knx {
 	onceKnx.Do(func() {
 		name := "knx"
 

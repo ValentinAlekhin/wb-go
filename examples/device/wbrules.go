@@ -28,7 +28,7 @@ var (
 	instanceWbrules *Wbrules
 )
 
-func NewWbrules(client *mqtt.Client) *Wbrules {
+func NewWbrules(client mqtt.ClientInterface) *Wbrules {
 	onceWbrules.Do(func() {
 		name := "wbrules"
 

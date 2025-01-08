@@ -41,7 +41,7 @@ func (c *VirtualValueControl) encode(value float64) string {
 }
 
 func (c *VirtualValueControl) AddWatcher(f func(payload control.ValueControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.ControlWatcherPayload) {
+	c.control.AddWatcher(func(p control.WatcherPayload) {
 		f(control.ValueControlWatcherPayload{
 			NewValue: c.decode(p.NewValue),
 			OldValue: c.decode(p.OldValue),
@@ -50,11 +50,11 @@ func (c *VirtualValueControl) AddWatcher(f func(payload control.ValueControlWatc
 	})
 }
 
-func (c *VirtualValueControl) GetInfo() control.ControlInfo {
+func (c *VirtualValueControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualValueControl(client *wb.Client, device, control string, meta control.Meta, onValueHandler OnValueHandler) *VirtualValueControl {
+func NewVirtualValueControl(client wb.ClientInterface, device, control string, meta control.Meta, onValueHandler OnValueHandler) *VirtualValueControl {
 	vc := &VirtualValueControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		value := vc.decode(payload.Value)

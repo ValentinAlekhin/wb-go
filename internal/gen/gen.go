@@ -20,7 +20,7 @@ import (
 )
 
 type GenerateService struct {
-	client      *wb.Client
+	client      wb.ClientInterface
 	outputDir   string
 	packageName string
 }
@@ -52,7 +52,7 @@ type watchResultItem struct {
 //go:embed templates/*
 var embedFs embed.FS
 
-func NewGenerateService(client *wb.Client, output string, packageName string) *GenerateService {
+func NewGenerateService(client wb.ClientInterface, output string, packageName string) *GenerateService {
 	service := &GenerateService{
 		client:      client,
 		outputDir:   output,
@@ -72,7 +72,7 @@ func (g *GenerateService) collectData() []watchResultItem {
 	var list []watchResultItem
 
 	watcher := g.getTopicWatcher(&list)
-	g.client.Subscribe(mqttTopic, watcher)
+	_ = g.client.Subscribe(mqttTopic, watcher)
 	time.Sleep(1 * time.Second)
 
 	return list

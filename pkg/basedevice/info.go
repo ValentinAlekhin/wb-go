@@ -8,5 +8,5 @@ type Device struct {
 }
 type Info struct {
 	Name         string
-	ControlsInfo []control.ControlInfo
+	ControlsInfo []control.Info
 }

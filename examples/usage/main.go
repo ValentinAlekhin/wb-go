@@ -5,6 +5,7 @@ import (
 	"github.com/ValentinAlekhin/wb-go/examples/device"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,7 +20,10 @@ func main() {
 		Broker:   "192.168.1.150:1883",
 		ClientId: "client-wb-go-test",
 	}
-	client := wb.NewClient(opt)
+	client, err := wb.NewClient(opt)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//Создание устройств
 	WbMswV4151 := device.NewWbMswV4151(client)

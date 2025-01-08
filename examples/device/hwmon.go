@@ -29,7 +29,7 @@ var (
 	instanceHwmon *Hwmon
 )
 
-func NewHwmon(client *mqtt.Client) *Hwmon {
+func NewHwmon(client mqtt.ClientInterface) *Hwmon {
 	onceHwmon.Do(func() {
 		name := "hwmon"
 

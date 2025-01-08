@@ -30,7 +30,7 @@ var (
 	instanceSystemWbCloudAgentDefault *SystemWbCloudAgentDefault
 )
 
-func NewSystemWbCloudAgentDefault(client *mqtt.Client) *SystemWbCloudAgentDefault {
+func NewSystemWbCloudAgentDefault(client mqtt.ClientInterface) *SystemWbCloudAgentDefault {
 	onceSystemWbCloudAgentDefault.Do(func() {
 		name := "system__wb-cloud-agent__default"
 

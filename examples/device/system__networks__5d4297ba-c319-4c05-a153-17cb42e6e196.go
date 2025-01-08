@@ -39,7 +39,7 @@ var (
 	instanceSystemNetworks5D4297BaC3194C05A15317Cb42E6E196 *SystemNetworks5D4297BaC3194C05A15317Cb42E6E196
 )
 
-func NewSystemNetworks5D4297BaC3194C05A15317Cb42E6E196(client *mqtt.Client) *SystemNetworks5D4297BaC3194C05A15317Cb42E6E196 {
+func NewSystemNetworks5D4297BaC3194C05A15317Cb42E6E196(client mqtt.ClientInterface) *SystemNetworks5D4297BaC3194C05A15317Cb42E6E196 {
 	onceSystemNetworks5D4297BaC3194C05A15317Cb42E6E196.Do(func() {
 		name := "system__networks__5d4297ba-c319-4c05-a153-17cb42e6e196"
 

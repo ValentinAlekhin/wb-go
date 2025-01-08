@@ -13,11 +13,11 @@ func (c *PushbuttonControl) Push() {
 	c.control.SetValue(conventions.CONV_META_BOOL_TRUE)
 }
 
-func (c *PushbuttonControl) GetInfo() ControlInfo {
+func (c *PushbuttonControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
-func NewPushbuttonControl(client *wb.Client, device, control string, meta Meta) *PushbuttonControl {
+func NewPushbuttonControl(client wb.ClientInterface, device, control string, meta Meta) *PushbuttonControl {
 	c := NewControl(client, device, control, meta)
 
 	return &PushbuttonControl{c}

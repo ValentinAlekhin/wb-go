@@ -40,7 +40,7 @@ var (
 	instanceMetrics *Metrics
 )
 
-func NewMetrics(client *mqtt.Client) *Metrics {
+func NewMetrics(client mqtt.ClientInterface) *Metrics {
 	onceMetrics.Do(func() {
 		name := "metrics"
 

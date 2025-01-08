@@ -51,7 +51,7 @@ func (c *VirtualTimeControl) encode(value time.Time) string {
 }
 
 func (c *VirtualTimeControl) AddWatcher(f func(payload TimeControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.ControlWatcherPayload) {
+	c.control.AddWatcher(func(p control.WatcherPayload) {
 		newValue, _ := c.decode(p.NewValue)
 		oldValue, _ := c.decode(p.OldValue)
 
@@ -63,11 +63,11 @@ func (c *VirtualTimeControl) AddWatcher(f func(payload TimeControlWatcherPayload
 	})
 }
 
-func (c *VirtualTimeControl) GetInfo() control.ControlInfo {
+func (c *VirtualTimeControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualTimeValueControl(client *wb.Client, device, control string, meta control.Meta, onTimeHandler OnTimeHandler) *VirtualTimeControl {
+func NewVirtualTimeValueControl(client wb.ClientInterface, device, control string, meta control.Meta, onTimeHandler OnTimeHandler) *VirtualTimeControl {
 	vc := &VirtualTimeControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		value, err := vc.decode(payload.Value)

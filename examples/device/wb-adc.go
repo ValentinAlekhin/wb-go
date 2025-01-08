@@ -36,7 +36,7 @@ var (
 	instanceWbAdc *WbAdc
 )
 
-func NewWbAdc(client *mqtt.Client) *WbAdc {
+func NewWbAdc(client mqtt.ClientInterface) *WbAdc {
 	onceWbAdc.Do(func() {
 		name := "wb-adc"
 

@@ -12,7 +12,7 @@ import (
 )
 
 type Thermostat struct {
-	client              *wb.Client
+	client              wb.ClientInterface
 	controls            ThermostatControls
 	meta                Meta
 	metaTopic           string
@@ -29,7 +29,7 @@ type ThermostatControls struct {
 }
 
 type ThermostatConfig struct {
-	Client              *wb.Client
+	Client              wb.ClientInterface
 	Device              string
 	TargetTemperature   int
 	TemperatureControls []*control.ValueControl
@@ -99,7 +99,7 @@ func (t *Thermostat) setMeta() {
 		fmt.Println(err)
 	}
 
-	t.client.Publish(wb.PublishPayload{
+	_ = t.client.Publish(wb.PublishPayload{
 		Topic:    t.metaTopic,
 		Value:    string(byteMeta),
 		QOS:      1,

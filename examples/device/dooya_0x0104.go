@@ -32,7 +32,7 @@ var (
 	instanceDooya0X0104 *Dooya0X0104
 )
 
-func NewDooya0X0104(client *mqtt.Client) *Dooya0X0104 {
+func NewDooya0X0104(client mqtt.ClientInterface) *Dooya0X0104 {
 	onceDooya0X0104.Do(func() {
 		name := "dooya_0x0104"
 

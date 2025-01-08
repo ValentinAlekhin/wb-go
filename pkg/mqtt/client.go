@@ -6,30 +6,9 @@ import (
 	"log"
 )
 
-type Options struct {
-	Broker   string
-	ClientId string
-	Username string
-	Password string
-	QoS      byte
-}
-
-// Client структура для управления MQTT-соединением
-type Client struct {
-	client  mqtt.Client
-	options Options
-}
-
-type PublishPayload struct {
-	Topic    string
-	Value    string
-	QOS      byte
-	Retained bool
-}
-
-// NewClient создает новый MQTT клиент
-func NewClient(opt Options) *Client {
-	fmt.Printf("Подключение к брокеру %s\n", opt.Broker)
+// NewClient creates a new MQTT client
+func NewClient(opt Options) (ClientInterface, error) {
+	fmt.Printf("Connecting to broker %s\n", opt.Broker)
 
 	client := &Client{
 		options: opt,
@@ -39,10 +18,10 @@ func NewClient(opt Options) *Client {
 	opts.AddBroker(opt.Broker)
 	opts.SetClientID(opt.ClientId)
 	opts.OnConnect = func(c mqtt.Client) {
-		fmt.Println("Подключение к MQTT-брокеру успешно!")
+		fmt.Println("Successfully connected to the MQTT broker!")
 	}
 	opts.OnConnectionLost = func(c mqtt.Client, err error) {
-		log.Fatalf("Соединение потеряно: %v\n", err)
+		log.Printf("Connection lost: %v\n", err)
 	}
 
 	if opt.Username != "" {
@@ -55,36 +34,43 @@ func NewClient(opt Options) *Client {
 
 	mqttClient := mqtt.NewClient(opts)
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatalf("Ошибка подключения к MQTT брокеру: %v", token.Error())
+		return nil, fmt.Errorf("error connecting to MQTT broker: %v", token.Error())
 	}
 
 	client.client = mqttClient
-
-	return client
+	return client, nil
 }
 
-// Subscribe подписывается на топик MQTT
-func (c *Client) Subscribe(topic string, handler mqtt.MessageHandler) {
+// Subscribe subscribes to an MQTT topic
+func (c *Client) Subscribe(topic string, handler mqtt.MessageHandler) error {
 	if token := c.client.Subscribe(topic, c.options.QoS, handler); token.Wait() && token.Error() != nil {
-		log.Fatalf("Ошибка подписки на топик %s: %v", topic, token.Error())
+		return fmt.Errorf("error subscribing to topic %s: %v", topic, token.Error())
 	}
+	return nil
 }
 
-// Publish публикует сообщение в топик MQTT
-func (c *Client) Publish(p PublishPayload) {
+// Publish publishes a message to an MQTT topic
+func (c *Client) Publish(p PublishPayload) error {
 	if token := c.client.Publish(p.Topic, p.QOS, p.Retained, p.Value); token.Wait() && token.Error() != nil {
-		log.Printf("Ошибка публикации в топик %s: %v", p.Topic, token.Error())
+		return fmt.Errorf("error publishing to topic %s: %v", p.Topic, token.Error())
 	}
+	return nil
 }
 
-func (c *Client) Unsubscribe(topics ...string) {
-	c.client.Unsubscribe(topics...)
+// Unsubscribe unsubscribes from MQTT topics
+func (c *Client) Unsubscribe(topics ...string) error {
+	if token := c.client.Unsubscribe(topics...); token.Wait() && token.Error() != nil {
+		return fmt.Errorf("error unsubscribing from topics: %v", token.Error())
+	}
+	return nil
 }
 
+// GetClient retrieves the underlying MQTT client
 func (c *Client) GetClient() mqtt.Client {
 	return c.client
 }
 
+// Disconnect disconnects from the MQTT broker
 func (c *Client) Disconnect(quiesce uint) {
 	c.client.Disconnect(quiesce)
 }

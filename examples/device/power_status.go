@@ -29,7 +29,7 @@ var (
 	instancePowerStatus *PowerStatus
 )
 
-func NewPowerStatus(client *mqtt.Client) *PowerStatus {
+func NewPowerStatus(client mqtt.ClientInterface) *PowerStatus {
 	oncePowerStatus.Do(func() {
 		name := "power_status"
 

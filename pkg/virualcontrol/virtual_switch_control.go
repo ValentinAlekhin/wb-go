@@ -60,7 +60,7 @@ func (c *VirtualSwitchControl) decode(value string) bool {
 }
 
 func (c *VirtualSwitchControl) AddWatcher(f func(payload control.SwitchControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.ControlWatcherPayload) {
+	c.control.AddWatcher(func(p control.WatcherPayload) {
 		f(control.SwitchControlWatcherPayload{
 			NewValue: c.decode(p.NewValue),
 			OldValue: c.decode(p.OldValue),
@@ -69,11 +69,11 @@ func (c *VirtualSwitchControl) AddWatcher(f func(payload control.SwitchControlWa
 	})
 }
 
-func (c *VirtualSwitchControl) GetInfo() control.ControlInfo {
+func (c *VirtualSwitchControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualSwitchControl(client *wb.Client, device, control string, meta control.Meta, onSwitchHandler OnSwitchHandler) *VirtualSwitchControl {
+func NewVirtualSwitchControl(client wb.ClientInterface, device, control string, meta control.Meta, onSwitchHandler OnSwitchHandler) *VirtualSwitchControl {
 	vc := &VirtualSwitchControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		value := vc.decode(payload.Value)

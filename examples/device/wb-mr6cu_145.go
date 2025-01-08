@@ -34,7 +34,7 @@ var (
 	instanceWbMr6Cu145 *WbMr6Cu145
 )
 
-func NewWbMr6Cu145(client *mqtt.Client) *WbMr6Cu145 {
+func NewWbMr6Cu145(client mqtt.ClientInterface) *WbMr6Cu145 {
 	onceWbMr6Cu145.Do(func() {
 		name := "wb-mr6cu_145"
 

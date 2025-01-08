@@ -60,7 +60,7 @@ var (
 	instanceWbMdm381 *WbMdm381
 )
 
-func NewWbMdm381(client *mqtt.Client) *WbMdm381 {
+func NewWbMdm381(client mqtt.ClientInterface) *WbMdm381 {
 	onceWbMdm381.Do(func() {
 		name := "wb-mdm3_81"
 

@@ -30,7 +30,7 @@ var (
 	instanceTermostat *Termostat
 )
 
-func NewTermostat(client *mqtt.Client) *Termostat {
+func NewTermostat(client mqtt.ClientInterface) *Termostat {
 	onceTermostat.Do(func() {
 		name := "Termostat"
 

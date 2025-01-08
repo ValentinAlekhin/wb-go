@@ -37,7 +37,7 @@ var (
 	instanceSystem *System
 )
 
-func NewSystem(client *mqtt.Client) *System {
+func NewSystem(client mqtt.ClientInterface) *System {
 	onceSystem.Do(func() {
 		name := "system"
 

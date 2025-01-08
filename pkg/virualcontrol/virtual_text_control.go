@@ -24,9 +24,9 @@ func (c *VirtualTextControl) SetValue(v string) {
 	c.control.SetValue(v)
 }
 
-func (c *VirtualTextControl) AddWatcher(f func(payload control.ControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.ControlWatcherPayload) {
-		f(control.ControlWatcherPayload{
+func (c *VirtualTextControl) AddWatcher(f func(payload control.WatcherPayload)) {
+	c.control.AddWatcher(func(p control.WatcherPayload) {
+		f(control.WatcherPayload{
 			NewValue: p.NewValue,
 			OldValue: p.OldValue,
 			Topic:    p.Topic,
@@ -34,11 +34,11 @@ func (c *VirtualTextControl) AddWatcher(f func(payload control.ControlWatcherPay
 	})
 }
 
-func (c *VirtualTextControl) GetInfo() control.ControlInfo {
+func (c *VirtualTextControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualTextControl(client *wb.Client, device, control string, meta control.Meta, onTextHandler OnTextHandler) *VirtualTextControl {
+func NewVirtualTextControl(client wb.ClientInterface, device, control string, meta control.Meta, onTextHandler OnTextHandler) *VirtualTextControl {
 	vc := &VirtualTextControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		newPayload := OnTextHandlerPayload{

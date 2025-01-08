@@ -38,7 +38,7 @@ func (c *RgbControl) SetValue(value RgbValue) {
 }
 
 func (c *RgbControl) AddWatcher(f func(payload RgbControlWatcherPayload)) {
-	c.control.AddWatcher(func(p ControlWatcherPayload) {
+	c.control.AddWatcher(func(p WatcherPayload) {
 		newValue, err := c.decode(p.NewValue)
 		if err != nil {
 			fmt.Println(err)
@@ -56,7 +56,7 @@ func (c *RgbControl) AddWatcher(f func(payload RgbControlWatcherPayload)) {
 	})
 }
 
-func (c *RgbControl) GetInfo() ControlInfo {
+func (c *RgbControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
@@ -89,7 +89,7 @@ func (c *RgbControl) encode(value RgbValue) string {
 	return fmt.Sprintf("%d;%d;%d", value.Red, value.Green, value.Blue)
 }
 
-func NewRgbControl(client *wb.Client, device, control string, meta Meta) *RgbControl {
+func NewRgbControl(client wb.ClientInterface, device, control string, meta Meta) *RgbControl {
 	c := NewControl(client, device, control, meta)
 	return &RgbControl{c}
 }

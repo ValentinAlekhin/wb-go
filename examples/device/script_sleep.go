@@ -33,7 +33,7 @@ var (
 	instanceScriptSleep *ScriptSleep
 )
 
-func NewScriptSleep(client *mqtt.Client) *ScriptSleep {
+func NewScriptSleep(client mqtt.ClientInterface) *ScriptSleep {
 	onceScriptSleep.Do(func() {
 		name := "script_sleep"
 

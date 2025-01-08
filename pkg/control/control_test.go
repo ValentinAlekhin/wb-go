@@ -11,7 +11,7 @@ import (
 )
 
 var broker *mochi.Server
-var client *wb.Client
+var client wb.ClientInterface
 
 func TestMain(m *testing.M) {
 	broker = test_mqtt_server.StartMQTTBroker(true)
@@ -55,7 +55,7 @@ func TestControl_AddWatcher(t *testing.T) {
 
 	var newValue, oldValue string
 
-	control.AddWatcher(func(payload ControlWatcherPayload) {
+	control.AddWatcher(func(payload WatcherPayload) {
 		newValue = payload.NewValue
 		oldValue = payload.OldValue
 	})
