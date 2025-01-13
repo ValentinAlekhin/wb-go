@@ -8,15 +8,9 @@ import (
 	"github.com/ValentinAlekhin/wb-go/pkg/homeassistant"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-
 	// Подключение к брокеру
 	opt := wb.Options{
 		Broker:   "192.168.1.150:1883",
@@ -29,11 +23,8 @@ func main() {
 
 	// Создание устройств
 	WbMswV4151 := device.NewWbMswV4151(client)
-	WbMr6Cu145 := device.NewWbMr6Cu145(client)
 	rgbLed := device.NewWbLed106(client)
 	cctLed := device.NewWbLed150(client)
-	wbMdm := device.NewWbMdm381(client)
-	system := device.NewSystem(client)
 
 	// Создание конфигурации Home Assistant
 	discoveryOpt := homeassistant.DiscoveryOptions{
@@ -50,14 +41,10 @@ func main() {
 	// Добавление устройств в Home Assistant
 	discovery.AddDevice(WbMswV4151.GetInfo())
 	discovery.AddDevice(rgbLed.GetInfo())
-	discovery.AddDevice(cctLed.GetInfo())
-	discovery.AddDevice(wbMdm.GetInfo())
-	discovery.AddDevice(system.GetInfo())
-	discovery.AddDevice(WbMr6Cu145.GetInfo())
 
+	// Создаем карту, где ключ - название контрола, а значение - имя в Home Assistant
+	nameMap := map[string]string{"CCT1": "Свет в гостиной", "CCT2": "Свет в спальне"}
 	var configMiddleware homeassistant.ConfigMiddleware = func(config *homeassistant.MqttDiscoveryConfig, device basedevice.Info, control control.Info) {
-		// Создаем карту, где ключ - название контрола, а значение - имя в Home Assistant
-		nameMap := map[string]string{"CCT1": "Свет в гостиной", "CCT2": "Свет в спальне"}
 		name, ok := nameMap[control.Name]
 		if !ok {
 			return
