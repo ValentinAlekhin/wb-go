@@ -12,24 +12,11 @@ import (
 	"time"
 )
 
-type Discovery struct {
-	client wb.ClientInterface
-	prefix string
-	name   string
-}
-
-type DiscoveryOptions struct {
-	Client wb.ClientInterface
-	Prefix string
-	Name   string
-}
-
-type DiscoveryMeta struct {
-	ClientName string    `json:"client_name"`
-	CreatedAt  time.Time `json:"created_at"`
-}
-
 func (d *Discovery) AddDevice(info basedevice.Info) {
+	d.AddDeviceWithMiddleware(info, nil)
+}
+
+func (d *Discovery) AddDeviceWithMiddleware(info basedevice.Info, middleware ConfigMiddleware) {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(info.ControlsInfo))
 
@@ -42,7 +29,12 @@ func (d *Discovery) AddDevice(info basedevice.Info) {
 				return
 			}
 
-			byteConfig, _ := json.Marshal(config)
+			configPointer := &config
+			if middleware != nil {
+				middleware(configPointer, info, controlInfo)
+			}
+
+			byteConfig, _ := json.Marshal(configPointer)
 			haControlTopic := d.getHaControlTopic(controlInfo.Name)
 			baseTopic := fmt.Sprintf("%s/%s/%s/%s", d.prefix, domain, info.Name, haControlTopic)
 			configTopic := baseTopic + "/config"
@@ -71,19 +63,6 @@ func (d *Discovery) AddDevice(info basedevice.Info) {
 
 	wg.Wait()
 	fmt.Printf("Устроство %s добавлено в Home Assistant\n", info.Name)
-}
-
-func (d *Discovery) getHaControlTopic(name string) string {
-	topic := strcase.ToSnake(name)
-	topic = clearControlName(topic)
-
-	return topic
-}
-
-func (d *Discovery) applyDefaultOptions() {
-	if d.name == "" {
-		d.name = DefaultDiscoveryName
-	}
 }
 
 // Clear all devices, added by wb-go
@@ -151,6 +130,19 @@ func (d *Discovery) Clear() {
 			QOS:      1,
 			Retained: true,
 		})
+	}
+}
+
+func (d *Discovery) getHaControlTopic(name string) string {
+	topic := strcase.ToSnake(name)
+	topic = clearControlName(topic)
+
+	return topic
+}
+
+func (d *Discovery) applyDefaultOptions() {
+	if d.name == "" {
+		d.name = DefaultDiscoveryName
 	}
 }
 

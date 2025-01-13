@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/examples/device"
+	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/homeassistant"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -52,19 +53,20 @@ func main() {
 	discovery.AddDevice(cctLed.GetInfo())
 	discovery.AddDevice(wbMdm.GetInfo())
 	discovery.AddDevice(system.GetInfo())
+	discovery.AddDevice(WbMr6Cu145.GetInfo())
 
-	// Добавление скрипта
-	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload control.ValueControlWatcherPayload) {
-		fmt.Printf("Получено новое сообщение: %f\n", payload.NewValue)
-
-		if payload.NewValue > 100 {
-			WbMr6Cu145.Controls.K1.TurnOff()
-		} else {
-			WbMr6Cu145.Controls.K1.TurnOn()
+	var configMiddleware homeassistant.ConfigMiddleware = func(config *homeassistant.MqttDiscoveryConfig, device basedevice.Info, control control.Info) {
+		// Создаем карту, где ключ - название контрола, а значение - имя в Home Assistant
+		nameMap := map[string]string{"CCT1": "Свет в гостиной", "CCT2": "Свет в спальне"}
+		name, ok := nameMap[control.Name]
+		if !ok {
+			return
 		}
-	})
 
-	<-stop
+		config.Name = name
+	}
+	// Добавляем устройство с использованием промежуточного обработчика конфигурации
+	discovery.AddDeviceWithMiddleware(cctLed.GetInfo(), configMiddleware)
 
 	// Отключениие от брокера и завершение программы
 	client.Disconnect(500)

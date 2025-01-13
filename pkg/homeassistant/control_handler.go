@@ -42,21 +42,6 @@ var DeviceConfigMap = map[string]*DeviceConfig{
 	},
 }
 
-type DeviceConfig struct {
-	getters         []*ConfigGetter
-	ignoreRegexpStr []string
-	ignoreRegexp    []*regexp.Regexp
-}
-
-type ConfigGetter struct {
-	regexpStr string
-	regexp    *regexp.Regexp
-	getter    ConfigGetterFn
-	domain    string
-}
-
-type ConfigGetterFn func(deviceInfo basedevice.Info, controlInfo control.Info) MqttDiscoveryConfig
-
 func init() {
 	for _, devConfig := range DeviceConfigMap {
 		devConfig.ignoreRegexp = make([]*regexp.Regexp, len(devConfig.ignoreRegexpStr))
