@@ -39,10 +39,17 @@ type ConfigGetter struct {
 }
 
 type MqttDiscoveryDevice struct {
-	Identifiers  string `json:"identifiers,omitempty"`
-	Manufacturer string `json:"manufacturer,omitempty"`
-	Model        string `json:"model,omitempty"`
-	Name         string `json:"name,omitempty"`
+	Identifiers      string `json:"identifiers,omitempty"`
+	Manufacturer     string `json:"manufacturer,omitempty"`
+	Model            string `json:"model,omitempty"`
+	Name             string `json:"name,omitempty"`
+	ConfigurationURL string `json:"configuration_url,omitempty"`
+	Connections      string `json:"connections,omitempty"`
+	ModelID          string `json:"model_id,omitempty"`
+	HardwareVersion  string `json:"hw_version,omitempty"`
+	SoftwareVersion  string `json:"sw_version,omitempty"`
+	SuggestedArea    string `json:"suggested_area,omitempty"`
+	SerialNumber     string `json:"serial_number,omitempty"`
 }
 
 type MqttDiscoveryAvailability struct {
