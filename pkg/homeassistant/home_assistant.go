@@ -30,13 +30,14 @@ func (d *Discovery) AddDeviceWithMiddleware(info basedevice.Info, middleware Con
 			}
 
 			configPointer := &config
+			domainPointer := &domain
 			if middleware != nil {
-				middleware(configPointer, info, controlInfo)
+				middleware(domainPointer, configPointer, info, controlInfo)
 			}
 
 			byteConfig, _ := json.Marshal(configPointer)
 			haControlTopic := d.getHaControlTopic(controlInfo.Name)
-			baseTopic := fmt.Sprintf("%s/%s/%s/%s", d.prefix, domain, info.Name, haControlTopic)
+			baseTopic := fmt.Sprintf("%s/%s/%s/%s", d.prefix, domainPointer, info.Name, haControlTopic)
 			configTopic := baseTopic + "/config"
 			metaTopic := fmt.Sprintf("%s/%s", baseTopic, DiscoveryMetaTopic)
 			meta := DiscoveryMeta{

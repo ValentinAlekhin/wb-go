@@ -44,7 +44,7 @@ func main() {
 
 	// Создаем карту, где ключ - название контрола, а значение - имя в Home Assistant
 	nameMap := map[string]string{"CCT1": "Свет в гостиной", "CCT2": "Свет в спальне"}
-	var configMiddleware homeassistant.ConfigMiddleware = func(config *homeassistant.MqttDiscoveryConfig, device basedevice.Info, control control.Info) {
+	var configMiddleware homeassistant.ConfigMiddleware = func(domain *string, config *homeassistant.MqttDiscoveryConfig, device basedevice.Info, control control.Info) {
 		name, ok := nameMap[control.Name]
 		if !ok {
 			return

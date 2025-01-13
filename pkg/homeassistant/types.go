@@ -316,4 +316,4 @@ type MqttDiscoveryConfig struct {
 }
 
 type ConfigGetterFn func(deviceInfo basedevice.Info, controlInfo control.Info) MqttDiscoveryConfig
-type ConfigMiddleware func(config *MqttDiscoveryConfig, device basedevice.Info, control control.Info)
+type ConfigMiddleware func(domain *string, config *MqttDiscoveryConfig, device basedevice.Info, control control.Info)
