@@ -22,6 +22,9 @@ func NewClient(opt Options) (ClientInterface, error) {
 	}
 	opts.OnConnectionLost = func(c mqtt.Client, err error) {
 		log.Printf("Connection lost: %v\n", err)
+		if opt.OnConnectionLost != nil {
+			opt.OnConnectionLost(err)
+		}
 	}
 
 	if opt.Username != "" {

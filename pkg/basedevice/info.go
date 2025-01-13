@@ -6,6 +6,7 @@ type Device struct {
 	Name     string
 	Controls interface{}
 }
+
 type Info struct {
 	Name         string
 	ControlsInfo []control.Info

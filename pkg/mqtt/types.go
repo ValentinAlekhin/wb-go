@@ -27,11 +27,12 @@ type Client struct {
 }
 
 type Options struct {
-	Broker   string
-	ClientId string
-	Username string
-	Password string
-	QoS      byte
+	Broker           string
+	ClientId         string
+	Username         string
+	Password         string
+	QoS              byte
+	OnConnectionLost func(err error)
 }
 
 type PublishPayload struct {
