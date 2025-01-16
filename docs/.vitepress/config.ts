@@ -28,17 +28,16 @@ export default defineConfig({
                         text: 'Home Assistant',
                         link: '/guide/home_assistant'
                     },
-                    {
-                        text: 'Развертывание приложения',
-                        link: '/guide/deploy'
-                    }
+                    // {
+                    //     text: 'Развертывание приложения',
+                    //     link: '/guide/deploy'
+                    // }
                 ]
             },
             {
                 text: 'Команды',
                 items: [
                     {text: 'Generate', link: '/guide/commands/generate'},
-                    {text: 'Deploy', link: '/guide/commands/deploy'},
                 ]
             },
         ]
