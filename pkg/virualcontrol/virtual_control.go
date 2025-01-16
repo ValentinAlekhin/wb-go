@@ -8,12 +8,13 @@ import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"go.uber.org/atomic"
-	"time"
+	"gorm.io/gorm"
 )
 
 type VirtualControl struct {
 	name         string
 	meta         control.Meta
+	db           *gorm.DB
 	client       wb.ClientInterface
 	value        atomic.String
 	valueTopic   string
@@ -24,6 +25,12 @@ type VirtualControl struct {
 	onChan       chan string
 	onHandler    OnHandler
 	stopChan     chan struct{}
+}
+
+type Options struct {
+	BaseOptions
+	OnHandler    OnHandler
+	DefaultValue string
 }
 
 type OnHandler func(payload OnHandlerPayload)
@@ -44,6 +51,8 @@ func (c *VirtualControl) SetValue(value string) {
 	if oldValue == value {
 		return
 	}
+
+	c.db.Model(&ControlModel{}).Where("topic = ?", c.valueTopic).Update("value", value)
 
 	payload := control.WatcherPayload{
 		NewValue: value,
@@ -125,48 +134,37 @@ func (c *VirtualControl) setMeta() {
 	})
 }
 
-func (c *VirtualControl) loadPrevValue() {
-	eventChannel := make(chan struct{})
-	done := make(chan bool)
-	timeoutDuration := 500 * time.Millisecond
-
-	go func() {
-		timer := time.NewTimer(timeoutDuration)
-		defer timer.Stop()
-
-		for {
-			select {
-			case <-eventChannel:
-				done <- true
-				return
-
-			case <-timer.C:
-				done <- true
-				return
-			}
-		}
-	}()
-
-	callback := func(client mqtt.Client, msg mqtt.Message) {
-		value := string(msg.Payload())
-		c.value.Swap(value)
-		eventChannel <- struct{}{}
+func (c *VirtualControl) loadPrevValue(defaultValue string) {
+	model := ControlModel{Topic: c.valueTopic}
+	result := c.db.First(&model)
+	if result.Error != nil {
+		fmt.Println(result.Error)
 	}
-	_ = c.client.Subscribe(c.valueTopic, callback)
 
-	<-done
+	if result.RowsAffected == 0 {
+		model.Value = defaultValue
+		c.db.Create(&model)
+	}
 
-	_ = c.client.Unsubscribe(c.valueTopic)
+	c.value.Swap(model.Value)
+
+	_ = c.client.Publish(wb.PublishPayload{
+		Topic:    c.valueTopic,
+		Value:    model.Value,
+		QOS:      1,
+		Retained: true,
+	})
 }
 
-func NewVirtualControl(client wb.ClientInterface, device, controlName string, meta control.Meta, onHandler OnHandler) *VirtualControl {
+func NewVirtualControl(opt Options) *VirtualControl {
 	vc := &VirtualControl{
-		name:         controlName,
-		meta:         meta,
-		client:       client,
-		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, controlName),
-		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, device, controlName),
-		metaTopic:    fmt.Sprintf(conventions.CONV_CONTROL_META_V2_FMT, device, controlName),
+		name:         opt.Name,
+		meta:         opt.Meta,
+		db:           opt.DB,
+		client:       opt.Client,
+		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, opt.Device, opt.Name),
+		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, opt.Device, opt.Name),
+		metaTopic:    fmt.Sprintf(conventions.CONV_CONTROL_META_V2_FMT, opt.Device, opt.Name),
 		value:        atomic.String{},
 		stopChan:     make(chan struct{}),
 		onChan:       make(chan string),
@@ -175,14 +173,16 @@ func NewVirtualControl(client wb.ClientInterface, device, controlName string, me
 		onHandler:    func(payload OnHandlerPayload) {},
 	}
 
-	if onHandler != nil {
-		vc.onHandler = onHandler
+	if opt.OnHandler != nil {
+		vc.onHandler = opt.OnHandler
 	}
 
-	vc.loadPrevValue()
+	go vc.runWatchHandler()
+
+	vc.loadPrevValue(opt.DefaultValue)
 	vc.subscribeToOnTopic()
 	vc.setMeta()
-	go vc.runWatchHandler()
+
 	go vc.runOnHandler()
 
 	return vc

@@ -3,13 +3,18 @@ package virualcontrol
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/dromara/carbon/v2"
 	"time"
 )
 
 type VirtualTimeControl struct {
 	control *VirtualControl
+}
+
+type TimeOptions struct {
+	BaseOptions
+	OnHandler    OnTimeHandler
+	DefaultValue time.Time
 }
 
 type OnTimeHandler func(payload OnTimeHandlerPayload)
@@ -67,7 +72,7 @@ func (c *VirtualTimeControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualTimeValueControl(client wb.ClientInterface, device, control string, meta control.Meta, onTimeHandler OnTimeHandler) *VirtualTimeControl {
+func NewVirtualTimeControl(opt TimeOptions) *VirtualTimeControl {
 	vc := &VirtualTimeControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		value, err := vc.decode(payload.Value)
@@ -78,11 +83,14 @@ func NewVirtualTimeValueControl(client wb.ClientInterface, device, control strin
 			Error: err,
 		}
 
-		if onTimeHandler != nil {
-			onTimeHandler(newPayload)
+		if opt.OnHandler != nil {
+			opt.OnHandler(newPayload)
 		}
 	}
-	meta.Type = "text"
-	vc.control = NewVirtualControl(client, device, control, meta, onHandler)
+	opt.Meta.Type = "text"
+
+	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.encode(opt.DefaultValue)}
+
+	vc.control = NewVirtualControl(vOpt)
 	return vc
 }

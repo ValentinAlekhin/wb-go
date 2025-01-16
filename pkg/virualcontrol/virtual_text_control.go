@@ -2,11 +2,16 @@ package virualcontrol
 
 import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 )
 
 type VirtualTextControl struct {
 	control *VirtualControl
+}
+
+type TextOptions struct {
+	BaseOptions
+	OnHandler    OnTextHandler
+	DefaultValue string
 }
 
 type OnTextHandler func(payload OnTextHandlerPayload)
@@ -38,19 +43,21 @@ func (c *VirtualTextControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualTextControl(client wb.ClientInterface, device, control string, meta control.Meta, onTextHandler OnTextHandler) *VirtualTextControl {
+func NewVirtualTextControl(opt TextOptions) *VirtualTextControl {
 	vc := &VirtualTextControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		newPayload := OnTextHandlerPayload{
 			Set:   payload.Set,
 			Value: payload.Value,
 		}
-
-		if onTextHandler != nil {
-			onTextHandler(newPayload)
+		if opt.OnHandler != nil {
+			opt.OnHandler(newPayload)
 		}
 	}
-	meta.Type = "text"
-	vc.control = NewVirtualControl(client, device, control, meta, onHandler)
+	opt.Meta.Type = "text"
+
+	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: opt.DefaultValue}
+
+	vc.control = NewVirtualControl(vOpt)
 	return vc
 }

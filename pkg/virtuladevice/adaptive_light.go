@@ -10,6 +10,7 @@ import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"
 	"github.com/dromara/carbon/v2"
+	"gorm.io/gorm"
 	"math"
 	"time"
 )
@@ -22,6 +23,7 @@ type AdaptiveLight struct {
 	metaTopic string
 	Controls  AdaptiveLightControls
 	ticker    *time.Ticker
+	loaded    bool
 }
 
 type AdaptiveLightControls struct {
@@ -45,6 +47,7 @@ type AdaptiveLightControls struct {
 }
 
 type AdaptiveLightConfig struct {
+	DB     *gorm.DB
 	Client wb.ClientInterface
 	Device string
 }
@@ -57,6 +60,10 @@ func (a *AdaptiveLight) GetInfo() basedevice.Info {
 }
 
 func (a *AdaptiveLight) update() {
+	if !a.loaded {
+		return
+	}
+
 	if !a.Controls.Enabled.GetValue() {
 		return
 	}
@@ -148,109 +155,20 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		return nil, errors.New("client is nil")
 	}
 
+	if config.DB == nil {
+		return nil, errors.New("db is nil")
+	}
+
 	if config.Device == "" {
 		return nil, errors.New("device is empty")
 	}
 
+	err := migrate(config.DB)
+	if err != nil {
+		return nil, err
+	}
+
 	deviceFullName := getDeviceFullName(config.Device)
-
-	enabled := virualcontrol.NewVirtualSwitchControl(config.Client, deviceFullName, "Enabled", control.Meta{
-		Order: 1,
-		Title: control.MultilingualText{"ru": "Включено"},
-	}, func(p virualcontrol.OnSwitchHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	minTemp := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Min Temperature", control.Meta{
-		Order: 2,
-		Max:   100,
-		Min:   0,
-		Title: control.MultilingualText{"ru": "Минимальная температура"},
-	}, func(p virualcontrol.OnRangeHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	maxTemp := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Max Temperature", control.Meta{
-		Order: 3,
-		Max:   100,
-		Min:   0,
-		Title: control.MultilingualText{"ru": "Максимальная температура"},
-	}, func(p virualcontrol.OnRangeHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	currentTemp := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Temperature", control.Meta{
-		ReadOnly: true,
-		Order:    4,
-		Max:      100,
-		Min:      0,
-		Title:    control.MultilingualText{"ru": "Температура"},
-	}, nil)
-
-	minBrightness := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Min Brightness", control.Meta{
-		Order: 5,
-		Max:   100,
-		Min:   0,
-		Title: control.MultilingualText{"ru": "Минимальная яркость"},
-	}, func(p virualcontrol.OnRangeHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	maxBrightness := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Max Brightness", control.Meta{
-		Order: 6,
-		Max:   100,
-		Min:   0,
-		Title: control.MultilingualText{"ru": "Максимальная яркость"},
-	}, func(p virualcontrol.OnRangeHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	currentBrightness := virualcontrol.NewVirtualRangeControl(config.Client, deviceFullName, "Brightness", control.Meta{
-		ReadOnly: true,
-		Order:    7,
-		Max:      100,
-		Min:      0,
-		Title:    control.MultilingualText{"ru": "Яркость"},
-	}, nil)
-
-	sleepMode := virualcontrol.NewVirtualSwitchControl(config.Client, deviceFullName, "Sleep Mode", control.Meta{
-		ReadOnly: true,
-		Order:    8,
-		Title:    control.MultilingualText{"ru": "Режим сна"},
-	}, func(p virualcontrol.OnSwitchHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	sunrise := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Sunrise", control.Meta{
-		Order: 9,
-		Title: control.MultilingualText{"ru": "Рассвет"},
-	}, func(p virualcontrol.OnTimeHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	sunset := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Sunset", control.Meta{
-		Order: 10,
-		Title: control.MultilingualText{"ru": "Закат"},
-	}, func(p virualcontrol.OnTimeHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	slipStart := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Slip Start", control.Meta{
-		Order: 11,
-		Title: control.MultilingualText{"ru": "Начало сна"},
-	}, func(p virualcontrol.OnTimeHandlerPayload) {
-		p.Set(p.Value)
-	})
-
-	slipEnd := virualcontrol.NewVirtualTimeValueControl(config.Client, deviceFullName, "Slip End", control.Meta{
-		Order: 12,
-		Title: control.MultilingualText{"ru": "Конец сна"},
-	}, func(p virualcontrol.OnTimeHandlerPayload) {
-		if p.Error != nil {
-			return
-		}
-		p.Set(p.Value)
-	})
 
 	al := &AdaptiveLight{
 		client:    config.Client,
@@ -258,24 +176,230 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		fullName:  deviceFullName,
 		metaTopic: fmt.Sprintf(conventions.CONV_DEVICE_META_V2_FMT, deviceFullName),
 		meta:      Meta{Name: config.Device, Driver: "wb-go"},
-		Controls: AdaptiveLightControls{
-			Enabled:           enabled,
-			MinTemp:           minTemp,
-			MaxTemp:           maxTemp,
-			CurrentTemp:       currentTemp,
-			MinBrightness:     minBrightness,
-			MaxBrightness:     maxBrightness,
-			CurrentBrightness: currentBrightness,
-			SleepMode:         sleepMode,
-			Sunrise:           sunrise,
-			Sunset:            sunset,
-			SleepEnd:          slipEnd,
-			SleepStart:        slipStart,
-		},
+		Controls:  AdaptiveLightControls{},
 	}
+
+	al.Controls.Enabled = virualcontrol.NewVirtualSwitchControl(virualcontrol.SwitchOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Enabled",
+			Meta: control.Meta{
+				Order: 1,
+				Title: control.MultilingualText{"ru": "Включено"},
+			},
+		},
+		OnHandler: func(p virualcontrol.OnSwitchHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+		DefaultValue: true,
+	})
+
+	al.Controls.MinTemp = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Min Temperature",
+			Meta: control.Meta{
+				Order: 2,
+				Max:   100,
+				Min:   0,
+				Title: control.MultilingualText{"ru": "Минимальная температура"},
+			},
+		},
+		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+		DefaultValue: 0,
+	})
+
+	al.Controls.MaxTemp = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Max Temperature",
+			Meta: control.Meta{
+				Order: 3,
+				Max:   100,
+				Min:   0,
+				Title: control.MultilingualText{"ru": "Максимальная температура"},
+			},
+		},
+		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+		DefaultValue: 100,
+	})
+
+	al.Controls.CurrentTemp = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Temperature",
+			Meta: control.Meta{
+				Order: 4,
+				Max:   100,
+				Min:   0,
+				Title: control.MultilingualText{"ru": "Температура"},
+			},
+		},
+		DefaultValue: 100,
+	})
+
+	al.Controls.MinBrightness = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Min Brightness",
+			Meta: control.Meta{
+				Order: 5,
+				Max:   100,
+				Min:   0,
+				Title: control.MultilingualText{"ru": "Минимальная яркость"},
+			},
+		},
+		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+		DefaultValue: 0,
+	})
+
+	al.Controls.MaxBrightness = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Max Brightness",
+			Meta: control.Meta{
+				Order: 6,
+				Max:   100,
+				Min:   0,
+				Title: control.MultilingualText{"ru": "Максимальная яркость"},
+			},
+		},
+		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+		DefaultValue: 100,
+	})
+
+	al.Controls.CurrentBrightness = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Brightness",
+			Meta: control.Meta{
+				Order: 7,
+				Max:   100,
+				Min:   0,
+				Title: control.MultilingualText{"ru": "Яркость"},
+			},
+		},
+		DefaultValue: 100,
+	})
+
+	al.Controls.SleepMode = virualcontrol.NewVirtualSwitchControl(virualcontrol.SwitchOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Sleep Mode",
+			Meta: control.Meta{
+				ReadOnly: true,
+				Order:    8,
+				Title:    control.MultilingualText{"ru": "Режим сна"},
+			},
+		},
+		DefaultValue: false,
+	})
+
+	al.Controls.Sunrise = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Sunrise",
+			Meta: control.Meta{
+				Order: 9,
+				Title: control.MultilingualText{"ru": "Рассвет"},
+			},
+		},
+		DefaultValue: carbon.ParseByFormat("06:00:00", "H:i:s").StdTime(),
+		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+	})
+
+	al.Controls.Sunset = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Sunset",
+			Meta: control.Meta{
+				Order: 10,
+				Title: control.MultilingualText{"ru": "Закат"},
+			},
+		},
+		DefaultValue: carbon.ParseByFormat("18:00:00", "H:i:s").StdTime(),
+		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+	})
+
+	al.Controls.SleepStart = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Slip Start",
+			Meta: control.Meta{
+				Order: 11,
+				Title: control.MultilingualText{"ru": "Начало сна"},
+			},
+		},
+		DefaultValue: carbon.ParseByFormat("23:00:00", "H:i:s").StdTime(),
+		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+	})
+
+	al.Controls.SleepEnd = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+		BaseOptions: virualcontrol.BaseOptions{
+			DB:     config.DB,
+			Client: config.Client,
+			Device: deviceFullName,
+			Name:   "Slip End",
+			Meta: control.Meta{
+				Order: 11,
+				Title: control.MultilingualText{"ru": "Конец сна"},
+			},
+		},
+		DefaultValue: carbon.ParseByFormat("06:00:00", "H:i:s").StdTime(),
+		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+			p.Set(p.Value)
+			al.update()
+		},
+	})
 
 	al.setMeta()
 	al.runTicker()
+
+	al.loaded = true
 
 	return al, nil
 }

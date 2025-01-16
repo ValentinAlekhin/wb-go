@@ -3,12 +3,17 @@ package virualcontrol
 import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
-	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"strconv"
 )
 
 type VirtualSwitchControl struct {
 	control *VirtualControl
+}
+
+type SwitchOptions struct {
+	BaseOptions
+	OnHandler    OnSwitchHandler
+	DefaultValue bool
 }
 
 type OnSwitchHandler func(payload OnSwitchHandlerPayload)
@@ -73,7 +78,7 @@ func (c *VirtualSwitchControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualSwitchControl(client wb.ClientInterface, device, control string, meta control.Meta, onSwitchHandler OnSwitchHandler) *VirtualSwitchControl {
+func NewVirtualSwitchControl(opt SwitchOptions) *VirtualSwitchControl {
 	vc := &VirtualSwitchControl{}
 	onHandler := func(payload OnHandlerPayload) {
 		value := vc.decode(payload.Value)
@@ -83,11 +88,14 @@ func NewVirtualSwitchControl(client wb.ClientInterface, device, control string, 
 			Value: value,
 		}
 
-		if onSwitchHandler != nil {
-			onSwitchHandler(newPayload)
+		if opt.OnHandler != nil {
+			opt.OnHandler(newPayload)
 		}
 	}
-	meta.Type = "switch"
-	vc.control = NewVirtualControl(client, device, control, meta, onHandler)
+	opt.Meta.Type = "switch"
+
+	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.encode(opt.DefaultValue)}
+
+	vc.control = NewVirtualControl(vOpt)
 	return vc
 }

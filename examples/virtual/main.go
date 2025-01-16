@@ -6,6 +6,8 @@ import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/virtuladevice"
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 	"log"
 	"os"
 	"os/signal"
@@ -15,6 +17,12 @@ import (
 func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+
+	// Подключение к базе данных
+	db, err := gorm.Open(sqlite.Open("./db/test.db"), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Подключение к брокеру
 	opt := wb.Options{
@@ -29,6 +37,7 @@ func main() {
 	wbMsw := device.NewWbMswV4151(client)
 
 	thermostat, err := virtuladevice.NewThermostat(virtuladevice.ThermostatConfig{
+		DB:                  db,
 		Client:              client,
 		Device:              "thermostat",
 		TargetTemperature:   21,
@@ -40,11 +49,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	thermostat.AddHeaterWatcher(func(p control.SwitchControlWatcherPayload) {
-		fmt.Println("Heater: ", p.NewValue)
+	thermostat.Controls.Relay.AddWatcher(func(p control.SwitchControlWatcherPayload) {
+		fmt.Println("Relay: ", p.NewValue)
 	})
 
 	_, err = virtuladevice.NewAdaptiveLight(virtuladevice.AdaptiveLightConfig{
+		DB:     db,
 		Client: client,
 		Device: "adaptive-light",
 	})
