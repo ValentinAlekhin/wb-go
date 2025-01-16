@@ -7,5 +7,4 @@ options:
       default_value: "false"
       usage: help for wb-go
 see_also:
-    - wb-go deploy - Развертывает приложение на целевых устройствах
     - wb-go generate - Генерирует код для работы с устройствами

@@ -18,7 +18,7 @@ options:
         Директория, куда будут сгенерированы файлы
     - name: package
       shorthand: "n"
-      default_value: devices
+      default_value: device
       usage: |
         Имя пакета сгенерированных файлов
     - name: password
