@@ -10,4 +10,5 @@ type Device struct {
 type Info struct {
 	Name         string
 	ControlsInfo []control.Info
+	MetaTopic    string
 }

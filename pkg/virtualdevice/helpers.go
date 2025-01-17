@@ -1,4 +1,4 @@
-package virtuladevice
+package virtualdevice
 
 import "fmt"
 

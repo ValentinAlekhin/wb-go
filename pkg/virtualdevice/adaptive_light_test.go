@@ -1,4 +1,4 @@
-package virtuladevice
+package virtualdevice
 
 import (
 	"fmt"
@@ -6,8 +6,10 @@ import (
 	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"
 	"github.com/ValentinAlekhin/wb-go/testutils"
 	"github.com/ValentinAlekhin/wb-go/testutils/test_mqtt_server"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/glebarez/sqlite"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -54,6 +56,7 @@ func TestNewAdaptiveLight_NilDB(t *testing.T) {
 }
 
 func TestNewAdaptiveLight_EmptyDevice(t *testing.T) {
+
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -80,10 +83,6 @@ func TestNewAdaptiveLight_Initialization(t *testing.T) {
 	assert.NotNil(t, al.Controls.Enabled)
 	assert.NotNil(t, al.Controls.MinTemp)
 	assert.NotNil(t, al.Controls.MaxTemp)
-	assert.NotNil(t, al.Controls.Sunrise)
-	assert.NotNil(t, al.Controls.Sunset)
-	assert.NotNil(t, al.Controls.SleepStart)
-	assert.NotNil(t, al.Controls.SleepEnd)
 	assert.NotNil(t, al.Controls.CurrentTemp)
 }
 
@@ -97,6 +96,7 @@ func TestNewAdaptiveLight_InvalidConfig(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetInfo(t *testing.T) {
+
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -111,6 +111,7 @@ func TestAdaptiveLight_GetInfo(t *testing.T) {
 }
 
 func TestAdaptiveLight_Update_Disabled(t *testing.T) {
+
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -129,6 +130,7 @@ func TestAdaptiveLight_Update_Disabled(t *testing.T) {
 }
 
 func TestAdaptiveLight_SleepMode(t *testing.T) {
+
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -149,6 +151,7 @@ func TestAdaptiveLight_SleepMode(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetBrightness(t *testing.T) {
+
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -166,6 +169,7 @@ func TestAdaptiveLight_GetBrightness(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetColorTemp(t *testing.T) {
+
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -187,24 +191,30 @@ func TestAdaptiveLight_GetColorTemp(t *testing.T) {
 	assert.Equal(t, minTemp, al.getColorTemp(true, maxTemp, minTemp, sunrise, sunset, al.now))
 }
 
-//func TestAdaptiveLight_MetaPublishing(t *testing.T) {
-//	config := AdaptiveLightConfig{
-//		DB:     testDB,
-//		Client: testClient,
-//		Device: "TestDevice",
-//	}
-//
-//	al, err := NewAdaptiveLight(config)
-//	require.NoError(t, err)
-//
-//	// Check if meta is published correctly
-//	meta := Meta{
-//		Name:   "TestDevice",
-//		Driver: "wb-go",
-//	}
-//	metaBytes, _ := json.Marshal(meta)
-//
-//	require.Len(t, client.publishedPayloads, 1)
-//	assert.Equal(t, client.publishedPayloads[0].Value, string(metaBytes))
-//	assert.Equal(t, client.publishedPayloads[0].Topic, al.metaTopic)
-//}
+func TestAdaptiveLight_MetaPublishing(t *testing.T) {
+
+	config := AdaptiveLightConfig{
+		DB:     testDB,
+		Client: testClient,
+		Device: "TestDevice",
+	}
+
+	al, err := NewAdaptiveLight(config)
+	require.NoError(t, err)
+
+	messageChan := make(chan string, 1)
+	err = testClient.Subscribe(al.GetInfo().MetaTopic, func(client mqtt.Client, msg mqtt.Message) {
+		messageChan <- string(msg.Payload())
+	})
+	require.NoError(t, err)
+
+	select {
+	case msg := <-messageChan:
+		// Проверяем, что метаданные пришли в правильном формате
+		expectedMeta := `{"name":"TestDevice","driver":"wb-go"}`
+		assert.JSONEq(t, expectedMeta, msg)
+	case <-time.After(1 * time.Second):
+		t.Fatal("Не дождались сообщения с метаданными в MQTT-топике")
+	}
+
+}

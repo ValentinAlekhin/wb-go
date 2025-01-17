@@ -1,4 +1,4 @@
-package virtuladevice
+package virtualdevice
 
 import (
 	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"

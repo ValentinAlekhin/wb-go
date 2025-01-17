@@ -1,4 +1,4 @@
-package virtuladevice
+package virtualdevice
 
 type Meta struct {
 	Name   string `json:"name"`

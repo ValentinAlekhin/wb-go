@@ -5,7 +5,7 @@ import (
 	"github.com/ValentinAlekhin/wb-go/examples/device"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"github.com/ValentinAlekhin/wb-go/pkg/virtuladevice"
+	"github.com/ValentinAlekhin/wb-go/pkg/virtualdevice"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"log"
@@ -36,7 +36,7 @@ func main() {
 
 	wbMsw := device.NewWbMswV4151(client)
 
-	thermostat, err := virtuladevice.NewThermostat(virtuladevice.ThermostatConfig{
+	thermostat, err := virtualdevice.NewThermostat(virtualdevice.ThermostatConfig{
 		DB:                  db,
 		Client:              client,
 		Device:              "thermostat",
@@ -53,7 +53,7 @@ func main() {
 		fmt.Println("Relay: ", p.NewValue)
 	})
 
-	_, err = virtuladevice.NewAdaptiveLight(virtuladevice.AdaptiveLightConfig{
+	_, err = virtualdevice.NewAdaptiveLight(virtualdevice.AdaptiveLightConfig{
 		DB:     db,
 		Client: client,
 		Device: "adaptive-light",

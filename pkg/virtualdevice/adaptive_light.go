@@ -1,4 +1,4 @@
-package virtuladevice
+package virtualdevice
 
 import (
 	"encoding/json"
@@ -57,6 +57,7 @@ func (a *AdaptiveLight) GetInfo() basedevice.Info {
 	return basedevice.Info{
 		Name:         a.fullName,
 		ControlsInfo: nil,
+		MetaTopic:    a.metaTopic,
 	}
 }
 
