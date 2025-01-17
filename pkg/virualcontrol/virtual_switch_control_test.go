@@ -109,6 +109,8 @@ func TestVirtualSwitchControlAddWatcher(t *testing.T) {
 	// Устанавливаем новое значение, что должно вызвать срабатывание watcher
 	vc.SetValue(true)
 
+	time.Sleep(100 * time.Millisecond)
+
 	// Проверяем, что watcher был вызван
 	assert.True(t, watcherCalled)
 }

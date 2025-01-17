@@ -8,8 +8,8 @@ import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
+	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
 	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"
-	"github.com/dromara/carbon/v2"
 	"gorm.io/gorm"
 	"math"
 	"time"
@@ -23,6 +23,7 @@ type AdaptiveLight struct {
 	metaTopic string
 	Controls  AdaptiveLightControls
 	ticker    *time.Ticker
+	now       timeonly.Time
 	loaded    bool
 }
 
@@ -68,50 +69,43 @@ func (a *AdaptiveLight) update() {
 		return
 	}
 
-	now := carbon.Now().SetDate(0, 1, 1)
+	slipStart := a.Controls.SleepStart.GetValue()
+	slipEnd := a.Controls.SleepEnd.GetValue()
+	sleepMode := a.getSleepMode(slipStart, slipEnd, a.now)
+	a.Controls.SleepMode.SetValue(sleepMode)
 
-	a.setSleepMode(now)
-	a.setBrightness()
-	a.setColorTemp(now)
-}
-
-func (a *AdaptiveLight) setSleepMode(now carbon.Carbon) {
-	slipStart := carbon.CreateFromStdTime(a.Controls.SleepStart.GetValue())
-	slipEnd := carbon.CreateFromStdTime(a.Controls.SleepEnd.GetValue())
-
-	if now.Gte(slipStart) || now.Lte(slipEnd) {
-		a.Controls.SleepMode.SetValue(true)
-	} else {
-		a.Controls.SleepMode.SetValue(false)
-	}
-}
-
-func (a *AdaptiveLight) setBrightness() {
 	maxBrightness := a.Controls.MaxBrightness.GetValue()
 	minBrightness := a.Controls.MinBrightness.GetValue()
+	brightness := a.getBrightness(maxBrightness, minBrightness, sleepMode)
+	a.Controls.CurrentBrightness.SetValue(brightness)
 
-	if a.Controls.SleepMode.GetValue() {
-		a.Controls.CurrentBrightness.SetValue(minBrightness)
+	maxTemp := a.Controls.MaxTemp.GetValue()
+	minTemp := a.Controls.MinTemp.GetValue()
+	sunrise := a.Controls.Sunrise.GetValue()
+	sunset := a.Controls.Sunset.GetValue()
+	temp := a.getColorTemp(sleepMode, maxTemp, minTemp, sunrise, sunset, a.now)
+	a.Controls.CurrentTemp.SetValue(temp)
+}
+
+func (a *AdaptiveLight) getSleepMode(start, end, now timeonly.Time) bool {
+	if now.After(start) || now.Before(end) {
+		return true
 	} else {
-		a.Controls.CurrentBrightness.SetValue(maxBrightness)
+		return false
 	}
 }
 
-func (a *AdaptiveLight) setColorTemp(now carbon.Carbon) {
-	maxTemp := a.Controls.MaxTemp.GetValue()
-	minTemp := a.Controls.MinTemp.GetValue()
-
-	if a.Controls.SleepMode.GetValue() {
-		a.Controls.CurrentTemp.SetValue(minTemp)
-		return
+func (a *AdaptiveLight) getBrightness(max, min int, sleepMode bool) int {
+	if sleepMode {
+		return min
+	} else {
+		return max
 	}
+}
 
-	sunrise := carbon.CreateFromStdTime(a.Controls.Sunrise.GetValue())
-	sunset := carbon.CreateFromStdTime(a.Controls.Sunset.GetValue())
-
-	if now.Gte(sunset) || now.Lte(sunrise) {
-		a.Controls.CurrentTemp.SetValue(minTemp)
-		return
+func (a *AdaptiveLight) getColorTemp(sleepMode bool, max, min int, sunrise, sunset, now timeonly.Time) int {
+	if sleepMode || now.After(sunset) || now.Before(sunrise) {
+		return min
 	}
 
 	sunriseMinutes := sunrise.Hour()*60 + sunrise.Minute()
@@ -122,15 +116,16 @@ func (a *AdaptiveLight) setColorTemp(now carbon.Carbon) {
 	minutesSinceSunrise := currentMinutes - sunriseMinutes
 	ratio := float64(minutesSinceSunrise) / float64(dayLength)
 
-	temp := int(float64(maxTemp) + float64(minTemp-maxTemp)*math.Pow(2*ratio-1, 2))
+	temp := int(float64(max) + float64(min-max)*math.Pow(2*ratio-1, 2))
 
-	a.Controls.CurrentTemp.SetValue(temp)
+	return temp
 }
 
 func (a *AdaptiveLight) runTicker() {
 	a.ticker = time.NewTicker(1 * time.Second)
 	go func() {
 		for range a.ticker.C {
+			a.now = timeonly.Now()
 			a.update()
 		}
 	}()
@@ -335,7 +330,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Рассвет"},
 			},
 		},
-		DefaultValue: carbon.ParseByFormat("06:00:00", "H:i:s").StdTime(),
+		DefaultValue: timeonly.NewTime(6, 0, 0),
 		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
@@ -353,7 +348,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Закат"},
 			},
 		},
-		DefaultValue: carbon.ParseByFormat("18:00:00", "H:i:s").StdTime(),
+		DefaultValue: timeonly.NewTime(18, 0, 0),
 		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
@@ -371,7 +366,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Начало сна"},
 			},
 		},
-		DefaultValue: carbon.ParseByFormat("23:00:00", "H:i:s").StdTime(),
+		DefaultValue: timeonly.NewTime(23, 0, 0),
 		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
@@ -389,7 +384,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Конец сна"},
 			},
 		},
-		DefaultValue: carbon.ParseByFormat("06:00:00", "H:i:s").StdTime(),
+		DefaultValue: timeonly.NewTime(6, 0, 0),
 		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()

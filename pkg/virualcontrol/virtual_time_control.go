@@ -3,8 +3,7 @@ package virualcontrol
 import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	"github.com/dromara/carbon/v2"
-	"time"
+	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
 )
 
 type VirtualTimeControl struct {
@@ -14,45 +13,43 @@ type VirtualTimeControl struct {
 type TimeOptions struct {
 	BaseOptions
 	OnHandler    OnTimeHandler
-	DefaultValue time.Time
+	DefaultValue timeonly.Time
 }
 
 type OnTimeHandler func(payload OnTimeHandlerPayload)
 
 type OnTimeHandlerPayload struct {
-	Set   func(time.Time)
-	Value time.Time
+	Set   func(timeonly.Time)
+	Value timeonly.Time
 	Error error
 }
 
 type TimeControlWatcherPayload struct {
-	NewValue time.Time
-	OldValue time.Time
+	NewValue timeonly.Time
+	OldValue timeonly.Time
 	Topic    string
 }
 
-func (c *VirtualTimeControl) GetValue() time.Time {
+func (c *VirtualTimeControl) GetValue() timeonly.Time {
 	value := c.control.GetValue()
 	timeValue, _ := c.decode(value)
 	return timeValue
 }
 
-func (c *VirtualTimeControl) SetValue(v time.Time) {
+func (c *VirtualTimeControl) SetValue(v timeonly.Time) {
 	c.control.SetValue(c.encode(v))
 }
 
-func (c *VirtualTimeControl) decode(value string) (time.Time, error) {
-	ca := carbon.ParseByFormat(value, "H:i:s")
-	valid := ca.IsValid()
-	if !valid {
-		return time.Time{}, fmt.Errorf("неправильный формат времени: %s", value)
+func (c *VirtualTimeControl) decode(value string) (timeonly.Time, error) {
+	t, err := timeonly.ParseString(value)
+	if err != nil {
+		return timeonly.Time{}, fmt.Errorf("invalid time format: %s", value)
 	}
-
-	return ca.StdTime(), nil
+	return t, nil
 }
 
-func (c *VirtualTimeControl) encode(value time.Time) string {
-	return carbon.CreateFromStdTime(value).ToTimeString()
+func (c *VirtualTimeControl) encode(value timeonly.Time) string {
+	return value.String()
 }
 
 func (c *VirtualTimeControl) AddWatcher(f func(payload TimeControlWatcherPayload)) {
@@ -89,7 +86,11 @@ func NewVirtualTimeControl(opt TimeOptions) *VirtualTimeControl {
 	}
 	opt.Meta.Type = "text"
 
-	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.encode(opt.DefaultValue)}
+	vOpt := Options{
+		BaseOptions:  opt.BaseOptions,
+		OnHandler:    onHandler,
+		DefaultValue: vc.encode(opt.DefaultValue),
+	}
 
 	vc.control = NewVirtualControl(vOpt)
 	return vc

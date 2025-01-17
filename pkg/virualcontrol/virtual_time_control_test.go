@@ -3,6 +3,7 @@ package virualcontrol
 import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
+	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
 	"github.com/ValentinAlekhin/wb-go/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -12,7 +13,7 @@ import (
 
 func TestVirtualTimeControlGetValue(t *testing.T) {
 	controlName := testutils.RandString(10)
-	defaultValue := time.Now()
+	defaultValue := timeonly.NewTime(14, 30, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
@@ -27,13 +28,13 @@ func TestVirtualTimeControlGetValue(t *testing.T) {
 
 	vc := NewVirtualTimeControl(opt)
 
-	// Проверяем, что значение по умолчанию корректно возвращается
-	assert.Equal(t, defaultValue.Format("15:04:05"), vc.GetValue().Format("15:04:05"))
+	// Verify that the default value is returned correctly
+	assert.Equal(t, defaultValue.String(), vc.GetValue().String())
 }
 
 func TestVirtualTimeControlSetValue(t *testing.T) {
 	controlName := testutils.RandString(10)
-	defaultValue := time.Now()
+	defaultValue := timeonly.NewTime(8, 15, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
@@ -48,17 +49,17 @@ func TestVirtualTimeControlSetValue(t *testing.T) {
 
 	vc := NewVirtualTimeControl(opt)
 
-	// Устанавливаем новое значение
-	newValue := time.Date(2025, 1, 1, 10, 30, 45, 0, time.UTC)
+	// Set a new value
+	newValue := timeonly.NewTime(10, 30, 45)
 	vc.SetValue(newValue)
 
-	// Проверяем, что значение установилось
-	assert.Equal(t, newValue.Format("15:04:05"), vc.GetValue().Format("15:04:05"))
+	// Verify that the value was set correctly
+	assert.Equal(t, newValue.String(), vc.GetValue().String())
 }
 
 func TestVirtualTimeControlOnHandler(t *testing.T) {
 	controlName := testutils.RandString(10)
-	defaultValue := time.Now()
+	defaultValue := timeonly.NewTime(6, 45, 0)
 
 	handlerCalled := false
 
@@ -73,7 +74,7 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 		DefaultValue: defaultValue,
 		OnHandler: func(payload OnTimeHandlerPayload) {
 			handlerCalled = true
-			assert.Equal(t, "10:30:45", payload.Value.Format("15:04:05")) // Проверяем, что передано правильное значение
+			assert.Equal(t, "10:30:45", payload.Value.String()) // Verify the correct value is passed
 		},
 	}
 
@@ -88,13 +89,13 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	// Проверяем, что обработчик был вызван
+	// Verify that the handler was called
 	assert.True(t, handlerCalled)
 }
 
 func TestVirtualTimeControlAddWatcher(t *testing.T) {
 	controlName := testutils.RandString(10)
-	defaultValue := time.Now()
+	defaultValue := timeonly.NewTime(7, 0, 0)
 
 	vc := NewVirtualTimeControl(TimeOptions{
 		BaseOptions: BaseOptions{
@@ -108,24 +109,24 @@ func TestVirtualTimeControlAddWatcher(t *testing.T) {
 	})
 
 	var watcherCalled bool
-	// Добавляем watcher для контроля изменений
+	// Add a watcher to monitor changes
 	vc.AddWatcher(func(payload TimeControlWatcherPayload) {
 		watcherCalled = true
-		assert.Equal(t, "10:30:45", payload.NewValue.Format("15:04:05"))                      // Проверяем, что новое значение корректное
-		assert.Equal(t, defaultValue.Format("15:04:05"), payload.OldValue.Format("15:04:05")) // Проверяем, что старое значение корректное
+		assert.Equal(t, "10:30:45", payload.NewValue.String())            // Verify the new value is correct
+		assert.Equal(t, defaultValue.String(), payload.OldValue.String()) // Verify the old value is correct
 	})
 
-	// Устанавливаем новое значение, что должно вызвать срабатывание watcher
-	newValue := time.Date(2025, 1, 1, 10, 30, 45, 0, time.UTC)
+	// Set a new value, which should trigger the watcher
+	newValue := timeonly.NewTime(10, 30, 45)
 	vc.SetValue(newValue)
 
-	// Проверяем, что watcher был вызван
+	// Verify that the watcher was called
 	assert.True(t, watcherCalled)
 }
 
 func TestVirtualTimeControlMetaType(t *testing.T) {
 	controlName := testutils.RandString(10)
-	defaultValue := time.Now()
+	defaultValue := timeonly.NewTime(12, 0, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
@@ -140,6 +141,6 @@ func TestVirtualTimeControlMetaType(t *testing.T) {
 
 	vc := NewVirtualTimeControl(opt)
 
-	// Проверяем, что Meta.Type корректно установлен в "text"
+	// Verify that Meta.Type is correctly set to "text"
 	assert.Equal(t, "text", vc.control.meta.Type)
 }
