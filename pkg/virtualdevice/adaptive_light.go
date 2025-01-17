@@ -89,6 +89,17 @@ func (a *AdaptiveLight) update() {
 }
 
 func (a *AdaptiveLight) getSleepMode(start, end, now timeonly.Time) bool {
+	midnight := timeonly.FromSeconds(0)
+
+	if start.Before(end) && start.After(midnight) {
+
+		if now.After(start) && now.Before(end) {
+			return true
+		} else {
+			return false
+		}
+	}
+
 	if now.After(start) || now.Before(end) {
 		return true
 	} else {

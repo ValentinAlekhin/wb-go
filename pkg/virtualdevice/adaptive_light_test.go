@@ -56,7 +56,6 @@ func TestNewAdaptiveLight_NilDB(t *testing.T) {
 }
 
 func TestNewAdaptiveLight_EmptyDevice(t *testing.T) {
-
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -96,7 +95,6 @@ func TestNewAdaptiveLight_InvalidConfig(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetInfo(t *testing.T) {
-
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -111,7 +109,6 @@ func TestAdaptiveLight_GetInfo(t *testing.T) {
 }
 
 func TestAdaptiveLight_Update_Disabled(t *testing.T) {
-
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -130,7 +127,6 @@ func TestAdaptiveLight_Update_Disabled(t *testing.T) {
 }
 
 func TestAdaptiveLight_SleepMode(t *testing.T) {
-
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -140,18 +136,80 @@ func TestAdaptiveLight_SleepMode(t *testing.T) {
 	al, err := NewAdaptiveLight(config)
 	require.NoError(t, err)
 
-	sleepStart := timeonly.NewTime(23, 0, 0)
-	sleepEnd := timeonly.NewTime(6, 0, 0)
+	tests := []struct {
+		name     string
+		start    timeonly.Time
+		end      timeonly.Time
+		now      timeonly.Time
+		expected bool
+	}{
+		{
+			"SleepMode: now is within active time range",
+			timeonly.NewTime(23, 0, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(8, 0, 0),
+			false,
+		},
+		{
+			"SleepMode: now equals start time",
+			timeonly.NewTime(23, 0, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(23, 0, 0),
+			false,
+		},
+		{
+			"SleepMode: now is after start time but before end time",
+			timeonly.NewTime(23, 0, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(23, 0, 1),
+			true,
+		},
+		{
+			"SleepMode: now is just after midnight and falls into sleep time",
+			timeonly.NewTime(23, 0, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(0, 0, 1),
+			true,
+		},
+		{
+			"SleepMode: now equals end time",
+			timeonly.NewTime(23, 0, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(6, 0, 0),
+			false,
+		},
+		{
+			"SleepMode: now is outside the sleep time range, later in the day",
+			timeonly.NewTime(0, 30, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(23, 0, 0),
+			false,
+		},
+		{
+			"SleepMode: now is before sleep time range starts",
+			timeonly.NewTime(0, 30, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(0, 25, 0),
+			false,
+		},
+		{
+			"SleepMode: now is just after the start of sleep time range",
+			timeonly.NewTime(0, 30, 0),
+			timeonly.NewTime(6, 0, 0),
+			timeonly.NewTime(1, 0, 0),
+			true,
+		},
+	}
 
-	al.now = timeonly.NewTime(23, 30, 0)
-	assert.True(t, al.getSleepMode(sleepStart, sleepEnd, al.now))
-
-	al.now = timeonly.NewTime(12, 0, 0)
-	assert.False(t, al.getSleepMode(sleepStart, sleepEnd, al.now))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := al.getSleepMode(tt.start, tt.end, tt.now)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }
 
 func TestAdaptiveLight_GetBrightness(t *testing.T) {
-
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -169,7 +227,6 @@ func TestAdaptiveLight_GetBrightness(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetColorTemp(t *testing.T) {
-
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,
@@ -192,7 +249,6 @@ func TestAdaptiveLight_GetColorTemp(t *testing.T) {
 }
 
 func TestAdaptiveLight_MetaPublishing(t *testing.T) {
-
 	config := AdaptiveLightConfig{
 		DB:     testDB,
 		Client: testClient,

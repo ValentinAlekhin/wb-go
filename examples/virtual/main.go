@@ -28,6 +28,9 @@ func main() {
 	opt := wb.Options{
 		Broker:   "192.168.1.150:1883",
 		ClientId: "client-wb-go-test",
+		OnConnectionLost: func(err error) {
+			log.Fatal(err)
+		},
 	}
 	client, err := wb.NewClient(opt)
 	if err != nil {
