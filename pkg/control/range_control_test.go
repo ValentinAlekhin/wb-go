@@ -1,7 +1,8 @@
 package control
 
 import (
-	"github.com/ValentinAlekhin/wb-go/testutils"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -10,9 +11,8 @@ import (
 func TestRangeControl_SetAndGetValue(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{}
 	device := testutils.RandString(10)
@@ -39,9 +39,8 @@ func TestRangeControl_SetAndGetValue(t *testing.T) {
 func TestRangeControl_AddWatcher(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{}
 	device := testutils.RandString(10)

@@ -2,6 +2,10 @@ package virualcontrol
 
 import (
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
+	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -9,46 +13,23 @@ import (
 	"time"
 
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	"github.com/ValentinAlekhin/wb-go/testutils"
-	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/gorm"
 )
 
 const device = "test-device" // Константа для устройства
 
-var testDB *gorm.DB
-
-func TestMain(m *testing.M) {
-	database, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	err = database.AutoMigrate(&ControlModel{})
-	fmt.Println("MOGRATE", err)
-	if err != nil {
-		panic(err)
-	}
-
-	testDB = database
-
-	m.Run()
-
-	database.Where("1 = 1").Delete(&ControlModel{})
-}
-
 func TestVirtualControlInitialization(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -67,16 +48,16 @@ func TestVirtualControlInitialization(t *testing.T) {
 }
 
 func TestVirtualControlSetValue(t *testing.T) {
-	//t.Parallel()
+	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10) // Генерация случайного имени для контрола
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,      // Используем константу для устройства
 			Name:   controlName, // Используем сгенерированное имя
@@ -90,8 +71,8 @@ func TestVirtualControlSetValue(t *testing.T) {
 	vc.SetValue("25")
 	assert.Equal(t, "25", vc.GetValue())
 
-	var model ControlModel
-	err := testDB.First(&model, "topic = ?", vc.GetInfo().ValueTopic).Error
+	var model db.ControlModel
+	err := database.First(&model, "topic = ?", vc.GetInfo().ValueTopic).Error
 	require.NoError(t, err)
 	assert.Equal(t, "25", model.Value)
 }
@@ -99,14 +80,14 @@ func TestVirtualControlSetValue(t *testing.T) {
 func TestVirtualControlWatchers(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10) // Генерация случайного имени для контрола
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,      // Используем константу для устройства
 			Name:   controlName, // Используем сгенерированное имя
@@ -134,14 +115,14 @@ func TestVirtualControlWatchers(t *testing.T) {
 func TestVirtualControlMQTTIntegration(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10) // Генерация случайного имени для контрола
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,      // Используем константу для устройства
 			Name:   controlName, // Используем сгенерированное имя
@@ -152,25 +133,20 @@ func TestVirtualControlMQTTIntegration(t *testing.T) {
 
 	vc := NewVirtualControl(opt)
 
-	// Перед подпиской отправляем пустое сообщение с флагом Retained, чтобы очистить старое значение
-	_ = client.Publish(wb.PublishPayload{
-		Topic:    vc.GetInfo().ValueTopic,
-		Value:    "", // Отправляем пустое значение
-		QOS:      1,
-		Retained: true, // Устанавливаем Retained, чтобы очистить топик
-	})
-
 	// Подписываемся на MQTT-топик и проверяем сообщения
-	messageChan := make(chan string, 1)
+	messageChan := make(chan string, 2)
 	err := client.Subscribe(vc.GetInfo().ValueTopic, func(client mqtt.Client, msg mqtt.Message) {
+		fmt.Println(msg.Topic(), string(msg.Payload()))
 		messageChan <- string(msg.Payload())
 	})
 	require.NoError(t, err)
 
+	<-messageChan
+
 	// Устанавливаем новое значение, которое должно быть отправлено в MQTT
 	vc.SetValue("50")
 
-	// Проверяем, что сообщение с новым значением пришло в канал
+	//Проверяем, что сообщение с новым значением пришло в канал
 	select {
 	case msg := <-messageChan:
 		assert.Equal(t, "50", msg) // Ожидаем значение "50"
@@ -182,14 +158,14 @@ func TestVirtualControlMQTTIntegration(t *testing.T) {
 func TestVirtualControlDefaultValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -207,8 +183,8 @@ func TestVirtualControlDefaultValue(t *testing.T) {
 func TestVirtualControlMetaData(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 
@@ -225,7 +201,7 @@ func TestVirtualControlMetaData(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -251,8 +227,8 @@ func TestVirtualControlMetaData(t *testing.T) {
 func TestVirtualControlOnHandler(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 
@@ -268,7 +244,7 @@ func TestVirtualControlOnHandler(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -301,8 +277,8 @@ func TestVirtualControlOnHandler(t *testing.T) {
 func TestVirtualControlDefaultValueInTopic(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 
@@ -311,7 +287,7 @@ func TestVirtualControlDefaultValueInTopic(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -341,8 +317,8 @@ func TestVirtualControlDefaultValueInTopic(t *testing.T) {
 func TestVirtualControlMetaInTopic(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 
@@ -360,7 +336,7 @@ func TestVirtualControlMetaInTopic(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -393,8 +369,8 @@ func TestVirtualControlMetaInTopic(t *testing.T) {
 func TestVirtualControlNoDuplicatePushesWithMqtt(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := "42"
@@ -402,7 +378,7 @@ func TestVirtualControlNoDuplicatePushesWithMqtt(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,

@@ -1,10 +1,12 @@
 package virualcontrol
 
 import (
+	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
-	"github.com/ValentinAlekhin/wb-go/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -14,15 +16,15 @@ import (
 func TestVirtualTimeControlGetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(14, 30, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -40,15 +42,15 @@ func TestVirtualTimeControlGetValue(t *testing.T) {
 func TestVirtualTimeControlSetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(8, 15, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -70,8 +72,8 @@ func TestVirtualTimeControlSetValue(t *testing.T) {
 func TestVirtualTimeControlOnHandler(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(6, 45, 0)
@@ -80,7 +82,7 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -111,15 +113,15 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 func TestVirtualTimeControlAddWatcher(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(7, 0, 0)
 
 	vc := NewVirtualTimeControl(TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -140,6 +142,8 @@ func TestVirtualTimeControlAddWatcher(t *testing.T) {
 	newValue := timeonly.NewTime(10, 30, 45)
 	vc.SetValue(newValue)
 
+	time.Sleep(50 * time.Millisecond)
+
 	// Verify that the watcher was called
 	assert.True(t, watcherCalled)
 }
@@ -147,15 +151,15 @@ func TestVirtualTimeControlAddWatcher(t *testing.T) {
 func TestVirtualTimeControlMetaType(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(12, 0, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,

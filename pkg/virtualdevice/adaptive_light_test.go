@@ -2,12 +2,9 @@ package virtualdevice
 
 import (
 	"fmt"
-	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"
-	"github.com/ValentinAlekhin/wb-go/testutils"
-	"github.com/ValentinAlekhin/wb-go/testutils/test_mqtt_server"
+	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/glebarez/sqlite"
 	"testing"
 	"time"
 
@@ -15,38 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
-	"gorm.io/gorm"
 )
 
-var testClient wb.ClientInterface
-var testDB *gorm.DB
-
-func TestMain(m *testing.M) {
-	test_mqtt_server.StartMQTTBroker(false)
-	testClient = testutils.GetMqttClient()
-
-	database, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	err = database.AutoMigrate(&virualcontrol.ControlModel{})
-	if err != nil {
-		panic(err)
-	}
-
-	testDB = database
-
-	fmt.Println("DONE")
-
-	m.Run()
-
-	database.Where("1 = 1").Delete(&virualcontrol.ControlModel{})
-}
-
 func TestNewAdaptiveLight_NilDB(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+
 	config := AdaptiveLightConfig{
 		DB:     nil,
-		Client: testClient,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -56,9 +31,14 @@ func TestNewAdaptiveLight_NilDB(t *testing.T) {
 }
 
 func TestNewAdaptiveLight_EmptyDevice(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "",
 	}
 
@@ -68,9 +48,14 @@ func TestNewAdaptiveLight_EmptyDevice(t *testing.T) {
 }
 
 func TestNewAdaptiveLight_Initialization(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -86,6 +71,8 @@ func TestNewAdaptiveLight_Initialization(t *testing.T) {
 }
 
 func TestNewAdaptiveLight_InvalidConfig(t *testing.T) {
+	t.Parallel()
+
 	_, err := NewAdaptiveLight(AdaptiveLightConfig{
 		DB:     nil,
 		Client: nil,
@@ -95,9 +82,14 @@ func TestNewAdaptiveLight_InvalidConfig(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetInfo(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -109,9 +101,14 @@ func TestAdaptiveLight_GetInfo(t *testing.T) {
 }
 
 func TestAdaptiveLight_Update_Disabled(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -127,9 +124,14 @@ func TestAdaptiveLight_Update_Disabled(t *testing.T) {
 }
 
 func TestAdaptiveLight_SleepMode(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -210,9 +212,14 @@ func TestAdaptiveLight_SleepMode(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetBrightness(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -227,9 +234,14 @@ func TestAdaptiveLight_GetBrightness(t *testing.T) {
 }
 
 func TestAdaptiveLight_GetColorTemp(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -249,9 +261,14 @@ func TestAdaptiveLight_GetColorTemp(t *testing.T) {
 }
 
 func TestAdaptiveLight_MetaPublishing(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
 	config := AdaptiveLightConfig{
-		DB:     testDB,
-		Client: testClient,
+		DB:     database,
+		Client: client,
 		Device: "TestDevice",
 	}
 
@@ -259,7 +276,7 @@ func TestAdaptiveLight_MetaPublishing(t *testing.T) {
 	require.NoError(t, err)
 
 	messageChan := make(chan string, 1)
-	err = testClient.Subscribe(al.GetInfo().MetaTopic, func(client mqtt.Client, msg mqtt.Message) {
+	err = client.Subscribe(al.GetInfo().MetaTopic, func(client mqtt.Client, msg mqtt.Message) {
 		messageChan <- string(msg.Payload())
 	})
 	require.NoError(t, err)

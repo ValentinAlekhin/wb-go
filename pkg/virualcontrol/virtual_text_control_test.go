@@ -1,9 +1,11 @@
 package virualcontrol
 
 import (
+	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"github.com/ValentinAlekhin/wb-go/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -13,15 +15,15 @@ import (
 func TestVirtualTextControlGetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := "initial_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -39,15 +41,15 @@ func TestVirtualTextControlGetValue(t *testing.T) {
 func TestVirtualTextControlSetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -69,8 +71,8 @@ func TestVirtualTextControlSetValue(t *testing.T) {
 func TestVirtualTextControlOnHandler(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
@@ -79,7 +81,7 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -110,15 +112,15 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 func TestVirtualTextControlAddWatcher(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	vc := NewVirtualTextControl(TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -138,6 +140,8 @@ func TestVirtualTextControlAddWatcher(t *testing.T) {
 	// Устанавливаем новое значение, что должно вызвать срабатывание watcher
 	vc.SetValue("new_value")
 
+	time.Sleep(50 * time.Millisecond)
+
 	// Проверяем, что watcher был вызван
 	assert.True(t, watcherCalled)
 }
@@ -145,15 +149,15 @@ func TestVirtualTextControlAddWatcher(t *testing.T) {
 func TestVirtualTextControlMetaType(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,

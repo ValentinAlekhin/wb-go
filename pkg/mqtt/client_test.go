@@ -1,7 +1,7 @@
 package mqtt
 
 import (
-	"github.com/ValentinAlekhin/wb-go/testutils/test_mqtt_server"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils/test_mqtt_server"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	mochi "github.com/mochi-mqtt/server/v2"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +15,7 @@ const testTopic = "test/topic"
 const testValue = "test_value"
 
 func TestMain(m *testing.M) {
-	broker = test_mqtt_server.StartMQTTBroker(false)
+	broker = test_mqtt_server.StartMQTTBroker()
 
 	m.Run()
 

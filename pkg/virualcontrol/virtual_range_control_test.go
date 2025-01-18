@@ -1,9 +1,11 @@
 package virualcontrol
 
 import (
+	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"github.com/ValentinAlekhin/wb-go/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -13,15 +15,15 @@ import (
 func TestVirtualRangeControlGetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 42
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -39,15 +41,15 @@ func TestVirtualRangeControlGetValue(t *testing.T) {
 func TestVirtualRangeControlSetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -68,8 +70,8 @@ func TestVirtualRangeControlSetValue(t *testing.T) {
 func TestVirtualRangeControlOnHandler(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
@@ -78,7 +80,7 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -109,15 +111,15 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 func TestVirtualRangeControlAddWatcher(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	vc := NewVirtualRangeControl(RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -146,15 +148,15 @@ func TestVirtualRangeControlAddWatcher(t *testing.T) {
 func TestVirtualRangeControlMetaType(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,

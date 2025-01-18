@@ -1,9 +1,11 @@
 package virualcontrol
 
 import (
+	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"github.com/ValentinAlekhin/wb-go/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -13,15 +15,15 @@ import (
 func TestVirtualValueControlGetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 42.42
 
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -39,15 +41,15 @@ func TestVirtualValueControlGetValue(t *testing.T) {
 func TestVirtualValueControlSetValue(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -69,8 +71,8 @@ func TestVirtualValueControlSetValue(t *testing.T) {
 func TestVirtualValueControlOnHandler(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
@@ -79,7 +81,7 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -108,17 +110,15 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualValueControlAddWatcher(t *testing.T) {
-	t.Parallel()
-
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
 	vc := NewVirtualValueControl(ValueOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,
@@ -148,15 +148,15 @@ func TestVirtualValueControlAddWatcher(t *testing.T) {
 func TestVirtualValueControlMetaType(t *testing.T) {
 	t.Parallel()
 
-	client, _, destroy := testutils.GetClientWithBroker()
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
-			DB:     testDB,
+			DB:     database,
 			Client: client,
 			Device: device,
 			Name:   controlName,

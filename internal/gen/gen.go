@@ -83,25 +83,34 @@ func (g *GenerateService) collectDevicesData() []watchDeviceItem {
 	list := make([]watchDeviceItem, 0)
 	devChan := make(chan watchDeviceItem)
 
-	duration := 100 * time.Millisecond
-	timer := time.NewTimer(duration)
-	defer timer.Stop()
+	done := make(chan struct{})
+
+	go func() {
+		duration := 100 * time.Millisecond
+		timer := time.NewTimer(duration)
+		defer timer.Stop()
+
+		for {
+			select {
+			case item := <-devChan:
+				if !timer.Stop() {
+					<-timer.C
+				}
+				timer.Reset(duration)
+				list = append(list, item)
+			case <-timer.C:
+				done <- struct{}{}
+				return
+			}
+		}
+	}()
 
 	watcher := g.getDeviceMetaWatcher(devChan)
 	_ = g.client.Subscribe(deviceMetaTopic, watcher)
 
-	for {
-		select {
-		case item := <-devChan:
-			if !timer.Stop() {
-				<-timer.C
-			}
-			timer.Reset(duration)
-			list = append(list, item)
-		case <-timer.C:
-			return list
-		}
-	}
+	<-done
+
+	return list
 }
 
 func (g *GenerateService) getDeviceMetaWatcher(ch chan<- watchDeviceItem) func(client mqtt.Client, msg mqtt.Message) {
@@ -129,25 +138,34 @@ func (g *GenerateService) collectControlsData() []watchControlResultItem {
 	var list []watchControlResultItem
 	controlCh := make(chan watchControlResultItem)
 
-	duration := 100 * time.Millisecond
-	timer := time.NewTimer(duration)
-	defer timer.Stop()
+	done := make(chan struct{})
+
+	go func() {
+		duration := 100 * time.Millisecond
+		timer := time.NewTimer(duration)
+		defer timer.Stop()
+
+		for {
+			select {
+			case item := <-controlCh:
+				if !timer.Stop() {
+					<-timer.C
+				}
+				timer.Reset(duration)
+				list = append(list, item)
+			case <-timer.C:
+				done <- struct{}{}
+				return
+			}
+		}
+	}()
 
 	watcher := g.getControlMetaWatcher(controlCh)
 	_ = g.client.Subscribe(controlMetaTopic, watcher)
 
-	for {
-		select {
-		case item := <-controlCh:
-			if !timer.Stop() {
-				<-timer.C
-			}
-			timer.Reset(duration)
-			list = append(list, item)
-		case <-timer.C:
-			return list
-		}
-	}
+	<-done
+
+	return list
 }
 
 func (g *GenerateService) getControlMetaWatcher(ch chan<- watchControlResultItem) func(client mqtt.Client, msg mqtt.Message) {
@@ -176,8 +194,6 @@ func (g *GenerateService) getControlMetaWatcher(ch chan<- watchControlResultItem
 
 func (g *GenerateService) generateTemplates(list []watchControlResultItem) map[string]deviceTemplateData {
 	deviceMap := map[string]deviceTemplateData{}
-
-	fmt.Println("LEN", len(list))
 
 	for _, item := range list {
 		key := item.DeviceName

@@ -1,7 +1,8 @@
 package control
 
 import (
-	"github.com/ValentinAlekhin/wb-go/testutils"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -10,9 +11,8 @@ import (
 func TestSwitchControl_SetAndGetValue(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "switch",
@@ -41,9 +41,8 @@ func TestSwitchControl_SetAndGetValue(t *testing.T) {
 func TestSwitchControl_Toggle(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "switch",
@@ -76,9 +75,8 @@ func TestSwitchControl_Toggle(t *testing.T) {
 func TestSwitchControl_AddWatcher(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "switch",
@@ -116,9 +114,8 @@ func TestSwitchControl_AddWatcher(t *testing.T) {
 func TestSwitchControl_TurnOn(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "switch",
@@ -144,9 +141,8 @@ func TestSwitchControl_TurnOn(t *testing.T) {
 func TestSwitchControl_TurnOff(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "switch",
@@ -172,9 +168,8 @@ func TestSwitchControl_TurnOff(t *testing.T) {
 func TestSwitchControl_TurnOnAndOff(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "switch",

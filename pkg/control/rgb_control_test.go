@@ -1,7 +1,8 @@
 package control
 
 import (
-	"github.com/ValentinAlekhin/wb-go/testutils"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -10,9 +11,8 @@ import (
 func TestRgbControl_SetAndGetValue(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "rgb",
@@ -48,9 +48,8 @@ func TestRgbControl_SetAndGetValue(t *testing.T) {
 func TestRgbControl_AddWatcher(t *testing.T) {
 	t.Parallel()
 
-	client, server, destroy := testutils.GetClientWithBroker()
-	testutils.AddOnHandler(server)
-	defer destroy()
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
 
 	meta := Meta{
 		Type: "rgb",

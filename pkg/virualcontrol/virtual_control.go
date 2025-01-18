@@ -3,6 +3,7 @@ package virualcontrol
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -52,7 +53,7 @@ func (c *VirtualControl) SetValue(value string) {
 		return
 	}
 
-	c.db.Model(&ControlModel{}).Where("topic = ?", c.valueTopic).Update("value", value)
+	c.db.Model(&db.ControlModel{}).Where("topic = ?", c.valueTopic).Update("value", value)
 
 	payload := control.WatcherPayload{
 		NewValue: value,
@@ -135,7 +136,7 @@ func (c *VirtualControl) setMeta() {
 }
 
 func (c *VirtualControl) loadPrevValue(defaultValue string) {
-	model := ControlModel{Topic: c.valueTopic}
+	model := db.ControlModel{Topic: c.valueTopic}
 	result := c.db.First(&model)
 	if result.Error != nil {
 		fmt.Println(result.Error)
