@@ -8,14 +8,7 @@ import (
 )
 
 type WbMs235Controls struct {
-	Temperature     *control.ValueControl
-	Humidity        *control.ValueControl
-	AirQualityVoc   *control.ValueControl
-	AirQualityIndex *control.ValueControl
-	Illuminance     *control.ValueControl
-	ExternalSensor1 *control.ValueControl
-	ExternalSensor2 *control.ValueControl
-	Serial          *control.TextControl
+	Temperature *control.ValueControl
 }
 
 type WbMs235 struct {
@@ -46,56 +39,6 @@ func NewWbMs235(client mqtt.ClientInterface) *WbMs235 {
 				Order:    1,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Температура`},
-			}),
-			Humidity: control.NewValueControl(client, name, "Humidity", control.Meta{
-				Type: "rel_humidity",
-
-				Order:    2,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Влажность`},
-			}),
-			AirQualityVoc: control.NewValueControl(client, name, "Air Quality (VOC)", control.Meta{
-				Type:  "value",
-				Units: "ppb",
-
-				Order:    3,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Качество воздуха (VOC)`},
-			}),
-			AirQualityIndex: control.NewValueControl(client, name, "Air Quality Index", control.Meta{
-				Type: "value",
-
-				Order:    4,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Индекс качества воздуха (AQI)`},
-			}),
-			Illuminance: control.NewValueControl(client, name, "Illuminance", control.Meta{
-				Type: "lux",
-
-				Order:    5,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Освещенность`},
-			}),
-			ExternalSensor1: control.NewValueControl(client, name, "External Sensor 1", control.Meta{
-				Type: "temperature",
-
-				Order:    6,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Датчик температуры 1`},
-			}),
-			ExternalSensor2: control.NewValueControl(client, name, "External Sensor 2", control.Meta{
-				Type: "temperature",
-
-				Order:    7,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Датчик температуры 2`},
-			}),
-			Serial: control.NewTextControl(client, name, "Serial", control.Meta{
-				Type: "text",
-
-				Order:    8,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"ru": `Серийный номер`},
 			}),
 		}
 

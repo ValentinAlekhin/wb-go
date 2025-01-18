@@ -14,6 +14,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 	"unicode"
@@ -23,6 +24,10 @@ type GenerateService struct {
 	client      wb.ClientInterface
 	outputDir   string
 	packageName string
+}
+
+type deviceMeta struct {
+	Driver string `json:"driver"`
 }
 
 type deviceControlTemplateData struct {
@@ -43,7 +48,12 @@ type deviceTemplateData struct {
 	PackageName              string
 }
 
-type watchResultItem struct {
+type watchDeviceItem struct {
+	Meta deviceMeta
+	Name string
+}
+
+type watchControlResultItem struct {
 	DeviceName string
 	Control    string
 	Meta       control.Meta
@@ -62,32 +72,90 @@ func NewGenerateService(client wb.ClientInterface, output string, packageName st
 }
 
 func (g *GenerateService) Run() {
-	watchResults := g.collectData()
-	filteredResults := g.filterUnique(watchResults)
+	deviceData := g.collectDevicesData()
+	watchResults := g.collectControlsData()
+	filteredResults := g.filter(watchResults, deviceData)
 	templatesData := g.generateTemplates(filteredResults)
 	g.generateFiles(templatesData)
 }
 
-func (g *GenerateService) collectData() []watchResultItem {
-	var list []watchResultItem
+func (g *GenerateService) collectDevicesData() []watchDeviceItem {
+	list := make([]watchDeviceItem, 0)
+	devChan := make(chan watchDeviceItem)
 
-	watcher := g.getTopicWatcher(&list)
-	_ = g.client.Subscribe(mqttTopic, watcher)
-	time.Sleep(1 * time.Second)
+	duration := 100 * time.Millisecond
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
 
-	return list
+	watcher := g.getDeviceMetaWatcher(devChan)
+	_ = g.client.Subscribe(deviceMetaTopic, watcher)
+
+	for {
+		select {
+		case item := <-devChan:
+			if !timer.Stop() {
+				<-timer.C
+			}
+			timer.Reset(duration)
+			list = append(list, item)
+		case <-timer.C:
+			return list
+		}
+	}
 }
 
-func (g *GenerateService) getTopicWatcher(list *[]watchResultItem) func(client mqtt.Client, msg mqtt.Message) {
+func (g *GenerateService) getDeviceMetaWatcher(ch chan<- watchDeviceItem) func(client mqtt.Client, msg mqtt.Message) {
+	return func(client mqtt.Client, msg mqtt.Message) {
+		topic := msg.Topic()
+		metaStr := string(msg.Payload())
+
+		topicParts := strings.Split(topic, "/")
+		name := topicParts[2]
+
+		meta := deviceMeta{}
+		err := json.Unmarshal([]byte(metaStr), &meta)
+		if err != nil {
+			panic(err)
+		}
+
+		ch <- watchDeviceItem{
+			Meta: meta,
+			Name: name,
+		}
+	}
+}
+
+func (g *GenerateService) collectControlsData() []watchControlResultItem {
+	var list []watchControlResultItem
+	controlCh := make(chan watchControlResultItem)
+
+	duration := 100 * time.Millisecond
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+
+	watcher := g.getControlMetaWatcher(controlCh)
+	_ = g.client.Subscribe(controlMetaTopic, watcher)
+
+	for {
+		select {
+		case item := <-controlCh:
+			if !timer.Stop() {
+				<-timer.C
+			}
+			timer.Reset(duration)
+			list = append(list, item)
+		case <-timer.C:
+			return list
+		}
+	}
+}
+
+func (g *GenerateService) getControlMetaWatcher(ch chan<- watchControlResultItem) func(client mqtt.Client, msg mqtt.Message) {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		topic := msg.Topic()
 		meta := string(msg.Payload())
 
 		topicParts := strings.Split(topic, "/")
-		if len(topicParts) < 5 {
-			return
-		}
-
 		device := topicParts[2]
 		controlName := topicParts[4]
 		controlMeta := control.Meta{}
@@ -97,18 +165,17 @@ func (g *GenerateService) getTopicWatcher(list *[]watchResultItem) func(client m
 			panic(err)
 		}
 
-		item := watchResultItem{
+		ch <- watchControlResultItem{
 			DeviceName: device,
 			Control:    controlName,
 			Meta:       controlMeta,
 		}
 
-		*list = append(*list, item)
 	}
 }
 
-func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*deviceTemplateData {
-	deviceMap := map[string]*deviceTemplateData{}
+func (g *GenerateService) generateTemplates(list []watchControlResultItem) map[string]deviceTemplateData {
+	deviceMap := map[string]deviceTemplateData{}
 
 	for _, item := range list {
 		key := item.DeviceName
@@ -119,7 +186,7 @@ func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*
 			filename := item.DeviceName
 
 			controlTemplate := g.getControlTemplate(item)
-			newVal := &deviceTemplateData{
+			newVal := deviceTemplateData{
 				DeviceName:               item.DeviceName,
 				DeviceStructName:         deviceStructName,
 				DeviceControlsStructName: deviceControlsStructName,
@@ -139,7 +206,7 @@ func (g *GenerateService) generateTemplates(list []watchResultItem) map[string]*
 
 }
 
-func (g *GenerateService) getControlTemplate(control watchResultItem) deviceControlTemplateData {
+func (g *GenerateService) getControlTemplate(control watchControlResultItem) deviceControlTemplateData {
 	typeName := control.Meta.Type
 	for key, val := range controlValueTypeMap {
 		if !slices.Contains(val, control.Meta.Type) {
@@ -164,11 +231,22 @@ func (g *GenerateService) getControlTemplate(control watchResultItem) deviceCont
 	}
 }
 
-func (g *GenerateService) filterUnique(list []watchResultItem) []watchResultItem {
+func (g *GenerateService) filter(list []watchControlResultItem, devices []watchDeviceItem) []watchControlResultItem {
 	uniqueMap := make(map[string]struct{})
-	var result []watchResultItem
+	var result []watchControlResultItem
+
+	devicesToIgnore := make(map[string]struct{})
+	for _, device := range devices {
+		if slices.Contains(driversToExclude, device.Meta.Driver) {
+			devicesToIgnore[device.Name] = struct{}{}
+		}
+	}
 
 	for _, item := range list {
+		if _, ok := devicesToIgnore[item.DeviceName]; ok {
+			continue
+		}
+
 		key := item.DeviceName + "|" + item.Control
 		if _, exists := uniqueMap[key]; !exists {
 			uniqueMap[key] = struct{}{}
@@ -179,7 +257,7 @@ func (g *GenerateService) filterUnique(list []watchResultItem) []watchResultItem
 	return result
 }
 
-func (g *GenerateService) generateFiles(data map[string]*deviceTemplateData) {
+func (g *GenerateService) generateFiles(data map[string]deviceTemplateData) {
 	outputDir := g.getOutputDir()
 
 	err := os.MkdirAll(outputDir, os.ModePerm)
@@ -187,9 +265,17 @@ func (g *GenerateService) generateFiles(data map[string]*deviceTemplateData) {
 		panic(err)
 	}
 
+	wg := sync.WaitGroup{}
+	wg.Add(len(data))
+
 	for _, v := range data {
-		g.generateFile(v, outputDir)
+		go func() {
+			g.generateFile(v, outputDir)
+			wg.Done()
+		}()
 	}
+
+	wg.Wait()
 }
 
 func (g *GenerateService) getOutputDir() string {
@@ -205,7 +291,7 @@ func (g *GenerateService) getOutputDir() string {
 	return dir
 }
 
-func (g *GenerateService) generateFile(data *deviceTemplateData, outputDir string) {
+func (g *GenerateService) generateFile(data deviceTemplateData, outputDir string) {
 	tmpl, err := template.ParseFS(embedFs, deviceTemplateFile)
 	if err != nil {
 		panic(err)
@@ -219,9 +305,8 @@ func (g *GenerateService) generateFile(data *deviceTemplateData, outputDir strin
 
 	formattedCode, err := format.Source(buf.Bytes())
 	if err != nil {
-		fmt.Println("Ошибка форматирования:", err)
-		fmt.Println("Сгенерированный код до форматирования:")
-		fmt.Println(buf.String())
+		fmt.Println("Formating error:", err)
+		fmt.Println("Code: \n", buf.String())
 	}
 
 	outputPath := fmt.Sprintf("%s/%s.go", outputDir, data.Filename)
@@ -230,5 +315,5 @@ func (g *GenerateService) generateFile(data *deviceTemplateData, outputDir strin
 		panic(err)
 	}
 
-	fmt.Printf("Сгененирован файл %s\n", outputPath)
+	fmt.Printf("File generated %s\n", outputPath)
 }

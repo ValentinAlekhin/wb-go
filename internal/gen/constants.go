@@ -2,10 +2,14 @@ package gen
 
 import (
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
+	"github.com/ValentinAlekhin/wb-go/pkg/virtualdevice"
 )
 
-const mqttTopic = "/devices/+/controls/+/meta"
+const deviceMetaTopic = "/devices/+/meta"
+const controlMetaTopic = "/devices/+/controls/+/meta"
 const deviceTemplateFile = "templates/device.gotmpl"
+
+var driversToExclude = []string{virtualdevice.DevicePrefix}
 
 var controlValueTypeMap = map[string][]string{
 	"value": {

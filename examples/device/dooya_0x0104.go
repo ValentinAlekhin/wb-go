@@ -8,11 +8,7 @@ import (
 )
 
 type Dooya0X0104Controls struct {
-	Position       *control.RangeControl
-	Open           *control.PushbuttonControl
-	Close          *control.PushbuttonControl
-	Stop           *control.PushbuttonControl
-	FactoryDefault *control.PushbuttonControl
+	Position *control.RangeControl
 }
 
 type Dooya0X0104 struct {
@@ -45,34 +41,6 @@ func NewDooya0X0104(client mqtt.ClientInterface) *Dooya0X0104 {
 				Order:    1,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Позиция`},
-			}),
-			Open: control.NewPushbuttonControl(client, name, "Open", control.Meta{
-				Type: "pushbutton",
-
-				Order:    2,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Открыть`},
-			}),
-			Close: control.NewPushbuttonControl(client, name, "Close", control.Meta{
-				Type: "pushbutton",
-
-				Order:    3,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Закрыть`},
-			}),
-			Stop: control.NewPushbuttonControl(client, name, "Stop", control.Meta{
-				Type: "pushbutton",
-
-				Order:    4,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Остановить`},
-			}),
-			FactoryDefault: control.NewPushbuttonControl(client, name, "Factory Default", control.Meta{
-				Type: "pushbutton",
-
-				Order:    5,
-				ReadOnly: false,
-				Title:    control.MultilingualText{"ru": `Сбросить настройки`},
 			}),
 		}
 

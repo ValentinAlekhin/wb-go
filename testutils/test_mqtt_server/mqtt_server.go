@@ -47,7 +47,6 @@ func StartMQTTBroker(deviceOnMock bool) *mochi.Server {
 		}
 	}()
 
-	// Подождите немного, чтобы брокер успел запуститься
 	time.Sleep(100 * time.Millisecond)
 
 	return server

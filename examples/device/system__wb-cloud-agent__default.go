@@ -8,9 +8,7 @@ import (
 )
 
 type SystemWbCloudAgentDefaultControls struct {
-	Status         *control.TextControl
-	ActivationLink *control.TextControl
-	CloudBaseUrl   *control.TextControl
+	Status *control.TextControl
 }
 
 type SystemWbCloudAgentDefault struct {
@@ -41,20 +39,6 @@ func NewSystemWbCloudAgentDefault(client mqtt.ClientInterface) *SystemWbCloudAge
 				Order:    1,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Status`},
-			}),
-			ActivationLink: control.NewTextControl(client, name, "activation_link", control.Meta{
-				Type: "text",
-
-				Order:    2,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"en": `Link`},
-			}),
-			CloudBaseUrl: control.NewTextControl(client, name, "cloud_base_url", control.Meta{
-				Type: "text",
-
-				Order:    3,
-				ReadOnly: true,
-				Title:    control.MultilingualText{"en": `URL`},
 			}),
 		}
 

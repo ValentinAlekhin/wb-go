@@ -43,7 +43,7 @@ jobs:
         run: go mod verify
 
       - name: Run tests
-        run: go test ./pkg/control/ && go test ./pkg/mqtt/ && go test ./pkg/virualcontrol/ && go test ./pkg/virtuladevice/
+        run: go test ./pkg/control/ && go test ./pkg/mqtt/ && go test ./pkg/virualcontrol/ && go test ./pkg/virtuladevice/ && go test ./internal/gen/
 
       - name: Run generate_docs.go
         run: go run scripts/generate_docs.go
