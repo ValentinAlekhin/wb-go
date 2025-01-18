@@ -11,13 +11,18 @@ import (
 )
 
 func TestVirtualRangeControlGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 42
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -32,13 +37,18 @@ func TestVirtualRangeControlGetValue(t *testing.T) {
 }
 
 func TestVirtualRangeControlSetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -56,6 +66,11 @@ func TestVirtualRangeControlSetValue(t *testing.T) {
 }
 
 func TestVirtualRangeControlOnHandler(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
@@ -64,7 +79,7 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -78,7 +93,7 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 
 	vc := NewVirtualRangeControl(opt)
 
-	err := testClient.Publish(wb.PublishPayload{
+	err := client.Publish(wb.PublishPayload{
 		Value: "25",
 		QOS:   0,
 		Topic: vc.GetInfo().CommandTopic,
@@ -92,13 +107,18 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualRangeControlAddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	vc := NewVirtualRangeControl(RangeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -124,13 +144,18 @@ func TestVirtualRangeControlAddWatcher(t *testing.T) {
 }
 
 func TestVirtualRangeControlMetaType(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},

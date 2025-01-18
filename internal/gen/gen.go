@@ -30,7 +30,7 @@ type deviceMeta struct {
 	Driver string `json:"driver"`
 }
 
-type deviceControlTemplateData struct {
+type controlTemplateData struct {
 	Name       string
 	Mqtt       string
 	ReadOnly   bool
@@ -44,7 +44,7 @@ type deviceTemplateData struct {
 	DeviceStructName         string
 	DeviceControlsStructName string
 	Filename                 string
-	Controls                 []deviceControlTemplateData
+	Controls                 []controlTemplateData
 	PackageName              string
 }
 
@@ -177,6 +177,8 @@ func (g *GenerateService) getControlMetaWatcher(ch chan<- watchControlResultItem
 func (g *GenerateService) generateTemplates(list []watchControlResultItem) map[string]deviceTemplateData {
 	deviceMap := map[string]deviceTemplateData{}
 
+	fmt.Println("LEN", len(list))
+
 	for _, item := range list {
 		key := item.DeviceName
 		if val, ok := deviceMap[key]; !ok {
@@ -192,21 +194,21 @@ func (g *GenerateService) generateTemplates(list []watchControlResultItem) map[s
 				DeviceControlsStructName: deviceControlsStructName,
 				Filename:                 filename,
 				PackageName:              g.packageName,
-				Controls:                 []deviceControlTemplateData{controlTemplate},
+				Controls:                 []controlTemplateData{controlTemplate},
 			}
 
 			deviceMap[key] = newVal
 		} else {
 			controlTemplate := g.getControlTemplate(item)
 			val.Controls = append(val.Controls, controlTemplate)
+			deviceMap[key] = val
 		}
 	}
 
 	return deviceMap
-
 }
 
-func (g *GenerateService) getControlTemplate(control watchControlResultItem) deviceControlTemplateData {
+func (g *GenerateService) getControlTemplate(control watchControlResultItem) controlTemplateData {
 	typeName := control.Meta.Type
 	for key, val := range controlValueTypeMap {
 		if !slices.Contains(val, control.Meta.Type) {
@@ -221,7 +223,7 @@ func (g *GenerateService) getControlTemplate(control watchControlResultItem) dev
 		name = "C" + name
 	}
 
-	return deviceControlTemplateData{
+	return controlTemplateData{
 		Name:       name,
 		Mqtt:       control.Control,
 		ReadOnly:   control.Meta.ReadOnly,
@@ -232,26 +234,28 @@ func (g *GenerateService) getControlTemplate(control watchControlResultItem) dev
 }
 
 func (g *GenerateService) filter(list []watchControlResultItem, devices []watchDeviceItem) []watchControlResultItem {
-	uniqueMap := make(map[string]struct{})
-	var result []watchControlResultItem
-
-	devicesToIgnore := make(map[string]struct{})
+	devicesToIgnore := make(map[string]struct{}, len(devices))
 	for _, device := range devices {
 		if slices.Contains(driversToExclude, device.Meta.Driver) {
 			devicesToIgnore[device.Name] = struct{}{}
 		}
 	}
 
+	uniqueControls := make(map[string]struct{}, len(list))
+	var result []watchControlResultItem
+
 	for _, item := range list {
-		if _, ok := devicesToIgnore[item.DeviceName]; ok {
+		if _, ignore := devicesToIgnore[item.DeviceName]; ignore {
 			continue
 		}
 
 		key := item.DeviceName + "|" + item.Control
-		if _, exists := uniqueMap[key]; !exists {
-			uniqueMap[key] = struct{}{}
-			result = append(result, item)
+		if _, exists := uniqueControls[key]; exists {
+			continue
 		}
+
+		uniqueControls[key] = struct{}{}
+		result = append(result, item)
 	}
 
 	return result

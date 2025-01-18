@@ -11,13 +11,18 @@ import (
 )
 
 func TestVirtualValueControlGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 42.42
 
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -32,13 +37,18 @@ func TestVirtualValueControlGetValue(t *testing.T) {
 }
 
 func TestVirtualValueControlSetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -57,6 +67,11 @@ func TestVirtualValueControlSetValue(t *testing.T) {
 }
 
 func TestVirtualValueControlOnHandler(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
@@ -65,7 +80,7 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -79,7 +94,7 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 
 	vc := NewVirtualValueControl(opt)
 
-	err := testClient.Publish(wb.PublishPayload{
+	err := client.Publish(wb.PublishPayload{
 		Value: "25.75",
 		QOS:   0,
 		Topic: vc.GetInfo().CommandTopic,
@@ -93,13 +108,18 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualValueControlAddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
 	vc := NewVirtualValueControl(ValueOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -119,18 +139,25 @@ func TestVirtualValueControlAddWatcher(t *testing.T) {
 	newValue := 25.75
 	vc.SetValue(newValue)
 
+	time.Sleep(100 * time.Millisecond)
+
 	// Проверяем, что watcher был вызван
 	assert.True(t, watcherCalled)
 }
 
 func TestVirtualValueControlMetaType(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
 	opt := ValueOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},

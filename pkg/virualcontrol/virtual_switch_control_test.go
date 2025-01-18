@@ -12,12 +12,17 @@ import (
 )
 
 func TestVirtualSwitchControlGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -32,12 +37,17 @@ func TestVirtualSwitchControlGetValue(t *testing.T) {
 }
 
 func TestVirtualSwitchControlSetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -54,13 +64,18 @@ func TestVirtualSwitchControlSetValue(t *testing.T) {
 }
 
 func TestVirtualSwitchControlOnHandler(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	handlerCalled := false
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -73,7 +88,7 @@ func TestVirtualSwitchControlOnHandler(t *testing.T) {
 
 	vc := NewVirtualSwitchControl(opt)
 
-	err := testClient.Publish(wb.PublishPayload{
+	err := client.Publish(wb.PublishPayload{
 		Value: conventions.CONV_META_BOOL_TRUE,
 		QOS:   0,
 		Topic: vc.GetInfo().CommandTopic,
@@ -87,11 +102,16 @@ func TestVirtualSwitchControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualSwitchControlAddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	vc := NewVirtualSwitchControl(SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -116,11 +136,16 @@ func TestVirtualSwitchControlAddWatcher(t *testing.T) {
 }
 
 func TestVirtualSwitchControlMetaType(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -134,12 +159,17 @@ func TestVirtualSwitchControlMetaType(t *testing.T) {
 }
 
 func TestVirtualSwitchControlToggle(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -161,12 +191,17 @@ func TestVirtualSwitchControlToggle(t *testing.T) {
 }
 
 func TestVirtualSwitchControlTurnOff(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -185,12 +220,17 @@ func TestVirtualSwitchControlTurnOff(t *testing.T) {
 }
 
 func TestVirtualSwitchControlTurnOn(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},

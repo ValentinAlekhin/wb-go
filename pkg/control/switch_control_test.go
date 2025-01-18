@@ -8,6 +8,12 @@ import (
 )
 
 func TestSwitchControl_SetAndGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}
@@ -33,6 +39,12 @@ func TestSwitchControl_SetAndGetValue(t *testing.T) {
 }
 
 func TestSwitchControl_Toggle(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}
@@ -62,6 +74,12 @@ func TestSwitchControl_Toggle(t *testing.T) {
 }
 
 func TestSwitchControl_AddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}
@@ -96,6 +114,12 @@ func TestSwitchControl_AddWatcher(t *testing.T) {
 }
 
 func TestSwitchControl_TurnOn(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}
@@ -118,6 +142,12 @@ func TestSwitchControl_TurnOn(t *testing.T) {
 }
 
 func TestSwitchControl_TurnOff(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}
@@ -140,6 +170,12 @@ func TestSwitchControl_TurnOff(t *testing.T) {
 }
 
 func TestSwitchControl_TurnOnAndOff(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}

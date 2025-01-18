@@ -9,6 +9,7 @@ import (
 
 type HwmonControls struct {
 	BoardTemperature *control.ValueControl
+	CpuTemperature   *control.ValueControl
 }
 
 type Hwmon struct {
@@ -37,6 +38,13 @@ func NewHwmon(client mqtt.ClientInterface) *Hwmon {
 				Type: "temperature",
 
 				Order:    1,
+				ReadOnly: true,
+				Title:    control.MultilingualText{},
+			}),
+			CpuTemperature: control.NewValueControl(client, name, "CPU Temperature", control.Meta{
+				Type: "temperature",
+
+				Order:    2,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),

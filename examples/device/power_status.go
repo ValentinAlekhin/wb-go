@@ -8,7 +8,8 @@ import (
 )
 
 type PowerStatusControls struct {
-	Vin *control.ValueControl
+	Vin              *control.ValueControl
+	WorkingOnBattery *control.SwitchControl
 }
 
 type PowerStatus struct {
@@ -39,6 +40,13 @@ func NewPowerStatus(client mqtt.ClientInterface) *PowerStatus {
 				Order:    1,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Input voltage`, "ru": `Входное напряжение`},
+			}),
+			WorkingOnBattery: control.NewSwitchControl(client, name, "working on battery", control.Meta{
+				Type: "switch",
+
+				Order:    2,
+				ReadOnly: true,
+				Title:    control.MultilingualText{"en": `Working on battery`, "ru": `Работа от батареи`},
 			}),
 		}
 

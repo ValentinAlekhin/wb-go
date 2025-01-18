@@ -1,32 +1,19 @@
 package control
 
 import (
-	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/testutils"
-	"github.com/ValentinAlekhin/wb-go/testutils/test_mqtt_server"
-	mochi "github.com/mochi-mqtt/server/v2"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
-var broker *mochi.Server
-var client wb.ClientInterface
-
-func TestMain(m *testing.M) {
-	broker = test_mqtt_server.StartMQTTBroker(true)
-	client = testutils.GetMqttClient()
-
-	m.Run()
-
-	client.Disconnect(100)
-	err := broker.Close()
-	if err != nil {
-		return
-	}
-}
-
 func TestSetAndGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}
@@ -45,6 +32,12 @@ func TestSetAndGetValue(t *testing.T) {
 }
 
 func TestControl_AddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "switch",
 	}

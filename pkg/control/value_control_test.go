@@ -9,6 +9,12 @@ import (
 )
 
 func TestValueControl_SetAndGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "value",
 	}
@@ -38,6 +44,12 @@ func TestValueControl_SetAndGetValue(t *testing.T) {
 }
 
 func TestValueControl_AddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "value",
 	}

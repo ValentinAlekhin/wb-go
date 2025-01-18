@@ -8,6 +8,12 @@ import (
 )
 
 func TestRangeControl_SetAndGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{}
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
@@ -31,6 +37,12 @@ func TestRangeControl_SetAndGetValue(t *testing.T) {
 }
 
 func TestRangeControl_AddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{}
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)

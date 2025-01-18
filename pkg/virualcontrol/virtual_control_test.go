@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"github.com/ValentinAlekhin/wb-go/testutils/test_mqtt_server"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"testing"
 	"time"
@@ -19,25 +18,20 @@ import (
 
 const device = "test-device" // Константа для устройства
 
-var testClient wb.ClientInterface
 var testDB *gorm.DB
 
 func TestMain(m *testing.M) {
-	test_mqtt_server.StartMQTTBroker(false)
-	testClient = testutils.GetMqttClient()
-
 	database, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
 	err = database.AutoMigrate(&ControlModel{})
+	fmt.Println("MOGRATE", err)
 	if err != nil {
 		panic(err)
 	}
 
 	testDB = database
-
-	fmt.Println("DONE")
 
 	m.Run()
 
@@ -45,12 +39,17 @@ func TestMain(m *testing.M) {
 }
 
 func TestVirtualControlInitialization(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta: control.Meta{
@@ -68,12 +67,17 @@ func TestVirtualControlInitialization(t *testing.T) {
 }
 
 func TestVirtualControlSetValue(t *testing.T) {
+	//t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10) // Генерация случайного имени для контрола
 
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,      // Используем константу для устройства
 			Name:   controlName, // Используем сгенерированное имя
 			Meta:   control.Meta{},
@@ -93,12 +97,17 @@ func TestVirtualControlSetValue(t *testing.T) {
 }
 
 func TestVirtualControlWatchers(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10) // Генерация случайного имени для контрола
 
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,      // Используем константу для устройства
 			Name:   controlName, // Используем сгенерированное имя
 			Meta:   control.Meta{},
@@ -123,12 +132,17 @@ func TestVirtualControlWatchers(t *testing.T) {
 }
 
 func TestVirtualControlMQTTIntegration(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10) // Генерация случайного имени для контрола
 
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,      // Используем константу для устройства
 			Name:   controlName, // Используем сгенерированное имя
 			Meta:   control.Meta{},
@@ -139,7 +153,7 @@ func TestVirtualControlMQTTIntegration(t *testing.T) {
 	vc := NewVirtualControl(opt)
 
 	// Перед подпиской отправляем пустое сообщение с флагом Retained, чтобы очистить старое значение
-	_ = testClient.Publish(wb.PublishPayload{
+	_ = client.Publish(wb.PublishPayload{
 		Topic:    vc.GetInfo().ValueTopic,
 		Value:    "", // Отправляем пустое значение
 		QOS:      1,
@@ -148,7 +162,7 @@ func TestVirtualControlMQTTIntegration(t *testing.T) {
 
 	// Подписываемся на MQTT-топик и проверяем сообщения
 	messageChan := make(chan string, 1)
-	err := testClient.Subscribe(vc.GetInfo().ValueTopic, func(client mqtt.Client, msg mqtt.Message) {
+	err := client.Subscribe(vc.GetInfo().ValueTopic, func(client mqtt.Client, msg mqtt.Message) {
 		messageChan <- string(msg.Payload())
 	})
 	require.NoError(t, err)
@@ -166,12 +180,17 @@ func TestVirtualControlMQTTIntegration(t *testing.T) {
 }
 
 func TestVirtualControlDefaultValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -186,6 +205,11 @@ func TestVirtualControlDefaultValue(t *testing.T) {
 }
 
 func TestVirtualControlMetaData(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	meta := control.Meta{
@@ -202,7 +226,7 @@ func TestVirtualControlMetaData(t *testing.T) {
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   meta, // Устанавливаем метаданные
@@ -225,6 +249,11 @@ func TestVirtualControlMetaData(t *testing.T) {
 }
 
 func TestVirtualControlOnHandler(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	// Создаем флаг для отслеживания изменений
@@ -240,7 +269,7 @@ func TestVirtualControlOnHandler(t *testing.T) {
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -255,7 +284,7 @@ func TestVirtualControlOnHandler(t *testing.T) {
 	assert.False(t, handlerCalled)
 
 	// Устанавливаем новое значение через SetValue
-	err := testClient.Publish(wb.PublishPayload{
+	err := client.Publish(wb.PublishPayload{
 		Value: "99",
 		QOS:   0,
 		Topic: vc.GetInfo().CommandTopic,
@@ -270,6 +299,11 @@ func TestVirtualControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualControlDefaultValueInTopic(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	// Устанавливаем дефолтное значение
@@ -278,7 +312,7 @@ func TestVirtualControlDefaultValueInTopic(t *testing.T) {
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -290,7 +324,7 @@ func TestVirtualControlDefaultValueInTopic(t *testing.T) {
 
 	// Подписываемся на топик значения, чтобы проверить, что дефолтное значение приходит
 	messageChan := make(chan string, 1)
-	err := testClient.Subscribe(vc.GetInfo().ValueTopic, func(client mqtt.Client, msg mqtt.Message) {
+	err := client.Subscribe(vc.GetInfo().ValueTopic, func(client mqtt.Client, msg mqtt.Message) {
 		messageChan <- string(msg.Payload())
 	})
 	require.NoError(t, err)
@@ -305,6 +339,11 @@ func TestVirtualControlDefaultValueInTopic(t *testing.T) {
 }
 
 func TestVirtualControlMetaInTopic(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 
 	// Устанавливаем метаданные
@@ -322,7 +361,7 @@ func TestVirtualControlMetaInTopic(t *testing.T) {
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   meta, // Устанавливаем метаданные
@@ -335,7 +374,7 @@ func TestVirtualControlMetaInTopic(t *testing.T) {
 	// Подписываемся на топик метаданных, чтобы проверить, что метаданные приходят
 	metaTopic := fmt.Sprintf("%s/meta", vc.GetInfo().ValueTopic)
 	messageChan := make(chan string, 1)
-	err := testClient.Subscribe(metaTopic, func(client mqtt.Client, msg mqtt.Message) {
+	err := client.Subscribe(metaTopic, func(client mqtt.Client, msg mqtt.Message) {
 		messageChan <- string(msg.Payload())
 	})
 	require.NoError(t, err)
@@ -352,6 +391,11 @@ func TestVirtualControlMetaInTopic(t *testing.T) {
 }
 
 func TestVirtualControlNoDuplicatePushesWithMqtt(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := "42"
 	topic := fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, controlName)
@@ -359,7 +403,7 @@ func TestVirtualControlNoDuplicatePushesWithMqtt(t *testing.T) {
 	opt := Options{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -373,7 +417,7 @@ func TestVirtualControlNoDuplicatePushesWithMqtt(t *testing.T) {
 	messageChan := make(chan string, 10)
 
 	// Подписываемся на MQTT-топик, на который будет отправляться значение
-	err := testClient.Subscribe(topic, func(client mqtt.Client, msg mqtt.Message) {
+	err := client.Subscribe(topic, func(client mqtt.Client, msg mqtt.Message) {
 		fmt.Println(string(msg.Payload()))
 		messageChan <- string(msg.Payload())
 	})

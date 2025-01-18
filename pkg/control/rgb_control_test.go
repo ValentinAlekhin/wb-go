@@ -8,6 +8,12 @@ import (
 )
 
 func TestRgbControl_SetAndGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "rgb",
 	}
@@ -40,6 +46,12 @@ func TestRgbControl_SetAndGetValue(t *testing.T) {
 }
 
 func TestRgbControl_AddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, server, destroy := testutils.GetClientWithBroker()
+	testutils.AddOnHandler(server)
+	defer destroy()
+
 	meta := Meta{
 		Type: "rgb",
 	}

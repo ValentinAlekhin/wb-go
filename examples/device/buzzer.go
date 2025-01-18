@@ -8,7 +8,9 @@ import (
 )
 
 type BuzzerControls struct {
-	Enabled *control.SwitchControl
+	Enabled   *control.SwitchControl
+	Frequency *control.RangeControl
+	Volume    *control.RangeControl
 }
 
 type Buzzer struct {
@@ -39,6 +41,24 @@ func NewBuzzer(client mqtt.ClientInterface) *Buzzer {
 				Order:    1,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"en": `Enabled`, "ru": `Включен`},
+			}),
+			Frequency: control.NewRangeControl(client, name, "frequency", control.Meta{
+				Type: "range",
+
+				Max: 7000,
+
+				Order:    2,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"en": `Frequency`, "ru": `Частота`},
+			}),
+			Volume: control.NewRangeControl(client, name, "volume", control.Meta{
+				Type: "range",
+
+				Max: 100,
+
+				Order:    3,
+				ReadOnly: false,
+				Title:    control.MultilingualText{"en": `Volume`, "ru": `Громкость`},
 			}),
 		}
 

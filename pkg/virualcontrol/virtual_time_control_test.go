@@ -12,13 +12,18 @@ import (
 )
 
 func TestVirtualTimeControlGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(14, 30, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -33,13 +38,18 @@ func TestVirtualTimeControlGetValue(t *testing.T) {
 }
 
 func TestVirtualTimeControlSetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(8, 15, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -58,6 +68,11 @@ func TestVirtualTimeControlSetValue(t *testing.T) {
 }
 
 func TestVirtualTimeControlOnHandler(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(6, 45, 0)
 
@@ -66,7 +81,7 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -80,7 +95,7 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 
 	vc := NewVirtualTimeControl(opt)
 
-	err := testClient.Publish(wb.PublishPayload{
+	err := client.Publish(wb.PublishPayload{
 		Value: "10:30:45",
 		QOS:   0,
 		Topic: vc.GetInfo().CommandTopic,
@@ -94,13 +109,18 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualTimeControlAddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(7, 0, 0)
 
 	vc := NewVirtualTimeControl(TimeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -125,13 +145,18 @@ func TestVirtualTimeControlAddWatcher(t *testing.T) {
 }
 
 func TestVirtualTimeControlMetaType(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(12, 0, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},

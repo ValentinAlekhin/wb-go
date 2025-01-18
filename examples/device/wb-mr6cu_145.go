@@ -8,7 +8,13 @@ import (
 )
 
 type WbMr6Cu145Controls struct {
-	K1 *control.SwitchControl
+	K1     *control.SwitchControl
+	K2     *control.SwitchControl
+	K3     *control.SwitchControl
+	K4     *control.SwitchControl
+	K5     *control.SwitchControl
+	K6     *control.SwitchControl
+	Serial *control.TextControl
 }
 
 type WbMr6Cu145 struct {
@@ -39,6 +45,48 @@ func NewWbMr6Cu145(client mqtt.ClientInterface) *WbMr6Cu145 {
 				Order:    1,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
+			}),
+			K2: control.NewSwitchControl(client, name, "K2", control.Meta{
+				Type: "switch",
+
+				Order:    2,
+				ReadOnly: false,
+				Title:    control.MultilingualText{},
+			}),
+			K3: control.NewSwitchControl(client, name, "K3", control.Meta{
+				Type: "switch",
+
+				Order:    3,
+				ReadOnly: false,
+				Title:    control.MultilingualText{},
+			}),
+			K4: control.NewSwitchControl(client, name, "K4", control.Meta{
+				Type: "switch",
+
+				Order:    4,
+				ReadOnly: false,
+				Title:    control.MultilingualText{},
+			}),
+			K5: control.NewSwitchControl(client, name, "K5", control.Meta{
+				Type: "switch",
+
+				Order:    5,
+				ReadOnly: false,
+				Title:    control.MultilingualText{},
+			}),
+			K6: control.NewSwitchControl(client, name, "K6", control.Meta{
+				Type: "switch",
+
+				Order:    6,
+				ReadOnly: false,
+				Title:    control.MultilingualText{},
+			}),
+			Serial: control.NewTextControl(client, name, "Serial", control.Meta{
+				Type: "text",
+
+				Order:    7,
+				ReadOnly: true,
+				Title:    control.MultilingualText{"ru": `Серийный номер`},
 			}),
 		}
 

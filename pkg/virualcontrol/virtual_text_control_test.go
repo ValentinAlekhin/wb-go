@@ -11,13 +11,18 @@ import (
 )
 
 func TestVirtualTextControlGetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := "initial_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -32,13 +37,18 @@ func TestVirtualTextControlGetValue(t *testing.T) {
 }
 
 func TestVirtualTextControlSetValue(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -57,6 +67,11 @@ func TestVirtualTextControlSetValue(t *testing.T) {
 }
 
 func TestVirtualTextControlOnHandler(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
@@ -65,7 +80,7 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -79,7 +94,7 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 
 	vc := NewVirtualTextControl(opt)
 
-	err := testClient.Publish(wb.PublishPayload{
+	err := client.Publish(wb.PublishPayload{
 		Value: "new_value",
 		QOS:   0,
 		Topic: vc.GetInfo().CommandTopic,
@@ -93,13 +108,18 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualTextControlAddWatcher(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	vc := NewVirtualTextControl(TextOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
@@ -123,13 +143,18 @@ func TestVirtualTextControlAddWatcher(t *testing.T) {
 }
 
 func TestVirtualTextControlMetaType(t *testing.T) {
+	t.Parallel()
+
+	client, _, destroy := testutils.GetClientWithBroker()
+	defer destroy()
+
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
 			DB:     testDB,
-			Client: testClient,
+			Client: client,
 			Device: device,
 			Name:   controlName,
 			Meta:   control.Meta{},
