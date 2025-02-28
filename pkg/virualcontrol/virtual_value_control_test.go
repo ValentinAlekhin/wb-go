@@ -88,7 +88,7 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 			Meta:   control.Meta{},
 		},
 		DefaultValue: defaultValue,
-		OnHandler: func(payload OnValueHandlerPayload) {
+		OnHandler: func(payload ValueHandlerPayload) {
 			handlerCalled = true
 			assert.Equal(t, 25.75, payload.Value) // Проверяем, что передано правильное значение
 		},
@@ -129,7 +129,7 @@ func TestVirtualValueControlAddWatcher(t *testing.T) {
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
-	vc.AddWatcher(func(payload control.ValueControlWatcherPayload) {
+	vc.AddWatcher(func(payload control.WatcherPayloadFloat64) {
 		watcherCalled = true
 		assert.Equal(t, 25.75, payload.NewValue)        // Проверяем, что новое значение корректное
 		assert.Equal(t, defaultValue, payload.OldValue) // Проверяем, что старое значение корректное

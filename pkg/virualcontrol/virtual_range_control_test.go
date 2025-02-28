@@ -87,7 +87,7 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 			Meta:   control.Meta{},
 		},
 		DefaultValue: defaultValue,
-		OnHandler: func(payload OnRangeHandlerPayload) {
+		OnHandler: func(payload OnHandlerPayload[int]) {
 			handlerCalled = true
 			assert.Equal(t, 25, payload.Value) // Проверяем, что передано правильное значение
 		},
@@ -130,7 +130,7 @@ func TestVirtualRangeControlAddWatcher(t *testing.T) {
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
-	vc.AddWatcher(func(payload control.RangeControlWatcherPayload) {
+	vc.AddWatcher(func(payload control.WatcherPayloadInt) {
 		watcherCalled = true
 		assert.Equal(t, 25, payload.NewValue) // Проверяем, что новое значение корректное
 		assert.Equal(t, 0, payload.OldValue)  // Проверяем, что старое значение корректное

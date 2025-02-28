@@ -62,7 +62,7 @@ func TestRgbControl_AddWatcher(t *testing.T) {
 
 	var newValue, oldValue RgbValue
 
-	rgbControl.AddWatcher(func(payload RgbControlWatcherPayload) {
+	rgbControl.AddWatcher(func(payload WatcherPayloadRGB) {
 		newValue = payload.NewValue
 		oldValue = payload.OldValue
 	})

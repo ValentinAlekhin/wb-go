@@ -2,52 +2,39 @@ package virualcontrol
 
 import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	"strconv"
 )
 
 type VirtualRangeControl struct {
-	control *VirtualControl
+	converter control.RangeConverter
+	control   *VirtualControl
 }
+
+type RangeHandler = OnHandler[int]
+type RangeHandlerPayload = OnHandlerPayload[int]
 
 type RangeOptions struct {
 	BaseOptions
-	OnHandler    OnRangeHandler
+	OnHandler    RangeHandler
 	DefaultValue int
 }
 
-type OnRangeHandler func(payload OnRangeHandlerPayload)
-
-type OnRangeHandlerPayload struct {
-	Set   func(value int)
-	Value int
-}
-
 func (c *VirtualRangeControl) GetValue() int {
-	return c.decode(c.control.GetValue())
+	value, _ := c.converter.Decode(c.control.GetValue()) // Обработать ошибку
+	return value
 }
 
 func (c *VirtualRangeControl) SetValue(v int) {
-	c.control.SetValue(c.encode(v))
+	c.control.SetValue(c.converter.Encode(v))
 }
 
-func (c *VirtualRangeControl) encode(value int) string {
-	return strconv.Itoa(value)
-}
+func (c *VirtualRangeControl) AddWatcher(f func(payload control.WatcherPayloadInt)) {
+	c.control.AddWatcher(func(p control.WatcherPayloadString) {
+		newValue, _ := c.converter.Decode(p.NewValue) // Обработать ошибку
+		oldValue, _ := c.converter.Decode(p.OldValue) // Обработать ошибку
 
-func (c *VirtualRangeControl) decode(value string) int {
-	v, err := strconv.Atoi(value)
-	if err != nil {
-		return 0
-	}
-
-	return v
-}
-
-func (c *VirtualRangeControl) AddWatcher(f func(payload control.RangeControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.WatcherPayload) {
-		f(control.RangeControlWatcherPayload{
-			NewValue: c.decode(p.NewValue),
-			OldValue: c.decode(p.OldValue),
+		f(control.WatcherPayloadInt{
+			NewValue: newValue,
+			OldValue: oldValue,
 			Topic:    p.Topic,
 		})
 	})
@@ -59,10 +46,14 @@ func (c *VirtualRangeControl) GetInfo() control.Info {
 
 func NewVirtualRangeControl(opt RangeOptions) *VirtualRangeControl {
 	vc := &VirtualRangeControl{}
-	onHandler := func(payload OnHandlerPayload) {
-		value := vc.decode(payload.Value)
+	onHandler := func(payload OnHandlerPayload[string]) {
+		value, err := vc.converter.Decode(payload.Value)
+		if err != nil {
+			// Логировать ошибку
+			return
+		}
 
-		newPayload := OnRangeHandlerPayload{
+		newPayload := RangeHandlerPayload{
 			Set:   vc.SetValue,
 			Value: value,
 		}
@@ -73,7 +64,11 @@ func NewVirtualRangeControl(opt RangeOptions) *VirtualRangeControl {
 	}
 	opt.Meta.Type = "range"
 
-	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.encode(opt.DefaultValue)}
+	vOpt := Options{
+		BaseOptions:  opt.BaseOptions,
+		OnHandler:    onHandler,
+		DefaultValue: vc.converter.Encode(opt.DefaultValue),
+	}
 
 	vc.control = NewVirtualControl(vOpt)
 	return vc

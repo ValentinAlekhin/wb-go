@@ -2,33 +2,29 @@ package virualcontrol
 
 import (
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
-	"strconv"
 )
 
 type VirtualSwitchControl struct {
-	control *VirtualControl
+	converter control.SwitchConverter
+	control   *VirtualControl
 }
+
+type SwitchHandler = OnHandler[bool]
+type SwitchHandlerPayload = OnHandlerPayload[bool]
 
 type SwitchOptions struct {
 	BaseOptions
-	OnHandler    OnSwitchHandler
+	OnHandler    SwitchHandler
 	DefaultValue bool
 }
 
-type OnSwitchHandler func(payload OnSwitchHandlerPayload)
-
-type OnSwitchHandlerPayload struct {
-	Set   func(bool)
-	Value bool
-}
-
 func (c *VirtualSwitchControl) GetValue() bool {
-	return c.decode(c.control.GetValue())
+	value, _ := c.converter.Decode(c.control.GetValue())
+	return value
 }
 
 func (c *VirtualSwitchControl) SetValue(value bool) {
-	c.control.SetValue(c.encode(value))
+	c.control.SetValue(c.converter.Encode(value))
 }
 
 func (c *VirtualSwitchControl) Toggle() {
@@ -47,28 +43,14 @@ func (c *VirtualSwitchControl) TurnOn() {
 	c.SetValue(true)
 }
 
-func (c *VirtualSwitchControl) encode(value bool) string {
-	if value {
-		return conventions.CONV_SWITCH_VALUE_TRUE
-	} else {
-		return conventions.CONV_SWITCH_VALUE_FALSE
-	}
-}
+func (c *VirtualSwitchControl) AddWatcher(f func(payload control.WatcherPayloadBool)) {
+	c.control.AddWatcher(func(p control.WatcherPayloadString) {
+		newValue, _ := c.converter.Decode(p.NewValue)
+		oldValue, _ := c.converter.Decode(p.OldValue)
 
-func (c *VirtualSwitchControl) decode(value string) bool {
-	v, err := strconv.ParseBool(value)
-	if err != nil {
-		return false
-	}
-
-	return v
-}
-
-func (c *VirtualSwitchControl) AddWatcher(f func(payload control.SwitchControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.WatcherPayload) {
-		f(control.SwitchControlWatcherPayload{
-			NewValue: c.decode(p.NewValue),
-			OldValue: c.decode(p.OldValue),
+		f(control.WatcherPayloadBool{
+			NewValue: newValue,
+			OldValue: oldValue,
 			Topic:    p.Topic,
 		})
 	})
@@ -80,10 +62,10 @@ func (c *VirtualSwitchControl) GetInfo() control.Info {
 
 func NewVirtualSwitchControl(opt SwitchOptions) *VirtualSwitchControl {
 	vc := &VirtualSwitchControl{}
-	onHandler := func(payload OnHandlerPayload) {
-		value := vc.decode(payload.Value)
+	onHandler := func(payload OnHandlerPayload[string]) {
+		value, _ := vc.converter.Decode(payload.Value)
 
-		newPayload := OnSwitchHandlerPayload{
+		newPayload := SwitchHandlerPayload{
 			Set:   vc.SetValue,
 			Value: value,
 		}
@@ -94,7 +76,7 @@ func NewVirtualSwitchControl(opt SwitchOptions) *VirtualSwitchControl {
 	}
 	opt.Meta.Type = "switch"
 
-	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.encode(opt.DefaultValue)}
+	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.converter.Encode(opt.DefaultValue)}
 
 	vc.control = NewVirtualControl(vOpt)
 	return vc

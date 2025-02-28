@@ -89,7 +89,7 @@ func TestSwitchControl_AddWatcher(t *testing.T) {
 
 	var newValue, oldValue bool
 
-	switchControl.AddWatcher(func(payload SwitchControlWatcherPayload) {
+	switchControl.AddWatcher(func(payload WatcherPayloadBool) {
 		newValue = payload.NewValue
 		oldValue = payload.OldValue
 	})

@@ -30,7 +30,7 @@ func main() {
 	WbMr6Cu145 := device.NewWbMr6Cu145(client)
 
 	// Добавление скрипта
-	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload control.ValueControlWatcherPayload) {
+	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload control.WatcherPayloadFloat64) {
 		fmt.Printf("Получено новое сообщение: %f\n", payload.NewValue)
 
 		if payload.NewValue > 100 {

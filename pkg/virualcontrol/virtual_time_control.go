@@ -1,18 +1,21 @@
 package virualcontrol
 
 import (
-	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
 )
 
 type VirtualTimeControl struct {
-	control *VirtualControl
+	converter control.TimeOnlyConverter
+	control   *VirtualControl
 }
+
+type TimeHandler = OnHandler[timeonly.Time]
+type TimeHandlerPayload = OnHandlerPayload[timeonly.Time]
 
 type TimeOptions struct {
 	BaseOptions
-	OnHandler    OnTimeHandler
+	OnHandler    TimeHandler
 	DefaultValue timeonly.Time
 }
 
@@ -32,30 +35,18 @@ type TimeControlWatcherPayload struct {
 
 func (c *VirtualTimeControl) GetValue() timeonly.Time {
 	value := c.control.GetValue()
-	timeValue, _ := c.decode(value)
+	timeValue, _ := c.converter.Decode(value)
 	return timeValue
 }
 
 func (c *VirtualTimeControl) SetValue(v timeonly.Time) {
-	c.control.SetValue(c.encode(v))
-}
-
-func (c *VirtualTimeControl) decode(value string) (timeonly.Time, error) {
-	t, err := timeonly.ParseString(value)
-	if err != nil {
-		return timeonly.Time{}, fmt.Errorf("invalid time format: %s", value)
-	}
-	return t, nil
-}
-
-func (c *VirtualTimeControl) encode(value timeonly.Time) string {
-	return value.String()
+	c.control.SetValue(c.converter.Encode(v))
 }
 
 func (c *VirtualTimeControl) AddWatcher(f func(payload TimeControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.WatcherPayload) {
-		newValue, _ := c.decode(p.NewValue)
-		oldValue, _ := c.decode(p.OldValue)
+	c.control.AddWatcher(func(p control.WatcherPayloadString) {
+		newValue, _ := c.converter.Decode(p.NewValue)
+		oldValue, _ := c.converter.Decode(p.OldValue)
 
 		f(TimeControlWatcherPayload{
 			NewValue: newValue,
@@ -71,10 +62,10 @@ func (c *VirtualTimeControl) GetInfo() control.Info {
 
 func NewVirtualTimeControl(opt TimeOptions) *VirtualTimeControl {
 	vc := &VirtualTimeControl{}
-	onHandler := func(payload OnHandlerPayload) {
-		value, err := vc.decode(payload.Value)
+	onHandler := func(payload OnHandlerPayload[string]) {
+		value, err := vc.converter.Decode(payload.Value)
 
-		newPayload := OnTimeHandlerPayload{
+		newPayload := TimeHandlerPayload{
 			Set:   vc.SetValue,
 			Value: value,
 			Error: err,
@@ -89,7 +80,7 @@ func NewVirtualTimeControl(opt TimeOptions) *VirtualTimeControl {
 	vOpt := Options{
 		BaseOptions:  opt.BaseOptions,
 		OnHandler:    onHandler,
-		DefaultValue: vc.encode(opt.DefaultValue),
+		DefaultValue: vc.converter.Encode(opt.DefaultValue),
 	}
 
 	vc.control = NewVirtualControl(vOpt)

@@ -2,30 +2,26 @@ package control
 
 import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"strconv"
-	"strings"
 )
 
 type ValueControl struct {
-	control *Control
-}
-
-type ValueControlWatcherPayload struct {
-	NewValue    float64
-	OldValue    float64
-	Topic       string
-	ControlName string
+	converter ValueConverter
+	control   *Control
 }
 
 func (c *ValueControl) GetValue() float64 {
-	return c.decode(c.control.GetValue())
+	v, _ := c.converter.Decode(c.control.GetValue())
+	return v
 }
 
-func (c *ValueControl) AddWatcher(f func(payload ValueControlWatcherPayload)) {
-	c.control.AddWatcher(func(p WatcherPayload) {
-		f(ValueControlWatcherPayload{
-			NewValue: c.decode(p.NewValue),
-			OldValue: c.decode(p.OldValue),
+func (c *ValueControl) AddWatcher(f func(payload WatcherPayloadFloat64)) {
+	c.control.AddWatcher(func(p WatcherPayloadString) {
+		newValue, _ := c.converter.Decode(p.NewValue)
+		oldValue, _ := c.converter.Decode(p.OldValue)
+
+		f(WatcherPayloadFloat64{
+			NewValue: newValue,
+			OldValue: oldValue,
 			Topic:    p.Topic,
 		})
 	})
@@ -35,16 +31,7 @@ func (c *ValueControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
-func (c *ValueControl) decode(value string) float64 {
-	v, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
-	if err != nil {
-		return 0
-	}
-
-	return v
-}
-
 func NewValueControl(client wb.ClientInterface, device, control string, meta Meta) *ValueControl {
 	c := NewControl(client, device, control, meta)
-	return &ValueControl{c}
+	return &ValueControl{control: c}
 }

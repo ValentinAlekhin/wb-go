@@ -8,6 +8,7 @@ import (
 	"go.uber.org/atomic"
 )
 
+// Control represents a control entity that interacts with MQTT to manage values and notify about changes.
 type Control struct {
 	name         string
 	meta         Meta
@@ -15,49 +16,28 @@ type Control struct {
 	value        atomic.String
 	valueTopic   string
 	commandTopic string
-	addChan      chan func(payload WatcherPayload)
-	eventChan    chan WatcherPayload
+	addChan      chan func(payload WatcherPayloadString)
+	eventChan    chan WatcherPayloadString
 	setChan      chan string
 	stopChan     chan struct{}
 }
 
-type Meta struct {
-	Type      string                      `json:"type,omitempty"`      // Тип контроля
-	Units     string                      `json:"units,omitempty"`     // Единицы измерения (только для type="value")
-	Max       float64                     `json:"max,omitempty"`       // Максимальное значение
-	Min       float64                     `json:"min,omitempty"`       // Минимальное значение
-	Precision float64                     `json:"precision,omitempty"` // Точность
-	Order     int                         `json:"order"`               // Порядок отображения
-	ReadOnly  bool                        `json:"readonly"`            // Только для чтения
-	Title     MultilingualText            `json:"title"`               // Название (разные языки)
-	Enum      map[string]MultilingualEnum `json:"enum,omitempty"`      // Заголовки для enum
-}
-
-type MultilingualEnum struct {
-	Title MultilingualText `json:"title"` // Название enum на разных языках
-}
-
-// MultilingualText хранит текстовые значения на разных языках
-type MultilingualText map[string]string
-
-type WatcherPayload struct {
-	NewValue string
-	OldValue string
-	Topic    string
-}
-
+// GetValue returns the current value of the control.
 func (c *Control) GetValue() string {
 	return c.value.Load()
 }
 
-func (c *Control) AddWatcher(f func(payload WatcherPayload)) {
+// AddWatcher adds a watcher function that will be called when the control's value changes.
+func (c *Control) AddWatcher(f func(payload WatcherPayloadString)) {
 	c.addChan <- f
 }
 
+// SetValue sets a new value for the control.
 func (c *Control) SetValue(value string) {
 	c.setChan <- value
 }
 
+// GetInfo returns information about the control, including its name, topics, and metadata.
 func (c *Control) GetInfo() Info {
 	return Info{
 		Name:         c.name,
@@ -67,6 +47,7 @@ func (c *Control) GetInfo() Info {
 	}
 }
 
+// publish sends a new value to the MQTT command topic.
 func (c *Control) publish(value string) {
 	_ = c.client.Publish(wb.PublishPayload{
 		Value: value,
@@ -75,6 +56,7 @@ func (c *Control) publish(value string) {
 	})
 }
 
+// subscribe subscribes to the MQTT value topic to receive updates.
 func (c *Control) subscribe() {
 	callback := func(client mqtt.Client, msg mqtt.Message) {
 		newValue := string(msg.Payload())
@@ -84,11 +66,12 @@ func (c *Control) subscribe() {
 	_ = c.client.Subscribe(c.valueTopic, callback)
 }
 
+// handleValueUpdate processes a new value received from the MQTT topic.
 func (c *Control) handleValueUpdate(value string) {
 	oldValue := c.value.Load()
 	c.value.Swap(value)
 
-	payload := WatcherPayload{
+	payload := WatcherPayloadString{
 		NewValue: value,
 		OldValue: oldValue,
 		Topic:    c.valueTopic,
@@ -97,8 +80,9 @@ func (c *Control) handleValueUpdate(value string) {
 	c.eventChan <- payload
 }
 
+// runWatchHandler manages the list of watchers and notifies them about value changes.
 func (c *Control) runWatchHandler() {
-	listeners := make([]func(p WatcherPayload), 0)
+	listeners := make([]func(p WatcherPayloadString), 0)
 
 	for {
 		select {
@@ -114,6 +98,7 @@ func (c *Control) runWatchHandler() {
 	}
 }
 
+// runSetValueHandler processes new values and publishes them to the MQTT topic.
 func (c *Control) runSetValueHandler() {
 	var valueToSet string
 
@@ -130,6 +115,7 @@ func (c *Control) runSetValueHandler() {
 	}
 }
 
+// NewControl creates a new Control instance with the specified MQTT client, device, control name, and metadata.
 func NewControl(client wb.ClientInterface, device, control string, meta Meta) *Control {
 	c := &Control{
 		name:         control,
@@ -138,8 +124,8 @@ func NewControl(client wb.ClientInterface, device, control string, meta Meta) *C
 		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, control),
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, device, control),
 		value:        atomic.String{},
-		addChan:      make(chan func(payload WatcherPayload)),
-		eventChan:    make(chan WatcherPayload),
+		addChan:      make(chan func(payload WatcherPayloadString)),
+		eventChan:    make(chan WatcherPayloadString),
 		setChan:      make(chan string),
 		stopChan:     make(chan struct{}),
 	}

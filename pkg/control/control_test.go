@@ -47,7 +47,7 @@ func TestControl_AddWatcher(t *testing.T) {
 
 	var newValue, oldValue string
 
-	control.AddWatcher(func(payload WatcherPayload) {
+	control.AddWatcher(func(payload WatcherPayloadString) {
 		newValue = payload.NewValue
 		oldValue = payload.OldValue
 	})
