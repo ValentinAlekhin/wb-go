@@ -2,53 +2,37 @@ package control
 
 import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"strconv"
 )
 
 type RangeControl struct {
-	control *Control
-}
-
-type RangeControlWatcherPayload struct {
-	NewValue    int
-	OldValue    int
-	Topic       string
-	ControlName string
+	converter RangeConverter
+	control   *Control
 }
 
 func (c *RangeControl) GetValue() int {
-	return c.decode(c.control.GetValue())
+	val, _ := c.converter.Decode(c.control.GetValue())
+	return val
 }
 
-func (c *RangeControl) AddWatcher(f func(payload RangeControlWatcherPayload)) {
-	c.control.AddWatcher(func(p WatcherPayload) {
-		f(RangeControlWatcherPayload{
-			NewValue: c.decode(p.NewValue),
-			OldValue: c.decode(p.OldValue),
+func (c *RangeControl) AddWatcher(f func(payload WatcherPayloadInt)) {
+	c.control.AddWatcher(func(p WatcherPayloadString) {
+		newValue, _ := c.converter.Decode(p.NewValue)
+		oldValue, _ := c.converter.Decode(p.OldValue)
+
+		f(WatcherPayloadInt{
+			NewValue: newValue,
+			OldValue: oldValue,
 			Topic:    p.Topic,
 		})
 	})
 }
 
 func (c *RangeControl) SetValue(value int) {
-	c.control.SetValue(c.encode(value))
+	c.control.SetValue(c.converter.Encode(value))
 }
 
 func (c *RangeControl) GetInfo() Info {
 	return c.control.GetInfo()
-}
-
-func (c *RangeControl) encode(value int) string {
-	return strconv.Itoa(value)
-}
-
-func (c *RangeControl) decode(value string) int {
-	v, err := strconv.Atoi(value)
-	if err != nil {
-		return 0
-	}
-
-	return v
 }
 
 func NewRangeControl(client wb.ClientInterface, device, control string, meta Meta) *RangeControl {

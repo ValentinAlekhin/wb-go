@@ -51,7 +51,7 @@ func TestRangeControl_AddWatcher(t *testing.T) {
 
 	var newValue, oldValue int
 
-	rangeControl.AddWatcher(func(payload RangeControlWatcherPayload) {
+	rangeControl.AddWatcher(func(payload WatcherPayloadInt) {
 		newValue = payload.NewValue
 		oldValue = payload.OldValue
 	})

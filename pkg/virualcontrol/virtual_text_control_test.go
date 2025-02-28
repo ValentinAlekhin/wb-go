@@ -88,7 +88,7 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 			Meta:   control.Meta{},
 		},
 		DefaultValue: defaultValue,
-		OnHandler: func(payload OnTextHandlerPayload) {
+		OnHandler: func(payload TextHandlerPayload) {
 			handlerCalled = true
 			assert.Equal(t, "new_value", payload.Value) // Проверяем, что передано правильное значение
 		},
@@ -131,7 +131,7 @@ func TestVirtualTextControlAddWatcher(t *testing.T) {
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
-	vc.AddWatcher(func(payload control.WatcherPayload) {
+	vc.AddWatcher(func(payload control.WatcherPayloadString) {
 		watcherCalled = true
 		assert.Equal(t, "new_value", payload.NewValue)     // Проверяем, что новое значение корректное
 		assert.Equal(t, "default_value", payload.OldValue) // Проверяем, что старое значение корректное

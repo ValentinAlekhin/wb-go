@@ -60,7 +60,7 @@ func TestTextControl_AddWatcher(t *testing.T) {
 	var newValue, oldValue string
 
 	// Добавляем наблюдателя
-	textControl.AddWatcher(func(payload WatcherPayload) {
+	textControl.AddWatcher(func(payload WatcherPayloadString) {
 		newValue = payload.NewValue
 		oldValue = payload.OldValue
 	})

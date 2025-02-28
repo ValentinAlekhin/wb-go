@@ -89,7 +89,7 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 			Meta:   control.Meta{},
 		},
 		DefaultValue: defaultValue,
-		OnHandler: func(payload OnTimeHandlerPayload) {
+		OnHandler: func(payload TimeHandlerPayload) {
 			handlerCalled = true
 			assert.Equal(t, "10:30:45", payload.Value.String()) // Verify the correct value is passed
 		},

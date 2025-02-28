@@ -82,7 +82,7 @@ func TestVirtualSwitchControlOnHandler(t *testing.T) {
 			Name:   controlName,
 			Meta:   control.Meta{},
 		},
-		OnHandler: func(payload OnSwitchHandlerPayload) {
+		OnHandler: func(payload SwitchHandlerPayload) {
 			handlerCalled = true
 			assert.Equal(t, true, payload.Value) // Проверяем, что передано правильное значение
 		},
@@ -122,7 +122,7 @@ func TestVirtualSwitchControlAddWatcher(t *testing.T) {
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
-	vc.AddWatcher(func(payload control.SwitchControlWatcherPayload) {
+	vc.AddWatcher(func(payload control.WatcherPayloadBool) {
 		watcherCalled = true
 		assert.Equal(t, true, payload.NewValue)  // Проверяем, что новое значение корректное
 		assert.Equal(t, false, payload.OldValue) // Проверяем, что старое значение корректное

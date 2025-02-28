@@ -21,24 +21,25 @@ type VirtualControl struct {
 	valueTopic   string
 	commandTopic string
 	metaTopic    string
-	addChan      chan func(payload control.WatcherPayload)
-	eventChan    chan control.WatcherPayload
+	addChan      chan func(payload control.WatcherPayloadString)
+	eventChan    chan control.WatcherPayloadString
 	onChan       chan string
-	onHandler    OnHandler
+	onHandler    OnHandler[string]
 	stopChan     chan struct{}
 }
 
 type Options struct {
 	BaseOptions
-	OnHandler    OnHandler
+	OnHandler    OnHandler[string]
 	DefaultValue string
 }
 
-type OnHandler func(payload OnHandlerPayload)
+type OnHandler[T comparable] func(payload OnHandlerPayload[T])
 
-type OnHandlerPayload struct {
-	Set   func(value string)
-	Value string
+type OnHandlerPayload[T comparable] struct {
+	Set   func(value T)
+	Value T
+	Error error
 }
 
 func (c *VirtualControl) GetValue() string {
@@ -55,7 +56,7 @@ func (c *VirtualControl) SetValue(value string) {
 
 	c.db.Model(&db.ControlModel{}).Where("topic = ?", c.valueTopic).Update("value", value)
 
-	payload := control.WatcherPayload{
+	payload := control.WatcherPayloadString{
 		NewValue: value,
 		OldValue: oldValue,
 		Topic:    c.valueTopic,
@@ -79,12 +80,12 @@ func (c *VirtualControl) GetInfo() control.Info {
 	}
 }
 
-func (c *VirtualControl) AddWatcher(f func(payload control.WatcherPayload)) {
+func (c *VirtualControl) AddWatcher(f func(payload control.WatcherPayloadString)) {
 	c.addChan <- f
 }
 
 func (c *VirtualControl) runWatchHandler() {
-	listeners := make([]func(p control.WatcherPayload), 0)
+	listeners := make([]func(p control.WatcherPayloadString), 0)
 
 	for {
 		select {
@@ -104,7 +105,7 @@ func (c *VirtualControl) runOnHandler() {
 	for {
 		select {
 		case newValue := <-c.onChan:
-			c.onHandler(OnHandlerPayload{
+			c.onHandler(OnHandlerPayload[string]{
 				Set:   c.SetValue,
 				Value: newValue,
 			})
@@ -169,9 +170,9 @@ func NewVirtualControl(opt Options) *VirtualControl {
 		value:        atomic.String{},
 		stopChan:     make(chan struct{}),
 		onChan:       make(chan string),
-		addChan:      make(chan func(payload control.WatcherPayload)),
-		eventChan:    make(chan control.WatcherPayload),
-		onHandler:    func(payload OnHandlerPayload) {},
+		addChan:      make(chan func(payload control.WatcherPayloadString)),
+		eventChan:    make(chan control.WatcherPayloadString),
+		onHandler:    func(payload OnHandlerPayload[string]) {},
 	}
 
 	if opt.OnHandler != nil {

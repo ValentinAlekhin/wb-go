@@ -61,7 +61,7 @@ func TestValueControl_AddWatcher(t *testing.T) {
 	var newValue, oldValue float64
 
 	// Добавляем наблюдателя
-	valueControl.AddWatcher(func(payload ValueControlWatcherPayload) {
+	valueControl.AddWatcher(func(payload WatcherPayloadFloat64) {
 		newValue = payload.NewValue
 		oldValue = payload.OldValue
 	})

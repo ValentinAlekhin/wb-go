@@ -98,8 +98,8 @@ func TestVirtualControlWatchers(t *testing.T) {
 
 	vc := NewVirtualControl(opt)
 
-	var payloads []control.WatcherPayload
-	vc.AddWatcher(func(payload control.WatcherPayload) {
+	var payloads []control.WatcherPayloadString
+	vc.AddWatcher(func(payload control.WatcherPayloadString) {
 		payloads = append(payloads, payload)
 	})
 
@@ -237,7 +237,7 @@ func TestVirtualControlOnHandler(t *testing.T) {
 	var lastSetValue string
 
 	// Создаем кастомный OnHandler, который будет вызываться при изменении значения
-	onHandler := func(payload OnHandlerPayload) {
+	onHandler := func(payload OnHandlerPayload[string]) {
 		handlerCalled = true
 		lastSetValue = payload.Value
 	}

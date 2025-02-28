@@ -52,7 +52,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	thermostat.Controls.Relay.AddWatcher(func(p control.SwitchControlWatcherPayload) {
+	thermostat.Controls.Relay.AddWatcher(func(p control.WatcherPayloadBool) {
 		fmt.Println("Relay: ", p.NewValue)
 	})
 

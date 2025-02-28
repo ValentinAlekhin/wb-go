@@ -1,55 +1,40 @@
 package virualcontrol
 
 import (
-	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
-	"strconv"
-	"strings"
 )
 
 type VirtualValueControl struct {
-	control *VirtualControl
+	converter control.ValueConverter
+	control   *VirtualControl
 }
+
+type ValueHandler = OnHandler[float64]
+type ValueHandlerPayload = OnHandlerPayload[float64]
 
 type ValueOptions struct {
 	BaseOptions
-	OnHandler    OnValueHandler
+	OnHandler    ValueHandler
 	DefaultValue float64
 }
 
-type OnValueHandler func(payload OnValueHandlerPayload)
-
-type OnValueHandlerPayload struct {
-	Set   func(float64)
-	Value float64
-}
-
 func (c *VirtualValueControl) GetValue() float64 {
-	return c.decode(c.control.GetValue())
+	value, _ := c.converter.Decode(c.control.GetValue())
+	return value
 }
 
 func (c *VirtualValueControl) SetValue(v float64) {
-	c.control.SetValue(c.encode(v))
+	c.control.SetValue(c.converter.Encode(v))
 }
 
-func (c *VirtualValueControl) decode(value string) float64 {
-	v, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
-	if err != nil {
-		return 0
-	}
+func (c *VirtualValueControl) AddWatcher(f func(payload control.WatcherPayloadFloat64)) {
+	c.control.AddWatcher(func(p control.WatcherPayloadString) {
+		newValue, _ := c.converter.Decode(p.NewValue)
+		oldValue, _ := c.converter.Decode(p.OldValue)
 
-	return v
-}
-
-func (c *VirtualValueControl) encode(value float64) string {
-	return fmt.Sprintf("%f", value)
-}
-
-func (c *VirtualValueControl) AddWatcher(f func(payload control.ValueControlWatcherPayload)) {
-	c.control.AddWatcher(func(p control.WatcherPayload) {
-		f(control.ValueControlWatcherPayload{
-			NewValue: c.decode(p.NewValue),
-			OldValue: c.decode(p.OldValue),
+		f(control.WatcherPayloadFloat64{
+			NewValue: newValue,
+			OldValue: oldValue,
 			Topic:    p.Topic,
 		})
 	})
@@ -61,10 +46,10 @@ func (c *VirtualValueControl) GetInfo() control.Info {
 
 func NewVirtualValueControl(opt ValueOptions) *VirtualValueControl {
 	vc := &VirtualValueControl{}
-	onHandler := func(payload OnHandlerPayload) {
-		value := vc.decode(payload.Value)
+	onHandler := func(payload OnHandlerPayload[string]) {
+		value, _ := vc.converter.Decode(payload.Value)
 
-		newPayload := OnValueHandlerPayload{
+		newPayload := ValueHandlerPayload{
 			Set:   vc.SetValue,
 			Value: value,
 		}
@@ -75,7 +60,7 @@ func NewVirtualValueControl(opt ValueOptions) *VirtualValueControl {
 	}
 	opt.Meta.Type = "value"
 
-	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.encode(opt.DefaultValue)}
+	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.converter.Encode(opt.DefaultValue)}
 
 	vc.control = NewVirtualControl(vOpt)
 	return vc

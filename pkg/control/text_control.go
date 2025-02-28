@@ -12,13 +12,9 @@ func (c *TextControl) GetValue() string {
 	return c.control.GetValue()
 }
 
-func (c *TextControl) AddWatcher(f func(payload WatcherPayload)) {
-	c.control.AddWatcher(func(p WatcherPayload) {
-		f(WatcherPayload{
-			NewValue: p.NewValue,
-			OldValue: p.OldValue,
-			Topic:    p.Topic,
-		})
+func (c *TextControl) AddWatcher(f func(payload WatcherPayloadString)) {
+	c.control.AddWatcher(func(p WatcherPayloadString) {
+		f(p)
 	})
 }
 
