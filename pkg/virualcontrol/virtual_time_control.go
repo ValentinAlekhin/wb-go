@@ -1,6 +1,7 @@
 package virualcontrol
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
 )
@@ -60,7 +61,7 @@ func (c *VirtualTimeControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualTimeControl(opt TimeOptions) *VirtualTimeControl {
+func NewVirtualTimeControl(ctx context.Context, opt TimeOptions) *VirtualTimeControl {
 	vc := &VirtualTimeControl{}
 	onHandler := func(payload OnHandlerPayload[string]) {
 		value, err := vc.converter.Decode(payload.Value)
@@ -83,6 +84,6 @@ func NewVirtualTimeControl(opt TimeOptions) *VirtualTimeControl {
 		DefaultValue: vc.converter.Encode(opt.DefaultValue),
 	}
 
-	vc.control = NewVirtualControl(vOpt)
+	vc.control = NewVirtualControl(ctx, vOpt)
 	return vc
 }

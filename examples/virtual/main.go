@@ -42,7 +42,7 @@ func main() {
 
 	wbMsw := device.NewWbMswV4151(ctx, client)
 
-	thermostat, err := virtualdevice.NewThermostat(virtualdevice.ThermostatConfig{
+	thermostat, err := virtualdevice.NewThermostat(ctx, virtualdevice.ThermostatConfig{
 		DB:                  db,
 		Client:              client,
 		Device:              "thermostat",
@@ -59,7 +59,7 @@ func main() {
 		fmt.Println("Relay: ", p.NewValue)
 	})
 
-	_, err = virtualdevice.NewAdaptiveLight(virtualdevice.AdaptiveLightConfig{
+	_, err = virtualdevice.NewAdaptiveLight(ctx, virtualdevice.AdaptiveLightConfig{
 		DB:     db,
 		Client: client,
 		Device: "adaptive-light",

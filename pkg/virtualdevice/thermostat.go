@@ -1,6 +1,7 @@
 package virtualdevice
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -49,8 +50,12 @@ func (t *Thermostat) update() {
 }
 
 func (t *Thermostat) updateCurrentTemperature() {
-	var sum float64 = 0
+	if len(t.temperatureControls) == 0 {
+		t.Controls.CurrentTemperature.SetValue(0)
+		return
+	}
 
+	var sum float64 = 0
 	for _, temperatureControl := range t.temperatureControls {
 		sum += temperatureControl.GetValue()
 	}
@@ -78,36 +83,53 @@ func (t *Thermostat) updateRelay() {
 	}
 }
 
-func (t *Thermostat) runTicker() {
+func (t *Thermostat) runTicker(ctx context.Context) {
 	t.ticker = time.NewTicker(1 * time.Second)
 	go func() {
-		for range t.ticker.C {
-			t.update()
+		defer t.ticker.Stop()
+		for {
+			select {
+			case <-t.ticker.C:
+				t.update()
+			case <-ctx.Done():
+				return
+			}
 		}
 	}()
 }
 
-func (t *Thermostat) setMeta() {
+func (t *Thermostat) Stop() {
+	if t.ticker != nil {
+		t.ticker.Stop()
+	}
+}
+
+func (t *Thermostat) setMeta() error {
 	byteMeta, err := json.Marshal(t.meta)
 	if err != nil {
-		fmt.Println(err)
+		return fmt.Errorf("failed to marshal meta: %w", err)
 	}
 
-	_ = t.client.Publish(wb.PublishPayload{
+	err = t.client.Publish(wb.PublishPayload{
 		Topic:    t.metaTopic,
 		Value:    string(byteMeta),
 		QOS:      1,
 		Retained: true,
 	})
+	if err != nil {
+		return fmt.Errorf("failed to publish meta: %w", err)
+	}
+
+	return nil
 }
 
-func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
+func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, error) {
 	if config.Client == nil {
 		return &Thermostat{}, errors.New("client is nil")
 	}
 
 	if config.DB == nil {
-		return nil, errors.New("db is nil")
+		return &Thermostat{}, errors.New("db is nil")
 	}
 
 	if config.Device == "" {
@@ -116,7 +138,7 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 
 	err := migrate(config.DB)
 	if err != nil {
-		return nil, err
+		return &Thermostat{}, err
 	}
 
 	deviceFullName := getDeviceFullName(config.Device)
@@ -130,7 +152,7 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 		meta:                Meta{Name: config.Device, Driver: "wb-go"},
 	}
 
-	t.Controls.TargetTemperature = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+	t.Controls.TargetTemperature = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -152,7 +174,7 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 		DefaultValue: config.TargetTemperature,
 	})
 
-	t.Controls.CurrentTemperature = virualcontrol.NewVirtualValueControl(virualcontrol.ValueOptions{
+	t.Controls.CurrentTemperature = virualcontrol.NewVirtualValueControl(ctx, virualcontrol.ValueOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -167,7 +189,7 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 		},
 	})
 
-	t.Controls.Enabled = virualcontrol.NewVirtualSwitchControl(virualcontrol.SwitchOptions{
+	t.Controls.Enabled = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -186,7 +208,7 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 		},
 	})
 
-	t.Controls.Relay = virualcontrol.NewVirtualSwitchControl(virualcontrol.SwitchOptions{
+	t.Controls.Relay = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -200,8 +222,11 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 		},
 	})
 
-	t.setMeta()
-	t.runTicker()
+	if err := t.setMeta(); err != nil {
+		return nil, err
+	}
+
+	t.runTicker(ctx)
 	t.loaded = true
 
 	return t, nil

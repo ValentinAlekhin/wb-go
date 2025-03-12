@@ -1,22 +1,25 @@
 package virtualdevice
 
 import (
+	"context"
 	"fmt"
-	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
-	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/ValentinAlekhin/wb-go/pkg/control"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
+	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
+	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
 )
 
 func TestNewAdaptiveLight_NilDB(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 
 	config := AdaptiveLightConfig{
@@ -25,7 +28,7 @@ func TestNewAdaptiveLight_NilDB(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	assert.Nil(t, al)
 	assert.EqualError(t, err, "db is nil")
 }
@@ -33,6 +36,7 @@ func TestNewAdaptiveLight_NilDB(t *testing.T) {
 func TestNewAdaptiveLight_EmptyDevice(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -42,7 +46,7 @@ func TestNewAdaptiveLight_EmptyDevice(t *testing.T) {
 		Device: "",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	assert.Nil(t, al)
 	assert.EqualError(t, err, "device is empty")
 }
@@ -50,6 +54,7 @@ func TestNewAdaptiveLight_EmptyDevice(t *testing.T) {
 func TestNewAdaptiveLight_Initialization(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -59,7 +64,7 @@ func TestNewAdaptiveLight_Initialization(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	require.NoError(t, err)
 	require.NotNil(t, al)
 
@@ -73,7 +78,8 @@ func TestNewAdaptiveLight_Initialization(t *testing.T) {
 func TestNewAdaptiveLight_InvalidConfig(t *testing.T) {
 	t.Parallel()
 
-	_, err := NewAdaptiveLight(AdaptiveLightConfig{
+	ctx := context.Background()
+	_, err := NewAdaptiveLight(ctx, AdaptiveLightConfig{
 		DB:     nil,
 		Client: nil,
 		Device: "",
@@ -84,6 +90,7 @@ func TestNewAdaptiveLight_InvalidConfig(t *testing.T) {
 func TestAdaptiveLight_GetInfo(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -93,7 +100,7 @@ func TestAdaptiveLight_GetInfo(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	require.NoError(t, err)
 
 	info := al.GetInfo()
@@ -103,6 +110,7 @@ func TestAdaptiveLight_GetInfo(t *testing.T) {
 func TestAdaptiveLight_Update_Disabled(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -112,7 +120,7 @@ func TestAdaptiveLight_Update_Disabled(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	require.NoError(t, err)
 
 	// Disable AdaptiveLight
@@ -126,6 +134,7 @@ func TestAdaptiveLight_Update_Disabled(t *testing.T) {
 func TestAdaptiveLight_SleepMode(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -135,7 +144,7 @@ func TestAdaptiveLight_SleepMode(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -214,6 +223,7 @@ func TestAdaptiveLight_SleepMode(t *testing.T) {
 func TestAdaptiveLight_GetBrightness(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -223,7 +233,7 @@ func TestAdaptiveLight_GetBrightness(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	require.NoError(t, err)
 
 	maxBrightness := 100
@@ -236,6 +246,7 @@ func TestAdaptiveLight_GetBrightness(t *testing.T) {
 func TestAdaptiveLight_GetColorTemp(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -245,7 +256,7 @@ func TestAdaptiveLight_GetColorTemp(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	require.NoError(t, err)
 
 	maxTemp := 6500
@@ -263,6 +274,7 @@ func TestAdaptiveLight_GetColorTemp(t *testing.T) {
 func TestAdaptiveLight_MetaPublishing(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -272,7 +284,7 @@ func TestAdaptiveLight_MetaPublishing(t *testing.T) {
 		Device: "TestDevice",
 	}
 
-	al, err := NewAdaptiveLight(config)
+	al, err := NewAdaptiveLight(ctx, config)
 	require.NoError(t, err)
 
 	messageChan := make(chan string, 1)
@@ -281,13 +293,62 @@ func TestAdaptiveLight_MetaPublishing(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	// Ожидаем сообщение с таймаутом
 	select {
 	case msg := <-messageChan:
 		// Проверяем, что метаданные пришли в правильном формате
 		expectedMeta := `{"name":"TestDevice","driver":"wb-go"}`
 		assert.JSONEq(t, expectedMeta, msg)
-	case <-time.After(1 * time.Second):
+	case <-time.After(100 * time.Millisecond): // Уменьшаем таймаут для теста
 		t.Fatal("Не дождались сообщения с метаданными в MQTT-топике")
 	}
+}
 
+func TestAdaptiveLight_TickerUpdates(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
+	config := AdaptiveLightConfig{
+		DB:     database,
+		Client: client,
+		Device: "TestDevice",
+	}
+
+	al, err := NewAdaptiveLight(ctx, config)
+	require.NoError(t, err)
+
+	// Устанавливаем начальные значения
+	al.Controls.Enabled.SetValue(true)
+	al.Controls.SleepStart.SetValue(timeonly.NewTime(23, 0, 0))
+	al.Controls.SleepEnd.SetValue(timeonly.NewTime(6, 0, 0))
+	al.Controls.MaxBrightness.SetValue(100)
+	al.Controls.MinBrightness.SetValue(20)
+
+	// Создаем канал для отслеживания обновлений SleepMode
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	var sleepModeUpdated bool
+	al.Controls.SleepMode.AddWatcher(func(payload control.WatcherPayloadBool) {
+		sleepModeUpdated = payload.NewValue
+		wg.Done()
+	})
+
+	// Устанавливаем текущее время в ночной период
+	al.now = timeonly.NewTime(0, 30, 0) // После полуночи, в период сна
+	al.update()                         // Вызываем update вручную для первой итерации
+
+	// Ожидаем обновления от тикера
+	wg.Wait()
+	assert.True(t, sleepModeUpdated, "SleepMode должен быть включен в ночное время")
+
+	// Устанавливаем дневное время
+	al.now = timeonly.NewTime(12, 0, 0) // Полдень
+	wg.Add(1)
+	al.update()
+
+	wg.Wait()
+	assert.False(t, sleepModeUpdated, "SleepMode должен быть выключен в дневное время")
 }

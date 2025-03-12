@@ -1,6 +1,7 @@
 package virualcontrol
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 )
 
@@ -44,7 +45,7 @@ func (c *VirtualRangeControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualRangeControl(opt RangeOptions) *VirtualRangeControl {
+func NewVirtualRangeControl(ctx context.Context, opt RangeOptions) *VirtualRangeControl {
 	vc := &VirtualRangeControl{}
 	onHandler := func(payload OnHandlerPayload[string]) {
 		value, err := vc.converter.Decode(payload.Value)
@@ -70,6 +71,6 @@ func NewVirtualRangeControl(opt RangeOptions) *VirtualRangeControl {
 		DefaultValue: vc.converter.Encode(opt.DefaultValue),
 	}
 
-	vc.control = NewVirtualControl(vOpt)
+	vc.control = NewVirtualControl(ctx, vOpt)
 	return vc
 }

@@ -1,6 +1,10 @@
 package virualcontrol
 
 import (
+	"context"
+	"testing"
+	"time"
+
 	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
@@ -9,13 +13,12 @@ import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestVirtualSwitchControlGetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -32,7 +35,7 @@ func TestVirtualSwitchControlGetValue(t *testing.T) {
 		DefaultValue: true,
 	}
 
-	vc := NewVirtualSwitchControl(opt)
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	// Проверяем, что значение по умолчанию корректно возвращается
 	assert.True(t, vc.GetValue())
@@ -41,6 +44,7 @@ func TestVirtualSwitchControlGetValue(t *testing.T) {
 func TestVirtualSwitchControlSetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -56,7 +60,7 @@ func TestVirtualSwitchControlSetValue(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualSwitchControl(opt)
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	// Устанавливаем новое значение
 	vc.SetValue(true)
@@ -68,6 +72,7 @@ func TestVirtualSwitchControlSetValue(t *testing.T) {
 func TestVirtualSwitchControlOnHandler(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -88,7 +93,7 @@ func TestVirtualSwitchControlOnHandler(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualSwitchControl(opt)
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	err := client.Publish(wb.PublishPayload{
 		Value: conventions.CONV_META_BOOL_TRUE,
@@ -106,11 +111,13 @@ func TestVirtualSwitchControlOnHandler(t *testing.T) {
 func TestVirtualSwitchControlAddWatcher(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
-	vc := NewVirtualSwitchControl(SwitchOptions{
+
+	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
 			DB:     database,
 			Client: client,
@@ -118,7 +125,9 @@ func TestVirtualSwitchControlAddWatcher(t *testing.T) {
 			Name:   controlName,
 			Meta:   control.Meta{},
 		},
-	})
+	}
+
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
@@ -140,6 +149,7 @@ func TestVirtualSwitchControlAddWatcher(t *testing.T) {
 func TestVirtualSwitchControlMetaType(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -154,7 +164,7 @@ func TestVirtualSwitchControlMetaType(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualSwitchControl(opt)
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	// Проверяем, что Meta.Type корректно установлен в "switch"
 	assert.Equal(t, "switch", vc.control.meta.Type)
@@ -163,6 +173,7 @@ func TestVirtualSwitchControlMetaType(t *testing.T) {
 func TestVirtualSwitchControlToggle(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -178,7 +189,7 @@ func TestVirtualSwitchControlToggle(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualSwitchControl(opt)
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	// Проверяем начальное состояние
 	assert.False(t, vc.GetValue())
@@ -195,6 +206,7 @@ func TestVirtualSwitchControlToggle(t *testing.T) {
 func TestVirtualSwitchControlTurnOff(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -211,7 +223,7 @@ func TestVirtualSwitchControlTurnOff(t *testing.T) {
 		DefaultValue: true,
 	}
 
-	vc := NewVirtualSwitchControl(opt)
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	// Проверяем начальное состояние
 	assert.True(t, vc.GetValue())
@@ -224,6 +236,7 @@ func TestVirtualSwitchControlTurnOff(t *testing.T) {
 func TestVirtualSwitchControlTurnOn(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -239,7 +252,7 @@ func TestVirtualSwitchControlTurnOn(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualSwitchControl(opt)
+	vc := NewVirtualSwitchControl(ctx, opt)
 
 	// Проверяем начальное состояние
 	assert.False(t, vc.GetValue())

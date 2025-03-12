@@ -1,6 +1,7 @@
 package virualcontrol
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 )
 
@@ -46,7 +47,7 @@ func (c *VirtualTextControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualTextControl(opt TextOptions) *VirtualTextControl {
+func NewVirtualTextControl(ctx context.Context, opt TextOptions) *VirtualTextControl {
 	vc := &VirtualTextControl{}
 	onHandler := func(payload TextHandlerPayload) {
 		newPayload := TextHandlerPayload{
@@ -61,6 +62,6 @@ func NewVirtualTextControl(opt TextOptions) *VirtualTextControl {
 
 	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: opt.DefaultValue}
 
-	vc.control = NewVirtualControl(vOpt)
+	vc.control = NewVirtualControl(ctx, vOpt)
 	return vc
 }

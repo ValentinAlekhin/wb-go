@@ -1,6 +1,7 @@
 package virtualdevice
 
 import (
+	"context" // Добавляем импорт context
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -92,7 +93,6 @@ func (a *AdaptiveLight) getSleepMode(start, end, now timeonly.Time) bool {
 	midnight := timeonly.FromSeconds(0)
 
 	if start.Before(end) && start.After(midnight) {
-
 		if now.After(start) && now.Before(end) {
 			return true
 		} else {
@@ -133,12 +133,18 @@ func (a *AdaptiveLight) getColorTemp(sleepMode bool, max, min int, sunrise, suns
 	return temp
 }
 
-func (a *AdaptiveLight) runTicker() {
+func (a *AdaptiveLight) runTicker(ctx context.Context) {
 	a.ticker = time.NewTicker(1 * time.Second)
 	go func() {
-		for range a.ticker.C {
-			a.now = timeonly.Now()
-			a.update()
+		defer a.ticker.Stop()
+		for {
+			select {
+			case <-a.ticker.C:
+				a.now = timeonly.Now()
+				a.update()
+			case <-ctx.Done():
+				return
+			}
 		}
 	}()
 }
@@ -157,7 +163,7 @@ func (a *AdaptiveLight) setMeta() {
 	})
 }
 
-func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
+func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*AdaptiveLight, error) { // Добавляем ctx как первый аргумент
 	if config.Client == nil {
 		return nil, errors.New("client is nil")
 	}
@@ -186,7 +192,8 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		Controls:  AdaptiveLightControls{},
 	}
 
-	al.Controls.Enabled = virualcontrol.NewVirtualSwitchControl(virualcontrol.SwitchOptions{
+	// Передаем ctx во все вызовы контроллов
+	al.Controls.Enabled = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -204,7 +211,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: true,
 	})
 
-	al.Controls.MinTemp = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+	al.Controls.MinTemp = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -224,7 +231,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: 0,
 	})
 
-	al.Controls.MaxTemp = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+	al.Controls.MaxTemp = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -244,7 +251,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: 100,
 	})
 
-	al.Controls.CurrentTemp = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+	al.Controls.CurrentTemp = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -261,7 +268,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: 100,
 	})
 
-	al.Controls.MinBrightness = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+	al.Controls.MinBrightness = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -281,7 +288,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: 0,
 	})
 
-	al.Controls.MaxBrightness = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+	al.Controls.MaxBrightness = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -301,7 +308,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: 100,
 	})
 
-	al.Controls.CurrentBrightness = virualcontrol.NewVirtualRangeControl(virualcontrol.RangeOptions{
+	al.Controls.CurrentBrightness = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -318,7 +325,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: 100,
 	})
 
-	al.Controls.SleepMode = virualcontrol.NewVirtualSwitchControl(virualcontrol.SwitchOptions{
+	al.Controls.SleepMode = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -333,7 +340,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		DefaultValue: false,
 	})
 
-	al.Controls.Sunrise = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+	al.Controls.Sunrise = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -351,7 +358,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		},
 	})
 
-	al.Controls.Sunset = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+	al.Controls.Sunset = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -369,7 +376,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		},
 	})
 
-	al.Controls.SleepStart = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+	al.Controls.SleepStart = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -387,7 +394,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 		},
 	})
 
-	al.Controls.SleepEnd = virualcontrol.NewVirtualTimeControl(virualcontrol.TimeOptions{
+	al.Controls.SleepEnd = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
 			DB:     config.DB,
 			Client: config.Client,
@@ -406,7 +413,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 	})
 
 	al.setMeta()
-	al.runTicker()
+	al.runTicker(ctx)
 
 	al.loaded = true
 

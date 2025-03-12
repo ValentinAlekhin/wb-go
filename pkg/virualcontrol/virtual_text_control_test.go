@@ -1,6 +1,10 @@
 package virualcontrol
 
 import (
+	"context"
+	"testing"
+	"time"
+
 	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
@@ -8,13 +12,12 @@ import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestVirtualTextControlGetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -32,7 +35,7 @@ func TestVirtualTextControlGetValue(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualTextControl(opt)
+	vc := NewVirtualTextControl(ctx, opt)
 
 	// Проверяем, что значение по умолчанию корректно возвращается
 	assert.Equal(t, defaultValue, vc.GetValue())
@@ -41,6 +44,7 @@ func TestVirtualTextControlGetValue(t *testing.T) {
 func TestVirtualTextControlSetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -58,7 +62,7 @@ func TestVirtualTextControlSetValue(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualTextControl(opt)
+	vc := NewVirtualTextControl(ctx, opt)
 
 	// Устанавливаем новое значение
 	newValue := "new_value"
@@ -71,6 +75,7 @@ func TestVirtualTextControlSetValue(t *testing.T) {
 func TestVirtualTextControlOnHandler(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -94,7 +99,7 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualTextControl(opt)
+	vc := NewVirtualTextControl(ctx, opt)
 
 	err := client.Publish(wb.PublishPayload{
 		Value: "new_value",
@@ -112,13 +117,14 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 func TestVirtualTextControlAddWatcher(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
-	vc := NewVirtualTextControl(TextOptions{
+	opt := TextOptions{
 		BaseOptions: BaseOptions{
 			DB:     database,
 			Client: client,
@@ -127,7 +133,9 @@ func TestVirtualTextControlAddWatcher(t *testing.T) {
 			Meta:   control.Meta{},
 		},
 		DefaultValue: defaultValue,
-	})
+	}
+
+	vc := NewVirtualTextControl(ctx, opt)
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
@@ -149,6 +157,7 @@ func TestVirtualTextControlAddWatcher(t *testing.T) {
 func TestVirtualTextControlMetaType(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -166,7 +175,7 @@ func TestVirtualTextControlMetaType(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualTextControl(opt)
+	vc := NewVirtualTextControl(ctx, opt)
 
 	// Проверяем, что Meta.Type корректно установлен в "text"
 	assert.Equal(t, "text", vc.control.meta.Type)

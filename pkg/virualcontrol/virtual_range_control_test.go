@@ -1,6 +1,10 @@
 package virualcontrol
 
 import (
+	"context"
+	"testing"
+	"time"
+
 	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
@@ -8,13 +12,12 @@ import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestVirtualRangeControlGetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -32,7 +35,7 @@ func TestVirtualRangeControlGetValue(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualRangeControl(opt)
+	vc := NewVirtualRangeControl(ctx, opt)
 
 	// Проверяем, что значение по умолчанию корректно возвращается
 	assert.Equal(t, defaultValue, vc.GetValue())
@@ -41,6 +44,7 @@ func TestVirtualRangeControlGetValue(t *testing.T) {
 func TestVirtualRangeControlSetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -58,7 +62,7 @@ func TestVirtualRangeControlSetValue(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualRangeControl(opt)
+	vc := NewVirtualRangeControl(ctx, opt)
 
 	// Устанавливаем новое значение
 	vc.SetValue(25)
@@ -70,6 +74,7 @@ func TestVirtualRangeControlSetValue(t *testing.T) {
 func TestVirtualRangeControlOnHandler(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -93,7 +98,7 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualRangeControl(opt)
+	vc := NewVirtualRangeControl(ctx, opt)
 
 	err := client.Publish(wb.PublishPayload{
 		Value: "25",
@@ -111,13 +116,14 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 func TestVirtualRangeControlAddWatcher(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
-	vc := NewVirtualRangeControl(RangeOptions{
+	opt := RangeOptions{
 		BaseOptions: BaseOptions{
 			DB:     database,
 			Client: client,
@@ -126,7 +132,9 @@ func TestVirtualRangeControlAddWatcher(t *testing.T) {
 			Meta:   control.Meta{},
 		},
 		DefaultValue: defaultValue,
-	})
+	}
+
+	vc := NewVirtualRangeControl(ctx, opt)
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
@@ -148,6 +156,7 @@ func TestVirtualRangeControlAddWatcher(t *testing.T) {
 func TestVirtualRangeControlMetaType(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -165,7 +174,7 @@ func TestVirtualRangeControlMetaType(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualRangeControl(opt)
+	vc := NewVirtualRangeControl(ctx, opt)
 
 	// Проверяем, что Meta.Type корректно установлен в "range"
 	assert.Equal(t, "range", vc.control.meta.Type)

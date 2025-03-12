@@ -66,22 +66,13 @@ func (c *Control) publish(value string) {
 }
 
 // subscribe subscribes to the MQTT value topic to receive updates.
-func (c *Control) subscribe(ctx context.Context) {
+func (c *Control) subscribe() {
 	callback := func(client mqtt.Client, msg mqtt.Message) {
 		newValue := string(msg.Payload())
 		c.handleValueUpdate(newValue)
 	}
 
 	_ = c.client.Subscribe(c.valueTopic, callback)
-
-	go func() {
-		if <-ctx.Done(); true {
-			err := c.client.Unsubscribe(c.valueTopic)
-			if err != nil {
-				return
-			}
-		}
-	}()
 }
 
 // handleValueUpdate processes a new value received from the MQTT topic.
@@ -141,9 +132,12 @@ func (c *Control) runSetValueHandler(ctx context.Context) {
 
 func (c *Control) close() {
 	if c.closed.CompareAndSwap(false, true) {
+		_ = c.client.Unsubscribe(c.valueTopic)
+
 		close(c.setChan)
 		close(c.eventChan)
 		close(c.addChan)
+
 	}
 }
 
@@ -156,7 +150,7 @@ func NewControl(ctx context.Context, client wb.ClientInterface, device, control 
 		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, control),
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, device, control),
 		value:        atomic.String{},
-		addChan:      make(chan func(payload WatcherPayloadString), 10),
+		addChan:      make(chan func(payload WatcherPayloadString)),
 		eventChan:    make(chan WatcherPayloadString, 10),
 		setChan:      make(chan string, 10),
 	}
@@ -164,7 +158,7 @@ func NewControl(ctx context.Context, client wb.ClientInterface, device, control 
 	c.value.Store("")
 	go c.runWatchHandler(ctx)
 	go c.runSetValueHandler(ctx)
-	c.subscribe(ctx)
+	c.subscribe()
 
 	return c
 }

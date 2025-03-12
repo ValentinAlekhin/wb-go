@@ -1,6 +1,7 @@
 package virualcontrol
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/internal/db"
@@ -25,21 +26,7 @@ type VirtualControl struct {
 	eventChan    chan control.WatcherPayloadString
 	onChan       chan string
 	onHandler    OnHandler[string]
-	stopChan     chan struct{}
-}
-
-type Options struct {
-	BaseOptions
-	OnHandler    OnHandler[string]
-	DefaultValue string
-}
-
-type OnHandler[T comparable] func(payload OnHandlerPayload[T])
-
-type OnHandlerPayload[T comparable] struct {
-	Set   func(value T)
-	Value T
-	Error error
+	closed       atomic.Bool
 }
 
 func (c *VirtualControl) GetValue() string {
@@ -47,6 +34,10 @@ func (c *VirtualControl) GetValue() string {
 }
 
 func (c *VirtualControl) SetValue(value string) {
+	if c.closed.Load() {
+		return
+	}
+
 	oldValue := c.value.Load()
 	c.value.Swap(value)
 
@@ -81,11 +72,16 @@ func (c *VirtualControl) GetInfo() control.Info {
 }
 
 func (c *VirtualControl) AddWatcher(f func(payload control.WatcherPayloadString)) {
+	if c.closed.Load() {
+		return
+	}
+
 	c.addChan <- f
 }
 
-func (c *VirtualControl) runWatchHandler() {
+func (c *VirtualControl) runWatchHandler(ctx context.Context) {
 	listeners := make([]func(p control.WatcherPayloadString), 0)
+	defer c.close()
 
 	for {
 		select {
@@ -95,13 +91,15 @@ func (c *VirtualControl) runWatchHandler() {
 			for _, callback := range listeners {
 				go callback(event)
 			}
-		case <-c.stopChan:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (c *VirtualControl) runOnHandler() {
+func (c *VirtualControl) runOnHandler(ctx context.Context) {
+	defer c.close()
+
 	for {
 		select {
 		case newValue := <-c.onChan:
@@ -109,7 +107,7 @@ func (c *VirtualControl) runOnHandler() {
 				Set:   c.SetValue,
 				Value: newValue,
 			})
-		case <-c.stopChan:
+		case <-ctx.Done():
 			return
 		}
 	}
@@ -158,7 +156,17 @@ func (c *VirtualControl) loadPrevValue(defaultValue string) {
 	})
 }
 
-func NewVirtualControl(opt Options) *VirtualControl {
+func (c *VirtualControl) close() {
+	if c.closed.CompareAndSwap(false, true) {
+		_ = c.client.Unsubscribe(c.commandTopic)
+
+		close(c.onChan)
+		close(c.addChan)
+		close(c.eventChan)
+	}
+}
+
+func NewVirtualControl(ctx context.Context, opt Options) *VirtualControl {
 	vc := &VirtualControl{
 		name:         opt.Name,
 		meta:         opt.Meta,
@@ -168,7 +176,6 @@ func NewVirtualControl(opt Options) *VirtualControl {
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, opt.Device, opt.Name),
 		metaTopic:    fmt.Sprintf(conventions.CONV_CONTROL_META_V2_FMT, opt.Device, opt.Name),
 		value:        atomic.String{},
-		stopChan:     make(chan struct{}),
 		onChan:       make(chan string),
 		addChan:      make(chan func(payload control.WatcherPayloadString)),
 		eventChan:    make(chan control.WatcherPayloadString),
@@ -179,13 +186,13 @@ func NewVirtualControl(opt Options) *VirtualControl {
 		vc.onHandler = opt.OnHandler
 	}
 
-	go vc.runWatchHandler()
+	go vc.runWatchHandler(ctx)
 
 	vc.loadPrevValue(opt.DefaultValue)
 	vc.subscribeToOnTopic()
 	vc.setMeta()
 
-	go vc.runOnHandler()
+	go vc.runOnHandler(ctx)
 
 	return vc
 }

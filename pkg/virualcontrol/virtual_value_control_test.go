@@ -1,6 +1,10 @@
 package virualcontrol
 
 import (
+	"context"
+	"testing"
+	"time"
+
 	"github.com/ValentinAlekhin/wb-go/internal/dbmock"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
@@ -8,13 +12,12 @@ import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestVirtualValueControlGetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -32,7 +35,7 @@ func TestVirtualValueControlGetValue(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualValueControl(opt)
+	vc := NewVirtualValueControl(ctx, opt)
 
 	// Проверяем, что значение по умолчанию корректно возвращается
 	assert.Equal(t, defaultValue, vc.GetValue())
@@ -41,6 +44,7 @@ func TestVirtualValueControlGetValue(t *testing.T) {
 func TestVirtualValueControlSetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -58,7 +62,7 @@ func TestVirtualValueControlSetValue(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualValueControl(opt)
+	vc := NewVirtualValueControl(ctx, opt)
 
 	// Устанавливаем новое значение
 	newValue := 25.75
@@ -71,6 +75,7 @@ func TestVirtualValueControlSetValue(t *testing.T) {
 func TestVirtualValueControlOnHandler(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -94,7 +99,7 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 		},
 	}
 
-	vc := NewVirtualValueControl(opt)
+	vc := NewVirtualValueControl(ctx, opt)
 
 	err := client.Publish(wb.PublishPayload{
 		Value: "25.75",
@@ -110,13 +115,14 @@ func TestVirtualValueControlOnHandler(t *testing.T) {
 }
 
 func TestVirtualValueControlAddWatcher(t *testing.T) {
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0.0
 
-	vc := NewVirtualValueControl(ValueOptions{
+	opt := ValueOptions{
 		BaseOptions: BaseOptions{
 			DB:     database,
 			Client: client,
@@ -125,7 +131,9 @@ func TestVirtualValueControlAddWatcher(t *testing.T) {
 			Meta:   control.Meta{},
 		},
 		DefaultValue: defaultValue,
-	})
+	}
+
+	vc := NewVirtualValueControl(ctx, opt)
 
 	var watcherCalled bool
 	// Добавляем watcher для контроля изменений
@@ -148,6 +156,7 @@ func TestVirtualValueControlAddWatcher(t *testing.T) {
 func TestVirtualValueControlMetaType(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
 
@@ -165,7 +174,7 @@ func TestVirtualValueControlMetaType(t *testing.T) {
 		DefaultValue: defaultValue,
 	}
 
-	vc := NewVirtualValueControl(opt)
+	vc := NewVirtualValueControl(ctx, opt)
 
 	// Проверяем, что Meta.Type корректно установлен в "value"
 	assert.Equal(t, "value", vc.control.meta.Type)

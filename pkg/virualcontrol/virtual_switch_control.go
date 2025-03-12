@@ -1,6 +1,7 @@
 package virualcontrol
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 )
 
@@ -60,7 +61,7 @@ func (c *VirtualSwitchControl) GetInfo() control.Info {
 	return c.control.GetInfo()
 }
 
-func NewVirtualSwitchControl(opt SwitchOptions) *VirtualSwitchControl {
+func NewVirtualSwitchControl(ctx context.Context, opt SwitchOptions) *VirtualSwitchControl {
 	vc := &VirtualSwitchControl{}
 	onHandler := func(payload OnHandlerPayload[string]) {
 		value, _ := vc.converter.Decode(payload.Value)
@@ -78,6 +79,6 @@ func NewVirtualSwitchControl(opt SwitchOptions) *VirtualSwitchControl {
 
 	vOpt := Options{BaseOptions: opt.BaseOptions, OnHandler: onHandler, DefaultValue: vc.converter.Encode(opt.DefaultValue)}
 
-	vc.control = NewVirtualControl(vOpt)
+	vc.control = NewVirtualControl(ctx, vOpt)
 	return vc
 }
