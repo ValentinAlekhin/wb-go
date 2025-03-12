@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -28,12 +29,12 @@ var (
 	instanceAlarms *Alarms
 )
 
-func NewAlarms(client mqtt.ClientInterface) *Alarms {
+func NewAlarms(ctx context.Context, client mqtt.ClientInterface) *Alarms {
 	onceAlarms.Do(func() {
 		name := "alarms"
 
 		controlList := &AlarmsControls{
-			Log: control.NewTextControl(client, name, "log", control.Meta{
+			Log: control.NewTextControl(ctx, client, name, "log", control.Meta{
 				Type: "text",
 
 				Order:    1,

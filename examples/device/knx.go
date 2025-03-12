@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -28,12 +29,12 @@ var (
 	instanceKnx *Knx
 )
 
-func NewKnx(client mqtt.ClientInterface) *Knx {
+func NewKnx(ctx context.Context, client mqtt.ClientInterface) *Knx {
 	onceKnx.Do(func() {
 		name := "knx"
 
 		controlList := &KnxControls{
-			Data: control.NewTextControl(client, name, "data", control.Meta{
+			Data: control.NewTextControl(ctx, client, name, "data", control.Meta{
 				Type: "text",
 
 				Order:    0,

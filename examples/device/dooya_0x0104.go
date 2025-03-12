@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -32,12 +33,12 @@ var (
 	instanceDooya0X0104 *Dooya0X0104
 )
 
-func NewDooya0X0104(client mqtt.ClientInterface) *Dooya0X0104 {
+func NewDooya0X0104(ctx context.Context, client mqtt.ClientInterface) *Dooya0X0104 {
 	onceDooya0X0104.Do(func() {
 		name := "dooya_0x0104"
 
 		controlList := &Dooya0X0104Controls{
-			Position: control.NewRangeControl(client, name, "Position", control.Meta{
+			Position: control.NewRangeControl(ctx, client, name, "Position", control.Meta{
 				Type: "range",
 
 				Max: 100,
@@ -46,28 +47,28 @@ func NewDooya0X0104(client mqtt.ClientInterface) *Dooya0X0104 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Позиция`},
 			}),
-			Open: control.NewPushbuttonControl(client, name, "Open", control.Meta{
+			Open: control.NewPushbuttonControl(ctx, client, name, "Open", control.Meta{
 				Type: "pushbutton",
 
 				Order:    2,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Открыть`},
 			}),
-			Close: control.NewPushbuttonControl(client, name, "Close", control.Meta{
+			Close: control.NewPushbuttonControl(ctx, client, name, "Close", control.Meta{
 				Type: "pushbutton",
 
 				Order:    3,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Закрыть`},
 			}),
-			Stop: control.NewPushbuttonControl(client, name, "Stop", control.Meta{
+			Stop: control.NewPushbuttonControl(ctx, client, name, "Stop", control.Meta{
 				Type: "pushbutton",
 
 				Order:    4,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Остановить`},
 			}),
-			FactoryDefault: control.NewPushbuttonControl(client, name, "Factory Default", control.Meta{
+			FactoryDefault: control.NewPushbuttonControl(ctx, client, name, "Factory Default", control.Meta{
 				Type: "pushbutton",
 
 				Order:    5,

@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 )
 
@@ -35,7 +36,7 @@ func (c *RangeControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
-func NewRangeControl(client wb.ClientInterface, device, control string, meta Meta) *RangeControl {
-	c := NewControl(client, device, control, meta)
+func NewRangeControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *RangeControl {
+	c := NewControl(ctx, client, device, control, meta)
 	return &RangeControl{control: c}
 }

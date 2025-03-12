@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/examples/device"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
@@ -37,7 +38,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	wbMsw := device.NewWbMswV4151(client)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	wbMsw := device.NewWbMswV4151(ctx, client)
 
 	thermostat, err := virtualdevice.NewThermostat(virtualdevice.ThermostatConfig{
 		DB:                  db,
@@ -67,6 +70,7 @@ func main() {
 	}
 
 	<-stop
+	cancel()
 
 	// Отключениие от брокера и завершение программы
 	client.Disconnect(500)

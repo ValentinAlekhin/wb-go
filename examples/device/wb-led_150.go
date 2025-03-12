@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -44,19 +45,19 @@ var (
 	instanceWbLed150 *WbLed150
 )
 
-func NewWbLed150(client mqtt.ClientInterface) *WbLed150 {
+func NewWbLed150(ctx context.Context, client mqtt.ClientInterface) *WbLed150 {
 	onceWbLed150.Do(func() {
 		name := "wb-led_150"
 
 		controlList := &WbLed150Controls{
-			Cct1: control.NewSwitchControl(client, name, "CCT1", control.Meta{
+			Cct1: control.NewSwitchControl(ctx, client, name, "CCT1", control.Meta{
 				Type: "switch",
 
 				Order:    1,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Лента CCT1`},
 			}),
-			Cct1Temperature: control.NewRangeControl(client, name, "CCT1 Temperature", control.Meta{
+			Cct1Temperature: control.NewRangeControl(ctx, client, name, "CCT1 Temperature", control.Meta{
 				Type: "range",
 
 				Max: 100,
@@ -65,7 +66,7 @@ func NewWbLed150(client mqtt.ClientInterface) *WbLed150 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Цветовая температура ленты CCT1`},
 			}),
-			Cct1Brightness: control.NewRangeControl(client, name, "CCT1 Brightness", control.Meta{
+			Cct1Brightness: control.NewRangeControl(ctx, client, name, "CCT1 Brightness", control.Meta{
 				Type: "range",
 
 				Max: 100,
@@ -74,14 +75,14 @@ func NewWbLed150(client mqtt.ClientInterface) *WbLed150 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Яркость ленты CCT1`},
 			}),
-			Cct2: control.NewSwitchControl(client, name, "CCT2", control.Meta{
+			Cct2: control.NewSwitchControl(ctx, client, name, "CCT2", control.Meta{
 				Type: "switch",
 
 				Order:    4,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Лента CCT2`},
 			}),
-			Cct2Temperature: control.NewRangeControl(client, name, "CCT2 Temperature", control.Meta{
+			Cct2Temperature: control.NewRangeControl(ctx, client, name, "CCT2 Temperature", control.Meta{
 				Type: "range",
 
 				Max: 100,
@@ -90,7 +91,7 @@ func NewWbLed150(client mqtt.ClientInterface) *WbLed150 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Цветовая температура ленты CCT2`},
 			}),
-			Cct2Brightness: control.NewRangeControl(client, name, "CCT2 Brightness", control.Meta{
+			Cct2Brightness: control.NewRangeControl(ctx, client, name, "CCT2 Brightness", control.Meta{
 				Type: "range",
 
 				Max: 100,
@@ -99,7 +100,7 @@ func NewWbLed150(client mqtt.ClientInterface) *WbLed150 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Яркость ленты CCT2`},
 			}),
-			BoardTemperature: control.NewValueControl(client, name, "Board Temperature", control.Meta{
+			BoardTemperature: control.NewValueControl(ctx, client, name, "Board Temperature", control.Meta{
 				Type:  "value",
 				Units: "deg C",
 
@@ -107,7 +108,7 @@ func NewWbLed150(client mqtt.ClientInterface) *WbLed150 {
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Температура платы`},
 			}),
-			AllowedPower: control.NewValueControl(client, name, "Allowed Power", control.Meta{
+			AllowedPower: control.NewValueControl(ctx, client, name, "Allowed Power", control.Meta{
 				Type:  "value",
 				Units: "%",
 
@@ -115,63 +116,63 @@ func NewWbLed150(client mqtt.ClientInterface) *WbLed150 {
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Разрешенная мощность`},
 			}),
-			Overcurrent: control.NewSwitchControl(client, name, "Overcurrent", control.Meta{
+			Overcurrent: control.NewSwitchControl(ctx, client, name, "Overcurrent", control.Meta{
 				Type: "switch",
 
 				Order:    9,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Перегрузка по току`},
 			}),
-			Input1: control.NewSwitchControl(client, name, "Input 1", control.Meta{
+			Input1: control.NewSwitchControl(ctx, client, name, "Input 1", control.Meta{
 				Type: "switch",
 
 				Order:    10,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Вход 1`},
 			}),
-			Input2: control.NewSwitchControl(client, name, "Input 2", control.Meta{
+			Input2: control.NewSwitchControl(ctx, client, name, "Input 2", control.Meta{
 				Type: "switch",
 
 				Order:    11,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Вход 2`},
 			}),
-			Input2Counter: control.NewValueControl(client, name, "Input 2 Counter", control.Meta{
+			Input2Counter: control.NewValueControl(ctx, client, name, "Input 2 Counter", control.Meta{
 				Type: "value",
 
 				Order:    12,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Счетчик 2`},
 			}),
-			Input3: control.NewSwitchControl(client, name, "Input 3", control.Meta{
+			Input3: control.NewSwitchControl(ctx, client, name, "Input 3", control.Meta{
 				Type: "switch",
 
 				Order:    13,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Вход 3`},
 			}),
-			Input3Counter: control.NewValueControl(client, name, "Input 3 Counter", control.Meta{
+			Input3Counter: control.NewValueControl(ctx, client, name, "Input 3 Counter", control.Meta{
 				Type: "value",
 
 				Order:    14,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Счетчик 3`},
 			}),
-			Input4: control.NewSwitchControl(client, name, "Input 4", control.Meta{
+			Input4: control.NewSwitchControl(ctx, client, name, "Input 4", control.Meta{
 				Type: "switch",
 
 				Order:    15,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Вход 4`},
 			}),
-			Input4Counter: control.NewValueControl(client, name, "Input 4 Counter", control.Meta{
+			Input4Counter: control.NewValueControl(ctx, client, name, "Input 4 Counter", control.Meta{
 				Type: "value",
 
 				Order:    16,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Счетчик 4`},
 			}),
-			Serial: control.NewTextControl(client, name, "Serial", control.Meta{
+			Serial: control.NewTextControl(ctx, client, name, "Serial", control.Meta{
 				Type: "text",
 
 				Order:    17,

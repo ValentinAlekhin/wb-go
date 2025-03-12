@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
@@ -21,8 +22,11 @@ func TestValueControl_SetAndGetValue(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем ValueControl
-	valueControl := NewValueControl(client, device, controlName, meta)
+	valueControl := NewValueControl(ctx, client, device, controlName, meta)
 
 	// Числа для теста
 	newValue := 11.111111
@@ -55,8 +59,11 @@ func TestValueControl_AddWatcher(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем ValueControl
-	valueControl := NewValueControl(client, device, controlName, meta)
+	valueControl := NewValueControl(ctx, client, device, controlName, meta)
 
 	var newValue, oldValue float64
 

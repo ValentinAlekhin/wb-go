@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -30,26 +31,26 @@ var (
 	instanceSystemWbCloudAgentDefault *SystemWbCloudAgentDefault
 )
 
-func NewSystemWbCloudAgentDefault(client mqtt.ClientInterface) *SystemWbCloudAgentDefault {
+func NewSystemWbCloudAgentDefault(ctx context.Context, client mqtt.ClientInterface) *SystemWbCloudAgentDefault {
 	onceSystemWbCloudAgentDefault.Do(func() {
 		name := "system__wb-cloud-agent__default"
 
 		controlList := &SystemWbCloudAgentDefaultControls{
-			Status: control.NewTextControl(client, name, "status", control.Meta{
+			Status: control.NewTextControl(ctx, client, name, "status", control.Meta{
 				Type: "text",
 
 				Order:    1,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Status`},
 			}),
-			ActivationLink: control.NewTextControl(client, name, "activation_link", control.Meta{
+			ActivationLink: control.NewTextControl(ctx, client, name, "activation_link", control.Meta{
 				Type: "text",
 
 				Order:    2,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Link`},
 			}),
-			CloudBaseUrl: control.NewTextControl(client, name, "cloud_base_url", control.Meta{
+			CloudBaseUrl: control.NewTextControl(ctx, client, name, "cloud_base_url", control.Meta{
 				Type: "text",
 
 				Order:    3,

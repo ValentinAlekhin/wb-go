@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 )
@@ -17,8 +18,8 @@ func (c *PushbuttonControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
-func NewPushbuttonControl(client wb.ClientInterface, device, control string, meta Meta) *PushbuttonControl {
-	c := NewControl(client, device, control, meta)
+func NewPushbuttonControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *PushbuttonControl {
+	c := NewControl(ctx, client, device, control, meta)
 
 	return &PushbuttonControl{c}
 }

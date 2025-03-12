@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
@@ -20,8 +21,11 @@ func TestSwitchControl_SetAndGetValue(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем SwitchControl
-	switchControl := NewSwitchControl(client, device, controlName, meta)
+	switchControl := NewSwitchControl(ctx, client, device, controlName, meta)
 
 	// Устанавливаем значение
 	switchControl.SetValue(true)
@@ -50,8 +54,11 @@ func TestSwitchControl_Toggle(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем SwitchControl
-	switchControl := NewSwitchControl(client, device, controlName, meta)
+	switchControl := NewSwitchControl(ctx, client, device, controlName, meta)
 
 	// Устанавливаем значение в false
 	switchControl.SetValue(false)
@@ -84,8 +91,11 @@ func TestSwitchControl_AddWatcher(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем SwitchControl
-	switchControl := NewSwitchControl(client, device, controlName, meta)
+	switchControl := NewSwitchControl(ctx, client, device, controlName, meta)
 
 	var newValue, oldValue bool
 
@@ -123,8 +133,11 @@ func TestSwitchControl_TurnOn(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем SwitchControl
-	switchControl := NewSwitchControl(client, device, controlName, meta)
+	switchControl := NewSwitchControl(ctx, client, device, controlName, meta)
 
 	// Устанавливаем значение в false
 	switchControl.SetValue(false)
@@ -150,8 +163,11 @@ func TestSwitchControl_TurnOff(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем SwitchControl
-	switchControl := NewSwitchControl(client, device, controlName, meta)
+	switchControl := NewSwitchControl(ctx, client, device, controlName, meta)
 
 	// Устанавливаем значение в true
 	switchControl.SetValue(true)
@@ -177,8 +193,11 @@ func TestSwitchControl_TurnOnAndOff(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем SwitchControl
-	switchControl := NewSwitchControl(client, device, controlName, meta)
+	switchControl := NewSwitchControl(ctx, client, device, controlName, meta)
 
 	// Устанавливаем значение в false
 	switchControl.SetValue(false)

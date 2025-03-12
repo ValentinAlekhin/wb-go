@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -39,89 +40,89 @@ var (
 	instanceWbGpio *WbGpio
 )
 
-func NewWbGpio(client mqtt.ClientInterface) *WbGpio {
+func NewWbGpio(ctx context.Context, client mqtt.ClientInterface) *WbGpio {
 	onceWbGpio.Do(func() {
 		name := "wb-gpio"
 
 		controlList := &WbGpioControls{
-			A1Out: control.NewSwitchControl(client, name, "A1_OUT", control.Meta{
+			A1Out: control.NewSwitchControl(ctx, client, name, "A1_OUT", control.Meta{
 				Type: "switch",
 
 				Order:    1,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			A2Out: control.NewSwitchControl(client, name, "A2_OUT", control.Meta{
+			A2Out: control.NewSwitchControl(ctx, client, name, "A2_OUT", control.Meta{
 				Type: "switch",
 
 				Order:    2,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			A3Out: control.NewSwitchControl(client, name, "A3_OUT", control.Meta{
+			A3Out: control.NewSwitchControl(ctx, client, name, "A3_OUT", control.Meta{
 				Type: "switch",
 
 				Order:    3,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			A4Out: control.NewSwitchControl(client, name, "A4_OUT", control.Meta{
+			A4Out: control.NewSwitchControl(ctx, client, name, "A4_OUT", control.Meta{
 				Type: "switch",
 
 				Order:    4,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			A1In: control.NewSwitchControl(client, name, "A1_IN", control.Meta{
+			A1In: control.NewSwitchControl(ctx, client, name, "A1_IN", control.Meta{
 				Type: "switch",
 
 				Order:    5,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			A2In: control.NewSwitchControl(client, name, "A2_IN", control.Meta{
+			A2In: control.NewSwitchControl(ctx, client, name, "A2_IN", control.Meta{
 				Type: "switch",
 
 				Order:    6,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			A3In: control.NewSwitchControl(client, name, "A3_IN", control.Meta{
+			A3In: control.NewSwitchControl(ctx, client, name, "A3_IN", control.Meta{
 				Type: "switch",
 
 				Order:    7,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			A4In: control.NewSwitchControl(client, name, "A4_IN", control.Meta{
+			A4In: control.NewSwitchControl(ctx, client, name, "A4_IN", control.Meta{
 				Type: "switch",
 
 				Order:    8,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			C5VOut: control.NewSwitchControl(client, name, "5V_OUT", control.Meta{
+			C5VOut: control.NewSwitchControl(ctx, client, name, "5V_OUT", control.Meta{
 				Type: "switch",
 
 				Order:    9,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			W1In: control.NewSwitchControl(client, name, "W1_IN", control.Meta{
+			W1In: control.NewSwitchControl(ctx, client, name, "W1_IN", control.Meta{
 				Type: "switch",
 
 				Order:    10,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			W2In: control.NewSwitchControl(client, name, "W2_IN", control.Meta{
+			W2In: control.NewSwitchControl(ctx, client, name, "W2_IN", control.Meta{
 				Type: "switch",
 
 				Order:    11,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			VOut: control.NewSwitchControl(client, name, "V_OUT", control.Meta{
+			VOut: control.NewSwitchControl(ctx, client, name, "V_OUT", control.Meta{
 				Type: "switch",
 
 				Order:    12,

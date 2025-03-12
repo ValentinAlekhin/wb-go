@@ -1,26 +1,29 @@
 package control
 
 import (
+	"context"
+	"testing"
+	"time"
+
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestSetAndGetValue(t *testing.T) {
 	t.Parallel()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	client := mqttmock.NewMockClient()
 	mqttmock.AddOnHandler(client)
 
-	meta := Meta{
-		Type: "switch",
-	}
+	meta := Meta{Type: "switch"}
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
-	control := NewControl(client, device, controlName, meta)
+	control := NewControl(ctx, client, device, controlName, meta)
 
 	control.SetValue("on")
 	time.Sleep(50 * time.Millisecond)
@@ -34,16 +37,17 @@ func TestSetAndGetValue(t *testing.T) {
 func TestControl_AddWatcher(t *testing.T) {
 	t.Parallel()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	client := mqttmock.NewMockClient()
 	mqttmock.AddOnHandler(client)
 
-	meta := Meta{
-		Type: "switch",
-	}
+	meta := Meta{Type: "switch"}
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
-	control := NewControl(client, device, controlName, meta)
+	control := NewControl(ctx, client, device, controlName, meta)
 
 	var newValue, oldValue string
 
@@ -63,4 +67,40 @@ func TestControl_AddWatcher(t *testing.T) {
 
 	assert.Equal(t, "off", newValue)
 	assert.Equal(t, "on", oldValue)
+}
+
+func TestControl_ContextCancellation(t *testing.T) {
+	t.Parallel()
+
+	client := mqttmock.NewMockClient()
+	mqttmock.AddOnHandler(client)
+
+	meta := Meta{
+		Type: "switch",
+	}
+	device := testutils.RandString(10)
+	controlName := testutils.RandString(10)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	control := NewControl(ctx, client, device, controlName, meta)
+
+	control.SetValue("on")
+	time.Sleep(50 * time.Millisecond)
+	assert.Equal(t, "on", control.GetValue())
+
+	// Отмена контекста
+	cancel()
+	time.Sleep(50 * time.Millisecond)
+
+	assert.NotPanics(t, func() {
+		control.SetValue("off")
+	})
+
+	assert.NotPanics(t, func() {
+		control.AddWatcher(func(payload WatcherPayloadString) {
+		})
+	})
+
+	// Проверяем, что значение не изменилось после отмены контекста
+	assert.Equal(t, "on", control.GetValue())
 }

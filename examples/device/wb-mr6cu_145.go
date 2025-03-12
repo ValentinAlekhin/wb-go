@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -34,54 +35,54 @@ var (
 	instanceWbMr6Cu145 *WbMr6Cu145
 )
 
-func NewWbMr6Cu145(client mqtt.ClientInterface) *WbMr6Cu145 {
+func NewWbMr6Cu145(ctx context.Context, client mqtt.ClientInterface) *WbMr6Cu145 {
 	onceWbMr6Cu145.Do(func() {
 		name := "wb-mr6cu_145"
 
 		controlList := &WbMr6Cu145Controls{
-			K1: control.NewSwitchControl(client, name, "K1", control.Meta{
+			K1: control.NewSwitchControl(ctx, client, name, "K1", control.Meta{
 				Type: "switch",
 
 				Order:    1,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			K2: control.NewSwitchControl(client, name, "K2", control.Meta{
+			K2: control.NewSwitchControl(ctx, client, name, "K2", control.Meta{
 				Type: "switch",
 
 				Order:    2,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			K3: control.NewSwitchControl(client, name, "K3", control.Meta{
+			K3: control.NewSwitchControl(ctx, client, name, "K3", control.Meta{
 				Type: "switch",
 
 				Order:    3,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			K4: control.NewSwitchControl(client, name, "K4", control.Meta{
+			K4: control.NewSwitchControl(ctx, client, name, "K4", control.Meta{
 				Type: "switch",
 
 				Order:    4,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			K5: control.NewSwitchControl(client, name, "K5", control.Meta{
+			K5: control.NewSwitchControl(ctx, client, name, "K5", control.Meta{
 				Type: "switch",
 
 				Order:    5,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			K6: control.NewSwitchControl(client, name, "K6", control.Meta{
+			K6: control.NewSwitchControl(ctx, client, name, "K6", control.Meta{
 				Type: "switch",
 
 				Order:    6,
 				ReadOnly: false,
 				Title:    control.MultilingualText{},
 			}),
-			Serial: control.NewTextControl(client, name, "Serial", control.Meta{
+			Serial: control.NewTextControl(ctx, client, name, "Serial", control.Meta{
 				Type: "text",
 
 				Order:    7,

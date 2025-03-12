@@ -3,6 +3,7 @@
 package {{.PackageName}}
 
 import (
+	"context"
     "github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
     "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -30,12 +31,12 @@ var (
 	instance{{.DeviceStructName}} *{{.DeviceStructName}}
 )
 
-func New{{.DeviceStructName}}(client mqtt.ClientInterface) *{{.DeviceStructName}} {
+func New{{.DeviceStructName}}(ctx context.Context, client mqtt.ClientInterface) *{{.DeviceStructName}} {
 	once{{.DeviceStructName}}.Do(func() {
 		name := "{{.DeviceName}}"
 
         controlList := &{{.DeviceControlsStructName}}{
-        {{range .Controls}} {{.Name}}: control.New{{.StructName}}(client, name, "{{.Mqtt}}", control.Meta{
+        {{range .Controls}} {{.Name}}: control.New{{.StructName}}(ctx, client, name, "{{.Mqtt}}", control.Meta{
 			Type:      "{{.Meta.Type}}",
 			{{if .Meta.Units}} Units: "{{.Meta.Units}}", {{end}}
 			{{if .Meta.Max}} Max: {{.Meta.Max}}, {{ end }}

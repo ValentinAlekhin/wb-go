@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
@@ -19,8 +20,11 @@ func TestPushbuttonControl_Push(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем PushbuttonControl
-	pushbuttonControl := NewPushbuttonControl(client, device, controlName, meta)
+	pushbuttonControl := NewPushbuttonControl(ctx, client, device, controlName, meta)
 
 	// Проверяем начальное состояние
 	initialValue := pushbuttonControl.control.GetValue()

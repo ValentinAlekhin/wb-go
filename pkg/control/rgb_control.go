@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"fmt"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 )
@@ -46,7 +47,7 @@ func (c *RgbControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
-func NewRgbControl(client wb.ClientInterface, device, control string, meta Meta) *RgbControl {
-	c := NewControl(client, device, control, meta)
+func NewRgbControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *RgbControl {
+	c := NewControl(ctx, client, device, control, meta)
 	return &RgbControl{RGBConverter{}, c}
 }

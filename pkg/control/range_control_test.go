@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
@@ -18,8 +19,11 @@ func TestRangeControl_SetAndGetValue(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем RangeControl
-	rangeControl := NewRangeControl(client, device, controlName, meta)
+	rangeControl := NewRangeControl(ctx, client, device, controlName, meta)
 
 	// Устанавливаем значение
 	rangeControl.SetValue(42)
@@ -46,8 +50,11 @@ func TestRangeControl_AddWatcher(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем RangeControl
-	rangeControl := NewRangeControl(client, device, controlName, meta)
+	rangeControl := NewRangeControl(ctx, client, device, controlName, meta)
 
 	var newValue, oldValue int
 

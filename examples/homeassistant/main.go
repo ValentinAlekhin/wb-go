@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/examples/device"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
@@ -22,9 +23,12 @@ func main() {
 	}
 
 	// Создание устройств
-	WbMswV4151 := device.NewWbMswV4151(client)
-	rgbLed := device.NewWbLed106(client)
-	cctLed := device.NewWbLed150(client)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	WbMswV4151 := device.NewWbMswV4151(ctx, client)
+	rgbLed := device.NewWbLed106(ctx, client)
+	cctLed := device.NewWbLed150(ctx, client)
 
 	// Создание конфигурации Home Assistant
 	discoveryOpt := homeassistant.DiscoveryOptions{

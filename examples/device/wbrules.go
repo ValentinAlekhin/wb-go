@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -28,12 +29,12 @@ var (
 	instanceWbrules *Wbrules
 )
 
-func NewWbrules(client mqtt.ClientInterface) *Wbrules {
+func NewWbrules(ctx context.Context, client mqtt.ClientInterface) *Wbrules {
 	onceWbrules.Do(func() {
 		name := "wbrules"
 
 		controlList := &WbrulesControls{
-			RuleDebugging: control.NewSwitchControl(client, name, "Rule debugging", control.Meta{
+			RuleDebugging: control.NewSwitchControl(ctx, client, name, "Rule debugging", control.Meta{
 				Type: "switch",
 
 				Order:    1,

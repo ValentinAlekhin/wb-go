@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 )
 
@@ -31,7 +32,7 @@ func (c *ValueControl) GetInfo() Info {
 	return c.control.GetInfo()
 }
 
-func NewValueControl(client wb.ClientInterface, device, control string, meta Meta) *ValueControl {
-	c := NewControl(client, device, control, meta)
+func NewValueControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *ValueControl {
+	c := NewControl(ctx, client, device, control, meta)
 	return &ValueControl{control: c}
 }

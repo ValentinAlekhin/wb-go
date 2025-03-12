@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -37,75 +38,75 @@ var (
 	instanceSystem *System
 )
 
-func NewSystem(client mqtt.ClientInterface) *System {
+func NewSystem(ctx context.Context, client mqtt.ClientInterface) *System {
 	onceSystem.Do(func() {
 		name := "system"
 
 		controlList := &SystemControls{
-			BatchNo: control.NewTextControl(client, name, "Batch No", control.Meta{
+			BatchNo: control.NewTextControl(ctx, client, name, "Batch No", control.Meta{
 				Type: "text",
 
 				Order:    1,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Batch No`, "ru": `Номер партии`},
 			}),
-			CurrentUptime: control.NewTextControl(client, name, "Current uptime", control.Meta{
+			CurrentUptime: control.NewTextControl(ctx, client, name, "Current uptime", control.Meta{
 				Type: "text",
 
 				Order:    2,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Current uptime`, "ru": `Время работы`},
 			}),
-			DtsVersion: control.NewTextControl(client, name, "DTS Version", control.Meta{
+			DtsVersion: control.NewTextControl(ctx, client, name, "DTS Version", control.Meta{
 				Type: "text",
 
 				Order:    3,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `DTS Version`, "ru": `Версия DTS`},
 			}),
-			HwRevision: control.NewTextControl(client, name, "HW Revision", control.Meta{
+			HwRevision: control.NewTextControl(ctx, client, name, "HW Revision", control.Meta{
 				Type: "text",
 
 				Order:    4,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `HW Revision`, "ru": `Версия контроллера`},
 			}),
-			ManufacturingDate: control.NewTextControl(client, name, "Manufacturing Date", control.Meta{
+			ManufacturingDate: control.NewTextControl(ctx, client, name, "Manufacturing Date", control.Meta{
 				Type: "text",
 
 				Order:    5,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Manufacturing Date`, "ru": `Дата производства`},
 			}),
-			Reboot: control.NewPushbuttonControl(client, name, "Reboot", control.Meta{
+			Reboot: control.NewPushbuttonControl(ctx, client, name, "Reboot", control.Meta{
 				Type: "pushbutton",
 
 				Order:    6,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"en": `Reboot`, "ru": `Перезагрузить`},
 			}),
-			ReleaseName: control.NewTextControl(client, name, "Release name", control.Meta{
+			ReleaseName: control.NewTextControl(ctx, client, name, "Release name", control.Meta{
 				Type: "text",
 
 				Order:    7,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Release name`, "ru": `Название релиза`},
 			}),
-			ReleaseSuite: control.NewTextControl(client, name, "Release suite", control.Meta{
+			ReleaseSuite: control.NewTextControl(ctx, client, name, "Release suite", control.Meta{
 				Type: "text",
 
 				Order:    8,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Release suite`, "ru": `Тип релиза`},
 			}),
-			ShortSn: control.NewTextControl(client, name, "Short SN", control.Meta{
+			ShortSn: control.NewTextControl(ctx, client, name, "Short SN", control.Meta{
 				Type: "text",
 
 				Order:    9,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Short SN`, "ru": `Серийный номер`},
 			}),
-			TemperatureGrade: control.NewTextControl(client, name, "Temperature Grade", control.Meta{
+			TemperatureGrade: control.NewTextControl(ctx, client, name, "Temperature Grade", control.Meta{
 				Type: "text",
 
 				Order:    10,

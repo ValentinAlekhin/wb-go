@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -29,19 +30,19 @@ var (
 	instancePowerStatus *PowerStatus
 )
 
-func NewPowerStatus(client mqtt.ClientInterface) *PowerStatus {
+func NewPowerStatus(ctx context.Context, client mqtt.ClientInterface) *PowerStatus {
 	oncePowerStatus.Do(func() {
 		name := "power_status"
 
 		controlList := &PowerStatusControls{
-			Vin: control.NewValueControl(client, name, "Vin", control.Meta{
+			Vin: control.NewValueControl(ctx, client, name, "Vin", control.Meta{
 				Type: "voltage",
 
 				Order:    1,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `Input voltage`, "ru": `Входное напряжение`},
 			}),
-			WorkingOnBattery: control.NewSwitchControl(client, name, "working on battery", control.Meta{
+			WorkingOnBattery: control.NewSwitchControl(ctx, client, name, "working on battery", control.Meta{
 				Type: "switch",
 
 				Order:    2,

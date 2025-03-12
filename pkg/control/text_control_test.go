@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
@@ -20,8 +21,11 @@ func TestTextControl_SetAndGetValue(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем TextControl
-	textControl := NewTextControl(client, device, controlName, meta)
+	textControl := NewTextControl(ctx, client, device, controlName, meta)
 
 	// Генерируем случайные строки для теста
 	newValue := testutils.RandString(10)
@@ -54,8 +58,11 @@ func TestTextControl_AddWatcher(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем TextControl
-	textControl := NewTextControl(client, device, controlName, meta)
+	textControl := NewTextControl(ctx, client, device, controlName, meta)
 
 	var newValue, oldValue string
 

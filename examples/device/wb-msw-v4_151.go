@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -57,12 +58,12 @@ var (
 	instanceWbMswV4151 *WbMswV4151
 )
 
-func NewWbMswV4151(client mqtt.ClientInterface) *WbMswV4151 {
+func NewWbMswV4151(ctx context.Context, client mqtt.ClientInterface) *WbMswV4151 {
 	onceWbMswV4151.Do(func() {
 		name := "wb-msw-v4_151"
 
 		controlList := &WbMswV4151Controls{
-			Temperature: control.NewValueControl(client, name, "Temperature", control.Meta{
+			Temperature: control.NewValueControl(ctx, client, name, "Temperature", control.Meta{
 				Type:  "value",
 				Units: "deg C",
 
@@ -70,7 +71,7 @@ func NewWbMswV4151(client mqtt.ClientInterface) *WbMswV4151 {
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Температура`},
 			}),
-			Humidity: control.NewValueControl(client, name, "Humidity", control.Meta{
+			Humidity: control.NewValueControl(ctx, client, name, "Humidity", control.Meta{
 				Type:  "value",
 				Units: "%, RH",
 
@@ -78,14 +79,14 @@ func NewWbMswV4151(client mqtt.ClientInterface) *WbMswV4151 {
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Влажность`},
 			}),
-			Co2: control.NewValueControl(client, name, "CO2", control.Meta{
+			Co2: control.NewValueControl(ctx, client, name, "CO2", control.Meta{
 				Type: "concentration",
 
 				Order:    3,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"en": `CO₂`, "ru": `Уровень CO₂`},
 			}),
-			AirQualityVoc: control.NewValueControl(client, name, "Air Quality (VOC)", control.Meta{
+			AirQualityVoc: control.NewValueControl(ctx, client, name, "Air Quality (VOC)", control.Meta{
 				Type:  "value",
 				Units: "ppb",
 
@@ -93,56 +94,56 @@ func NewWbMswV4151(client mqtt.ClientInterface) *WbMswV4151 {
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Качество воздуха (VOC)`},
 			}),
-			SoundLevel: control.NewValueControl(client, name, "Sound Level", control.Meta{
+			SoundLevel: control.NewValueControl(ctx, client, name, "Sound Level", control.Meta{
 				Type: "sound_level",
 
 				Order:    5,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Уровень шума`},
 			}),
-			Illuminance: control.NewValueControl(client, name, "Illuminance", control.Meta{
+			Illuminance: control.NewValueControl(ctx, client, name, "Illuminance", control.Meta{
 				Type: "lux",
 
 				Order:    6,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Освещенность`},
 			}),
-			MaxMotion: control.NewValueControl(client, name, "Max Motion", control.Meta{
+			MaxMotion: control.NewValueControl(ctx, client, name, "Max Motion", control.Meta{
 				Type: "value",
 
 				Order:    7,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Максимальное движение`},
 			}),
-			CurrentMotion: control.NewValueControl(client, name, "Current Motion", control.Meta{
+			CurrentMotion: control.NewValueControl(ctx, client, name, "Current Motion", control.Meta{
 				Type: "value",
 
 				Order:    8,
 				ReadOnly: true,
 				Title:    control.MultilingualText{"ru": `Текущее движение`},
 			}),
-			Buzzer: control.NewSwitchControl(client, name, "Buzzer", control.Meta{
+			Buzzer: control.NewSwitchControl(ctx, client, name, "Buzzer", control.Meta{
 				Type: "switch",
 
 				Order:    9,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Зуммер`},
 			}),
-			RedLed: control.NewSwitchControl(client, name, "Red LED", control.Meta{
+			RedLed: control.NewSwitchControl(ctx, client, name, "Red LED", control.Meta{
 				Type: "switch",
 
 				Order:    10,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Красный светодиод`},
 			}),
-			GreenLed: control.NewSwitchControl(client, name, "Green LED", control.Meta{
+			GreenLed: control.NewSwitchControl(ctx, client, name, "Green LED", control.Meta{
 				Type: "switch",
 
 				Order:    11,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Зеленый светодиод`},
 			}),
-			LedPeriods: control.NewRangeControl(client, name, "LED Period (s)", control.Meta{
+			LedPeriods: control.NewRangeControl(ctx, client, name, "LED Period (s)", control.Meta{
 				Type: "range",
 
 				Max: 10,
@@ -151,7 +152,7 @@ func NewWbMswV4151(client mqtt.ClientInterface) *WbMswV4151 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Период включения светодиодов (с)`},
 			}),
-			LedGlowDurationms: control.NewRangeControl(client, name, "LED Glow Duration (ms)", control.Meta{
+			LedGlowDurationms: control.NewRangeControl(ctx, client, name, "LED Glow Duration (ms)", control.Meta{
 				Type: "range",
 
 				Max: 50,
@@ -160,119 +161,119 @@ func NewWbMswV4151(client mqtt.ClientInterface) *WbMswV4151 {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Длительность включения светодиодов (мс)`},
 			}),
-			LearnToRam: control.NewSwitchControl(client, name, "Learn to RAM", control.Meta{
+			LearnToRam: control.NewSwitchControl(ctx, client, name, "Learn to RAM", control.Meta{
 				Type: "switch",
 
 				Order:    14,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в RAM`},
 			}),
-			PlayFromRam: control.NewPushbuttonControl(client, name, "Play from RAM", control.Meta{
+			PlayFromRam: control.NewPushbuttonControl(ctx, client, name, "Play from RAM", control.Meta{
 				Type: "pushbutton",
 
 				Order:    15,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из RAM`},
 			}),
-			LearnToRom1: control.NewSwitchControl(client, name, "Learn to ROM1", control.Meta{
+			LearnToRom1: control.NewSwitchControl(ctx, client, name, "Learn to ROM1", control.Meta{
 				Type: "switch",
 
 				Order:    16,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM1`},
 			}),
-			LearnToRom2: control.NewSwitchControl(client, name, "Learn to ROM2", control.Meta{
+			LearnToRom2: control.NewSwitchControl(ctx, client, name, "Learn to ROM2", control.Meta{
 				Type: "switch",
 
 				Order:    17,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM2`},
 			}),
-			LearnToRom3: control.NewSwitchControl(client, name, "Learn to ROM3", control.Meta{
+			LearnToRom3: control.NewSwitchControl(ctx, client, name, "Learn to ROM3", control.Meta{
 				Type: "switch",
 
 				Order:    18,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM3`},
 			}),
-			LearnToRom4: control.NewSwitchControl(client, name, "Learn to ROM4", control.Meta{
+			LearnToRom4: control.NewSwitchControl(ctx, client, name, "Learn to ROM4", control.Meta{
 				Type: "switch",
 
 				Order:    19,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM4`},
 			}),
-			LearnToRom5: control.NewSwitchControl(client, name, "Learn to ROM5", control.Meta{
+			LearnToRom5: control.NewSwitchControl(ctx, client, name, "Learn to ROM5", control.Meta{
 				Type: "switch",
 
 				Order:    20,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM5`},
 			}),
-			LearnToRom6: control.NewSwitchControl(client, name, "Learn to ROM6", control.Meta{
+			LearnToRom6: control.NewSwitchControl(ctx, client, name, "Learn to ROM6", control.Meta{
 				Type: "switch",
 
 				Order:    21,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM6`},
 			}),
-			LearnToRom7: control.NewSwitchControl(client, name, "Learn to ROM7", control.Meta{
+			LearnToRom7: control.NewSwitchControl(ctx, client, name, "Learn to ROM7", control.Meta{
 				Type: "switch",
 
 				Order:    22,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Записать команду в ROM7`},
 			}),
-			PlayFromRom1: control.NewPushbuttonControl(client, name, "Play from ROM1", control.Meta{
+			PlayFromRom1: control.NewPushbuttonControl(ctx, client, name, "Play from ROM1", control.Meta{
 				Type: "pushbutton",
 
 				Order:    23,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM1`},
 			}),
-			PlayFromRom2: control.NewPushbuttonControl(client, name, "Play from ROM2", control.Meta{
+			PlayFromRom2: control.NewPushbuttonControl(ctx, client, name, "Play from ROM2", control.Meta{
 				Type: "pushbutton",
 
 				Order:    24,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM2`},
 			}),
-			PlayFromRom3: control.NewPushbuttonControl(client, name, "Play from ROM3", control.Meta{
+			PlayFromRom3: control.NewPushbuttonControl(ctx, client, name, "Play from ROM3", control.Meta{
 				Type: "pushbutton",
 
 				Order:    25,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM3`},
 			}),
-			PlayFromRom4: control.NewPushbuttonControl(client, name, "Play from ROM4", control.Meta{
+			PlayFromRom4: control.NewPushbuttonControl(ctx, client, name, "Play from ROM4", control.Meta{
 				Type: "pushbutton",
 
 				Order:    26,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM4`},
 			}),
-			PlayFromRom5: control.NewPushbuttonControl(client, name, "Play from ROM5", control.Meta{
+			PlayFromRom5: control.NewPushbuttonControl(ctx, client, name, "Play from ROM5", control.Meta{
 				Type: "pushbutton",
 
 				Order:    27,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM5`},
 			}),
-			PlayFromRom6: control.NewPushbuttonControl(client, name, "Play from ROM6", control.Meta{
+			PlayFromRom6: control.NewPushbuttonControl(ctx, client, name, "Play from ROM6", control.Meta{
 				Type: "pushbutton",
 
 				Order:    28,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM6`},
 			}),
-			PlayFromRom7: control.NewPushbuttonControl(client, name, "Play from ROM7", control.Meta{
+			PlayFromRom7: control.NewPushbuttonControl(ctx, client, name, "Play from ROM7", control.Meta{
 				Type: "pushbutton",
 
 				Order:    29,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"ru": `Воспроизвести команду из ROM7`},
 			}),
-			Serial: control.NewTextControl(client, name, "Serial", control.Meta{
+			Serial: control.NewTextControl(ctx, client, name, "Serial", control.Meta{
 				Type: "text",
 
 				Order:    30,

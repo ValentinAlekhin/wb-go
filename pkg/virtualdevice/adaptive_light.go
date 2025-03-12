@@ -197,7 +197,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Включено"},
 			},
 		},
-		OnHandler: func(p virualcontrol.OnSwitchHandlerPayload) {
+		OnHandler: func(p virualcontrol.SwitchHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -217,7 +217,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Минимальная температура"},
 			},
 		},
-		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+		OnHandler: func(p virualcontrol.RangeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -237,7 +237,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Максимальная температура"},
 			},
 		},
-		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+		OnHandler: func(p virualcontrol.RangeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -274,7 +274,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Минимальная яркость"},
 			},
 		},
-		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+		OnHandler: func(p virualcontrol.RangeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -294,7 +294,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 				Title: control.MultilingualText{"ru": "Максимальная яркость"},
 			},
 		},
-		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+		OnHandler: func(p virualcontrol.RangeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -345,7 +345,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 			},
 		},
 		DefaultValue: timeonly.NewTime(6, 0, 0),
-		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+		OnHandler: func(p virualcontrol.TimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -363,7 +363,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 			},
 		},
 		DefaultValue: timeonly.NewTime(18, 0, 0),
-		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+		OnHandler: func(p virualcontrol.TimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -381,7 +381,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 			},
 		},
 		DefaultValue: timeonly.NewTime(23, 0, 0),
-		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+		OnHandler: func(p virualcontrol.TimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},
@@ -399,7 +399,7 @@ func NewAdaptiveLight(config AdaptiveLightConfig) (*AdaptiveLight, error) {
 			},
 		},
 		DefaultValue: timeonly.NewTime(6, 0, 0),
-		OnHandler: func(p virualcontrol.OnTimeHandlerPayload) {
+		OnHandler: func(p virualcontrol.TimeHandlerPayload) {
 			p.Set(p.Value)
 			al.update()
 		},

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/examples/device"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
@@ -26,8 +27,10 @@ func main() {
 	}
 
 	//Создание устройств
-	WbMswV4151 := device.NewWbMswV4151(client)
-	WbMr6Cu145 := device.NewWbMr6Cu145(client)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	WbMswV4151 := device.NewWbMswV4151(ctx, client)
+	WbMr6Cu145 := device.NewWbMr6Cu145(ctx, client)
 
 	// Добавление скрипта
 	WbMswV4151.Controls.CurrentMotion.AddWatcher(func(payload control.WatcherPayloadFloat64) {
@@ -41,6 +44,7 @@ func main() {
 	})
 
 	<-stop
+	cancel()
 
 	// Отключениие от брокера и завершение программы
 	client.Disconnect(500)

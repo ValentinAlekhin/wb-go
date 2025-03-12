@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -30,19 +31,19 @@ var (
 	instanceBuzzer *Buzzer
 )
 
-func NewBuzzer(client mqtt.ClientInterface) *Buzzer {
+func NewBuzzer(ctx context.Context, client mqtt.ClientInterface) *Buzzer {
 	onceBuzzer.Do(func() {
 		name := "buzzer"
 
 		controlList := &BuzzerControls{
-			Enabled: control.NewSwitchControl(client, name, "enabled", control.Meta{
+			Enabled: control.NewSwitchControl(ctx, client, name, "enabled", control.Meta{
 				Type: "switch",
 
 				Order:    1,
 				ReadOnly: false,
 				Title:    control.MultilingualText{"en": `Enabled`, "ru": `Включен`},
 			}),
-			Frequency: control.NewRangeControl(client, name, "frequency", control.Meta{
+			Frequency: control.NewRangeControl(ctx, client, name, "frequency", control.Meta{
 				Type: "range",
 
 				Max: 7000,
@@ -51,7 +52,7 @@ func NewBuzzer(client mqtt.ClientInterface) *Buzzer {
 				ReadOnly: false,
 				Title:    control.MultilingualText{"en": `Frequency`, "ru": `Частота`},
 			}),
-			Volume: control.NewRangeControl(client, name, "volume", control.Meta{
+			Volume: control.NewRangeControl(ctx, client, name, "volume", control.Meta{
 				Type: "range",
 
 				Max: 100,

@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -29,19 +30,19 @@ var (
 	instanceHwmon *Hwmon
 )
 
-func NewHwmon(client mqtt.ClientInterface) *Hwmon {
+func NewHwmon(ctx context.Context, client mqtt.ClientInterface) *Hwmon {
 	onceHwmon.Do(func() {
 		name := "hwmon"
 
 		controlList := &HwmonControls{
-			BoardTemperature: control.NewValueControl(client, name, "Board Temperature", control.Meta{
+			BoardTemperature: control.NewValueControl(ctx, client, name, "Board Temperature", control.Meta{
 				Type: "temperature",
 
 				Order:    1,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			CpuTemperature: control.NewValueControl(client, name, "CPU Temperature", control.Meta{
+			CpuTemperature: control.NewValueControl(ctx, client, name, "CPU Temperature", control.Meta{
 				Type: "temperature",
 
 				Order:    2,

@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -40,12 +41,12 @@ var (
 	instanceMetrics *Metrics
 )
 
-func NewMetrics(client mqtt.ClientInterface) *Metrics {
+func NewMetrics(ctx context.Context, client mqtt.ClientInterface) *Metrics {
 	onceMetrics.Do(func() {
 		name := "metrics"
 
 		controlList := &MetricsControls{
-			LoadAverage1Min: control.NewValueControl(client, name, "load_average_1min", control.Meta{
+			LoadAverage1Min: control.NewValueControl(ctx, client, name, "load_average_1min", control.Meta{
 				Type:  "value",
 				Units: "tasks",
 
@@ -53,7 +54,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			LoadAverage5Min: control.NewValueControl(client, name, "load_average_5min", control.Meta{
+			LoadAverage5Min: control.NewValueControl(ctx, client, name, "load_average_5min", control.Meta{
 				Type:  "value",
 				Units: "tasks",
 
@@ -61,7 +62,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			LoadAverage15Min: control.NewValueControl(client, name, "load_average_15min", control.Meta{
+			LoadAverage15Min: control.NewValueControl(ctx, client, name, "load_average_15min", control.Meta{
 				Type:  "value",
 				Units: "tasks",
 
@@ -69,7 +70,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			RamAvailable: control.NewValueControl(client, name, "ram_available", control.Meta{
+			RamAvailable: control.NewValueControl(ctx, client, name, "ram_available", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -77,7 +78,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			RamUsed: control.NewValueControl(client, name, "ram_used", control.Meta{
+			RamUsed: control.NewValueControl(ctx, client, name, "ram_used", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -85,7 +86,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			RamTotal: control.NewValueControl(client, name, "ram_total", control.Meta{
+			RamTotal: control.NewValueControl(ctx, client, name, "ram_total", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -93,7 +94,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			SwapTotal: control.NewValueControl(client, name, "swap_total", control.Meta{
+			SwapTotal: control.NewValueControl(ctx, client, name, "swap_total", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -101,7 +102,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			SwapUsed: control.NewValueControl(client, name, "swap_used", control.Meta{
+			SwapUsed: control.NewValueControl(ctx, client, name, "swap_used", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -109,7 +110,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			DevRootUsedSpace: control.NewValueControl(client, name, "dev_root_used_space", control.Meta{
+			DevRootUsedSpace: control.NewValueControl(ctx, client, name, "dev_root_used_space", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -117,7 +118,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			DevRootTotalSpace: control.NewValueControl(client, name, "dev_root_total_space", control.Meta{
+			DevRootTotalSpace: control.NewValueControl(ctx, client, name, "dev_root_total_space", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -125,14 +126,14 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			DevRootLinkedOn: control.NewTextControl(client, name, "dev_root_linked_on", control.Meta{
+			DevRootLinkedOn: control.NewTextControl(ctx, client, name, "dev_root_linked_on", control.Meta{
 				Type: "text",
 
 				Order:    0,
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			DataUsedSpace: control.NewValueControl(client, name, "data_used_space", control.Meta{
+			DataUsedSpace: control.NewValueControl(ctx, client, name, "data_used_space", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 
@@ -140,7 +141,7 @@ func NewMetrics(client mqtt.ClientInterface) *Metrics {
 				ReadOnly: true,
 				Title:    control.MultilingualText{},
 			}),
-			DataTotalSpace: control.NewValueControl(client, name, "data_total_space", control.Meta{
+			DataTotalSpace: control.NewValueControl(ctx, client, name, "data_total_space", control.Meta{
 				Type:  "value",
 				Units: "MiB",
 

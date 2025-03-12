@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 )
 
@@ -26,7 +27,7 @@ func (c *TextControl) SetValue(value string) {
 	c.control.SetValue(value)
 }
 
-func NewTextControl(client wb.ClientInterface, device, control string, meta Meta) *TextControl {
-	c := NewControl(client, device, control, meta)
+func NewTextControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *TextControl {
+	c := NewControl(ctx, client, device, control, meta)
 	return &TextControl{control: c}
 }

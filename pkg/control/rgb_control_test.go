@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/ValentinAlekhin/wb-go/internal/mqttmock"
 	"github.com/ValentinAlekhin/wb-go/internal/testutils"
 	"github.com/stretchr/testify/assert"
@@ -20,8 +21,11 @@ func TestRgbControl_SetAndGetValue(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем RgbControl
-	rgbControl := NewRgbControl(client, device, controlName, meta)
+	rgbControl := NewRgbControl(ctx, client, device, controlName, meta)
 
 	// Устанавливаем значение
 	rgbControl.SetValue(RgbValue{Red: 255, Green: 0, Blue: 0})
@@ -57,8 +61,11 @@ func TestRgbControl_AddWatcher(t *testing.T) {
 	device := testutils.RandString(10)
 	controlName := testutils.RandString(10)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Создаем RgbControl
-	rgbControl := NewRgbControl(client, device, controlName, meta)
+	rgbControl := NewRgbControl(ctx, client, device, controlName, meta)
 
 	var newValue, oldValue RgbValue
 

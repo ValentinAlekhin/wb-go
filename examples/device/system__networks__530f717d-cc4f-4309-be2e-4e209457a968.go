@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-type SystemNetworksF1E52BdeCe934B699F0C3186C9C133AeControls struct {
+type SystemNetworks530F717DCc4F4309Be2E4E209457A968Controls struct {
 	Name         *control.TextControl
 	Uuid         *control.TextControl
 	Type         *control.TextControl
@@ -20,12 +20,12 @@ type SystemNetworksF1E52BdeCe934B699F0C3186C9C133AeControls struct {
 	UpDown       *control.PushbuttonControl
 }
 
-type SystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae struct {
+type SystemNetworks530F717DCc4F4309Be2E4E209457A968 struct {
 	name     string
-	Controls *SystemNetworksF1E52BdeCe934B699F0C3186C9C133AeControls
+	Controls *SystemNetworks530F717DCc4F4309Be2E4E209457A968Controls
 }
 
-func (w *SystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae) GetInfo() basedevice.Info {
+func (w *SystemNetworks530F717DCc4F4309Be2E4E209457A968) GetInfo() basedevice.Info {
 	return basedevice.Info{
 		Name:         w.name,
 		ControlsInfo: basedevice.GetControlsInfo(w.Controls),
@@ -33,15 +33,15 @@ func (w *SystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae) GetInfo() basedevice.In
 }
 
 var (
-	onceSystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae     sync.Once
-	instanceSystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae *SystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae
+	onceSystemNetworks530F717DCc4F4309Be2E4E209457A968     sync.Once
+	instanceSystemNetworks530F717DCc4F4309Be2E4E209457A968 *SystemNetworks530F717DCc4F4309Be2E4E209457A968
 )
 
-func NewSystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae(ctx context.Context, client mqtt.ClientInterface) *SystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae {
-	onceSystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae.Do(func() {
-		name := "system__networks__f1e52bde-ce93-4b69-9f0c-3186c9c133ae"
+func NewSystemNetworks530F717DCc4F4309Be2E4E209457A968(ctx context.Context, client mqtt.ClientInterface) *SystemNetworks530F717DCc4F4309Be2E4E209457A968 {
+	onceSystemNetworks530F717DCc4F4309Be2E4E209457A968.Do(func() {
+		name := "system__networks__530f717d-cc4f-4309-be2e-4e209457a968"
 
-		controlList := &SystemNetworksF1E52BdeCe934B699F0C3186C9C133AeControls{
+		controlList := &SystemNetworks530F717DCc4F4309Be2E4E209457A968Controls{
 			Name: control.NewTextControl(ctx, client, name, "Name", control.Meta{
 				Type: "text",
 
@@ -107,11 +107,11 @@ func NewSystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae(ctx context.Context, clie
 			}),
 		}
 
-		instanceSystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae = &SystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae{
+		instanceSystemNetworks530F717DCc4F4309Be2E4E209457A968 = &SystemNetworks530F717DCc4F4309Be2E4E209457A968{
 			name:     name,
 			Controls: controlList,
 		}
 	})
 
-	return instanceSystemNetworksF1E52BdeCe934B699F0C3186C9C133Ae
+	return instanceSystemNetworks530F717DCc4F4309Be2E4E209457A968
 }

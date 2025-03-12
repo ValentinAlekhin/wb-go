@@ -145,7 +145,7 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 				Title:    control.MultilingualText{"ru": "Целевая температура"},
 			},
 		},
-		OnHandler: func(p virualcontrol.OnRangeHandlerPayload) {
+		OnHandler: func(p virualcontrol.RangeHandlerPayload) {
 			p.Set(p.Value)
 			t.update()
 		},
@@ -180,7 +180,7 @@ func NewThermostat(config ThermostatConfig) (*Thermostat, error) {
 			},
 		},
 		DefaultValue: true,
-		OnHandler: func(p virualcontrol.OnSwitchHandlerPayload) {
+		OnHandler: func(p virualcontrol.SwitchHandlerPayload) {
 			p.Set(p.Value)
 			t.update()
 		},

@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
@@ -19,7 +20,7 @@ type Control struct {
 	addChan      chan func(payload WatcherPayloadString)
 	eventChan    chan WatcherPayloadString
 	setChan      chan string
-	stopChan     chan struct{}
+	closed       atomic.Bool
 }
 
 // GetValue returns the current value of the control.
@@ -29,11 +30,19 @@ func (c *Control) GetValue() string {
 
 // AddWatcher adds a watcher function that will be called when the control's value changes.
 func (c *Control) AddWatcher(f func(payload WatcherPayloadString)) {
+	if c.closed.Load() {
+		return
+	}
+
 	c.addChan <- f
 }
 
 // SetValue sets a new value for the control.
 func (c *Control) SetValue(value string) {
+	if c.closed.Load() {
+		return
+	}
+
 	c.setChan <- value
 }
 
@@ -57,17 +66,30 @@ func (c *Control) publish(value string) {
 }
 
 // subscribe subscribes to the MQTT value topic to receive updates.
-func (c *Control) subscribe() {
+func (c *Control) subscribe(ctx context.Context) {
 	callback := func(client mqtt.Client, msg mqtt.Message) {
 		newValue := string(msg.Payload())
 		c.handleValueUpdate(newValue)
 	}
 
 	_ = c.client.Subscribe(c.valueTopic, callback)
+
+	go func() {
+		if <-ctx.Done(); true {
+			err := c.client.Unsubscribe(c.valueTopic)
+			if err != nil {
+				return
+			}
+		}
+	}()
 }
 
 // handleValueUpdate processes a new value received from the MQTT topic.
 func (c *Control) handleValueUpdate(value string) {
+	if c.closed.Load() {
+		return
+	}
+
 	oldValue := c.value.Load()
 	c.value.Swap(value)
 
@@ -81,8 +103,9 @@ func (c *Control) handleValueUpdate(value string) {
 }
 
 // runWatchHandler manages the list of watchers and notifies them about value changes.
-func (c *Control) runWatchHandler() {
+func (c *Control) runWatchHandler(ctx context.Context) {
 	listeners := make([]func(p WatcherPayloadString), 0)
+	defer c.close()
 
 	for {
 		select {
@@ -92,15 +115,16 @@ func (c *Control) runWatchHandler() {
 			for _, callback := range listeners {
 				go callback(event)
 			}
-		case <-c.stopChan:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
 // runSetValueHandler processes new values and publishes them to the MQTT topic.
-func (c *Control) runSetValueHandler() {
+func (c *Control) runSetValueHandler(ctx context.Context) {
 	var valueToSet string
+	defer c.close()
 
 	for {
 		select {
@@ -109,14 +133,22 @@ func (c *Control) runSetValueHandler() {
 				c.publish(newValue)
 				valueToSet = newValue
 			}
-		case <-c.stopChan:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
+func (c *Control) close() {
+	if c.closed.CompareAndSwap(false, true) {
+		close(c.setChan)
+		close(c.eventChan)
+		close(c.addChan)
+	}
+}
+
 // NewControl creates a new Control instance with the specified MQTT client, device, control name, and metadata.
-func NewControl(client wb.ClientInterface, device, control string, meta Meta) *Control {
+func NewControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *Control {
 	c := &Control{
 		name:         control,
 		meta:         meta,
@@ -124,16 +156,15 @@ func NewControl(client wb.ClientInterface, device, control string, meta Meta) *C
 		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, device, control),
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, device, control),
 		value:        atomic.String{},
-		addChan:      make(chan func(payload WatcherPayloadString)),
-		eventChan:    make(chan WatcherPayloadString),
-		setChan:      make(chan string),
-		stopChan:     make(chan struct{}),
+		addChan:      make(chan func(payload WatcherPayloadString), 10),
+		eventChan:    make(chan WatcherPayloadString, 10),
+		setChan:      make(chan string, 10),
 	}
 
 	c.value.Store("")
-	go c.runWatchHandler()
-	go c.runSetValueHandler()
-	c.subscribe()
+	go c.runWatchHandler(ctx)
+	go c.runSetValueHandler(ctx)
+	c.subscribe(ctx)
 
 	return c
 }
