@@ -1,9 +1,9 @@
 package virualcontrol
 
 import (
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
-	"gorm.io/gorm"
 )
 
 type Options struct {
@@ -13,11 +13,11 @@ type Options struct {
 }
 
 type BaseOptions struct {
-	DB     *gorm.DB
-	Client wb.ClientInterface
-	Device string
-	Name   string
-	Meta   control.Meta
+	Queries *db.Queries
+	Client  wb.ClientInterface
+	Device  string
+	Name    string
+	Meta    control.Meta
 }
 
 type OnHandler[T comparable] func(payload OnHandlerPayload[T])

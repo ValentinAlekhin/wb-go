@@ -58,7 +58,11 @@ type SwitchConverter struct{}
 
 // Encode converts bool to string.
 func (c *SwitchConverter) Encode(value bool) string {
-	return strconv.FormatBool(value)
+	if value {
+		return "1"
+	} else {
+		return "0"
+	}
 }
 
 // Decode converts string to bool.

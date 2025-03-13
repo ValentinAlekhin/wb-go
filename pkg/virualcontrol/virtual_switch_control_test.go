@@ -2,6 +2,7 @@ package virualcontrol
 
 import (
 	"context"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"testing"
 	"time"
 
@@ -21,16 +22,17 @@ func TestVirtualSwitchControlGetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: true,
 	}
@@ -47,16 +49,17 @@ func TestVirtualSwitchControlSetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 	}
 
@@ -75,17 +78,18 @@ func TestVirtualSwitchControlOnHandler(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	handlerCalled := false
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		OnHandler: func(payload SwitchHandlerPayload) {
 			handlerCalled = true
@@ -114,16 +118,17 @@ func TestVirtualSwitchControlAddWatcher(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 	}
 
@@ -152,15 +157,16 @@ func TestVirtualSwitchControlMetaType(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 	}
 
@@ -176,16 +182,17 @@ func TestVirtualSwitchControlToggle(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 	}
 
@@ -209,16 +216,17 @@ func TestVirtualSwitchControlTurnOff(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: true,
 	}
@@ -239,16 +247,17 @@ func TestVirtualSwitchControlTurnOn(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := SwitchOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 	}
 

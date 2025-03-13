@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/ValentinAlekhin/wb-go/examples/device"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/virtualdevice"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
 	"log"
 	"os"
 	"os/signal"
@@ -20,7 +19,7 @@ func main() {
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 	// Подключение к базе данных
-	db, err := gorm.Open(sqlite.Open("./db/test.db"), &gorm.Config{})
+	db, err := sql.Open("sqlite", "./testdb/sqlite.db")
 	if err != nil {
 		log.Fatal(err)
 	}

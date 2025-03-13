@@ -10,13 +10,12 @@ import (
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"go.uber.org/atomic"
-	"gorm.io/gorm"
 )
 
 type VirtualControl struct {
 	name         string
 	meta         control.Meta
-	db           *gorm.DB
+	queries      *db.Queries
 	client       wb.ClientInterface
 	value        atomic.String
 	valueTopic   string
@@ -45,7 +44,15 @@ func (c *VirtualControl) SetValue(value string) {
 		return
 	}
 
-	c.db.Model(&db.ControlModel{}).Where("topic = ?", c.valueTopic).Update("value", value)
+	ctx := context.TODO()
+	params := db.UpdateVirtualControlParams{
+		Value: value,
+		Topic: c.valueTopic,
+	}
+	_, err := c.queries.UpdateVirtualControl(ctx, params)
+	if err != nil {
+		fmt.Printf("Error updating virtual control: %v\n", err)
+	}
 
 	payload := control.WatcherPayloadString{
 		NewValue: value,
@@ -135,22 +142,30 @@ func (c *VirtualControl) setMeta() {
 }
 
 func (c *VirtualControl) loadPrevValue(defaultValue string) {
-	model := db.ControlModel{Topic: c.valueTopic}
-	result := c.db.First(&model)
-	if result.Error != nil {
-		fmt.Println(result.Error)
+	ctx := context.TODO()
+
+	virtualControl, err := c.queries.GetVirtualControl(ctx, c.valueTopic)
+	if err != nil {
+		params := db.CreateVirtualControlParams{
+			Topic: c.valueTopic,
+			Value: defaultValue,
+		}
+		virtualControl, err = c.queries.CreateVirtualControl(ctx, params)
+		if err != nil {
+			fmt.Printf("Insert control '%s' value error: %s\n", c.valueTopic, err)
+		}
 	}
 
-	if result.RowsAffected == 0 {
-		model.Value = defaultValue
-		c.db.Create(&model)
+	value := virtualControl.Value
+	if value == "" {
+		value = defaultValue
 	}
 
-	c.value.Swap(model.Value)
+	c.value.Swap(value)
 
 	_ = c.client.Publish(wb.PublishPayload{
 		Topic:    c.valueTopic,
-		Value:    model.Value,
+		Value:    value,
 		QOS:      1,
 		Retained: true,
 	})
@@ -170,7 +185,7 @@ func NewVirtualControl(ctx context.Context, opt Options) *VirtualControl {
 	vc := &VirtualControl{
 		name:         opt.Name,
 		meta:         opt.Meta,
-		db:           opt.DB,
+		queries:      opt.Queries,
 		client:       opt.Client,
 		valueTopic:   fmt.Sprintf(conventions.CONV_CONTROL_VALUE_FMT, opt.Device, opt.Name),
 		commandTopic: fmt.Sprintf(conventions.CONV_CONTROL_ON_VALUE_FMT, opt.Device, opt.Name),

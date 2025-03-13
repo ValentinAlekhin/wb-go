@@ -2,14 +2,15 @@ package virtualdevice
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -32,7 +33,7 @@ type ThermostatControls struct {
 }
 
 type ThermostatConfig struct {
-	DB                  *gorm.DB
+	DB                  *sql.DB
 	Client              wb.ClientInterface
 	Device              string
 	TargetTemperature   int
@@ -136,10 +137,12 @@ func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, e
 		return &Thermostat{}, errors.New("device is empty")
 	}
 
-	err := migrate(config.DB)
+	err := db.MigrateOnce(config.DB)
 	if err != nil {
-		return &Thermostat{}, err
+		return nil, err
 	}
+
+	q := db.NewQueries(config.DB)
 
 	deviceFullName := getDeviceFullName(config.Device)
 
@@ -154,10 +157,10 @@ func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, e
 
 	t.Controls.TargetTemperature = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Set Point",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Set Point",
 			Meta: control.Meta{
 				Units:    "°C",
 				Order:    1,
@@ -176,10 +179,10 @@ func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, e
 
 	t.Controls.CurrentTemperature = virualcontrol.NewVirtualValueControl(ctx, virualcontrol.ValueOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Current Temperature",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Current Temperature",
 			Meta: control.Meta{
 				Units:    "°C",
 				Order:    2,
@@ -191,10 +194,10 @@ func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, e
 
 	t.Controls.Enabled = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Enabled",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Enabled",
 			Meta: control.Meta{
 				ReadOnly: false,
 				Order:    3,
@@ -210,10 +213,10 @@ func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, e
 
 	t.Controls.Relay = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Relay",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Relay",
 			Meta: control.Meta{
 				ReadOnly: true,
 				Order:    4,

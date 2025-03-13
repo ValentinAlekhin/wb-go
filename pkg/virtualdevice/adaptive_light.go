@@ -1,17 +1,18 @@
 package virtualdevice
 
 import (
-	"context" // Добавляем импорт context
+	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"github.com/ValentinAlekhin/wb-go/pkg/basedevice"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/timeonly"
 	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"
-	"gorm.io/gorm"
 	"math"
 	"time"
 )
@@ -49,7 +50,7 @@ type AdaptiveLightControls struct {
 }
 
 type AdaptiveLightConfig struct {
-	DB     *gorm.DB
+	DB     *sql.DB
 	Client wb.ClientInterface
 	Device string
 }
@@ -176,10 +177,12 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 		return nil, errors.New("device is empty")
 	}
 
-	err := migrate(config.DB)
+	err := db.MigrateOnce(config.DB)
 	if err != nil {
 		return nil, err
 	}
+
+	q := db.NewQueries(config.DB)
 
 	deviceFullName := getDeviceFullName(config.Device)
 
@@ -192,13 +195,12 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 		Controls:  AdaptiveLightControls{},
 	}
 
-	// Передаем ctx во все вызовы контроллов
 	al.Controls.Enabled = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Enabled",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Enabled",
 			Meta: control.Meta{
 				Order: 1,
 				Title: control.MultilingualText{"ru": "Включено"},
@@ -213,10 +215,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.MinTemp = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Min Temperature",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Min Temperature",
 			Meta: control.Meta{
 				Order: 2,
 				Max:   100,
@@ -233,10 +235,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.MaxTemp = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Max Temperature",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Max Temperature",
 			Meta: control.Meta{
 				Order: 3,
 				Max:   100,
@@ -253,10 +255,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.CurrentTemp = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Temperature",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Temperature",
 			Meta: control.Meta{
 				Order:    4,
 				Max:      100,
@@ -270,10 +272,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.MinBrightness = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Min Brightness",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Min Brightness",
 			Meta: control.Meta{
 				Order: 5,
 				Max:   100,
@@ -290,10 +292,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.MaxBrightness = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Max Brightness",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Max Brightness",
 			Meta: control.Meta{
 				Order: 6,
 				Max:   100,
@@ -310,10 +312,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.CurrentBrightness = virualcontrol.NewVirtualRangeControl(ctx, virualcontrol.RangeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Brightness",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Brightness",
 			Meta: control.Meta{
 				Order:    7,
 				Max:      100,
@@ -327,10 +329,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.SleepMode = virualcontrol.NewVirtualSwitchControl(ctx, virualcontrol.SwitchOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Sleep Mode",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Sleep Mode",
 			Meta: control.Meta{
 				ReadOnly: true,
 				Order:    8,
@@ -342,10 +344,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.Sunrise = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Sunrise",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Sunrise",
 			Meta: control.Meta{
 				Order: 9,
 				Title: control.MultilingualText{"ru": "Рассвет"},
@@ -360,10 +362,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.Sunset = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Sunset",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Sunset",
 			Meta: control.Meta{
 				Order: 10,
 				Title: control.MultilingualText{"ru": "Закат"},
@@ -378,10 +380,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.SleepStart = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Slip Start",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Slip Start",
 			Meta: control.Meta{
 				Order: 11,
 				Title: control.MultilingualText{"ru": "Начало сна"},
@@ -396,10 +398,10 @@ func NewAdaptiveLight(ctx context.Context, config AdaptiveLightConfig) (*Adaptiv
 
 	al.Controls.SleepEnd = virualcontrol.NewVirtualTimeControl(ctx, virualcontrol.TimeOptions{
 		BaseOptions: virualcontrol.BaseOptions{
-			DB:     config.DB,
-			Client: config.Client,
-			Device: deviceFullName,
-			Name:   "Slip End",
+			Queries: q,
+			Client:  config.Client,
+			Device:  deviceFullName,
+			Name:    "Slip End",
 			Meta: control.Meta{
 				Order: 11,
 				Title: control.MultilingualText{"ru": "Конец сна"},

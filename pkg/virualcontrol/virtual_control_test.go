@@ -26,15 +26,16 @@ func TestVirtualControlInitialization(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
 			Meta: control.Meta{
 				Type:  "value",
 				Units: "°C",
@@ -50,21 +51,20 @@ func TestVirtualControlInitialization(t *testing.T) {
 }
 
 func TestVirtualControlSetValue(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: "0",
 	}
@@ -74,10 +74,9 @@ func TestVirtualControlSetValue(t *testing.T) {
 	vc.SetValue("25")
 	assert.Equal(t, "25", vc.GetValue())
 
-	var model db.ControlModel
-	err := database.First(&model, "topic = ?", vc.GetInfo().ValueTopic).Error
+	virtualControl, err := q.GetVirtualControl(ctx, vc.GetInfo().ValueTopic)
 	require.NoError(t, err)
-	assert.Equal(t, "25", model.Value)
+	assert.Equal(t, "25", virtualControl.Value)
 }
 
 func TestVirtualControlWatchers(t *testing.T) {
@@ -86,16 +85,17 @@ func TestVirtualControlWatchers(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: "0",
 	}
@@ -122,16 +122,17 @@ func TestVirtualControlMQTTIntegration(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: "0",
 	}
@@ -166,16 +167,17 @@ func TestVirtualControlDefaultValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: "42",
 	}
@@ -191,6 +193,7 @@ func TestVirtualControlMetaData(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
@@ -207,11 +210,11 @@ func TestVirtualControlMetaData(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   meta,
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    meta,
 		},
 		DefaultValue: "0",
 	}
@@ -235,6 +238,7 @@ func TestVirtualControlOnHandler(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
@@ -248,11 +252,11 @@ func TestVirtualControlOnHandler(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: "0",
 		OnHandler:    onHandler,
@@ -281,17 +285,18 @@ func TestVirtualControlDefaultValueInTopic(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := "42"
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -318,6 +323,7 @@ func TestVirtualControlMetaInTopic(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
@@ -334,11 +340,11 @@ func TestVirtualControlMetaInTopic(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   meta,
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    meta,
 		},
 		DefaultValue: "0",
 	}
@@ -367,6 +373,7 @@ func TestVirtualControlNoDuplicatePushesWithMqtt(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := "42"
@@ -374,11 +381,11 @@ func TestVirtualControlNoDuplicatePushesWithMqtt(t *testing.T) {
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -426,16 +433,17 @@ func TestVirtualControlContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 
 	opt := Options{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: "0",
 	}

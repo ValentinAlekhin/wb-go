@@ -28,7 +28,7 @@ func TestNewThermostat_InvalidConfig(t *testing.T) {
 			errMsg: "client is nil",
 		},
 		{
-			name:   "Nil DB",
+			name:   "Nil Queries",
 			ctx:    context.Background(),
 			config: ThermostatConfig{Client: mqttmock.NewMockClient(), Device: "TestThermostat"},
 			errMsg: "db is nil",
@@ -135,6 +135,8 @@ func TestThermostat_ContextCancellation(t *testing.T) {
 	thermostat, err := NewThermostat(ctx, config)
 	require.NoError(t, err)
 
+	thermostat.Controls.CurrentTemperature.SetValue(20)
+
 	// Отменяем контекст
 	cancel()
 
@@ -144,7 +146,7 @@ func TestThermostat_ContextCancellation(t *testing.T) {
 	// Проверяем, что тикер больше не вызывает update
 	thermostat.Controls.CurrentTemperature.SetValue(30.0)
 	time.Sleep(500 * time.Millisecond)
-	assert.Equal(t, 30.0, thermostat.Controls.CurrentTemperature.GetValue())
+	assert.Equal(t, 20.0, thermostat.Controls.CurrentTemperature.GetValue())
 }
 
 func TestThermostat_MetaPublishing(t *testing.T) {

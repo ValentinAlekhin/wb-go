@@ -2,6 +2,7 @@ package virualcontrol
 
 import (
 	"context"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"testing"
 	"time"
 
@@ -21,17 +22,18 @@ func TestVirtualTimeControlGetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(14, 30, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -48,17 +50,18 @@ func TestVirtualTimeControlSetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(8, 15, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -79,6 +82,7 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(6, 45, 0)
@@ -87,11 +91,11 @@ func TestVirtualTimeControlOnHandler(t *testing.T) {
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 		OnHandler: func(payload TimeHandlerPayload) {
@@ -121,17 +125,18 @@ func TestVirtualTimeControlAddWatcher(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(7, 0, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -162,17 +167,18 @@ func TestVirtualTimeControlMetaType(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := timeonly.NewTime(12, 0, 0)
 
 	opt := TimeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}

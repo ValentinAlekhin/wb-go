@@ -1,20 +1,21 @@
 package dbmock
 
 import (
-	db2 "github.com/ValentinAlekhin/wb-go/internal/db"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
+	"database/sql"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
+	_ "modernc.org/sqlite"
 )
 
-func NewDBMock() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	err = db.AutoMigrate(&db2.ControlModel{})
+func NewDBMock() *sql.DB {
+	instance, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		panic(err)
 	}
 
-	return db
+	err = db.MigrateOnce(instance)
+	if err != nil {
+		panic(err)
+	}
+
+	return instance
 }

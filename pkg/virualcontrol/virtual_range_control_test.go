@@ -2,6 +2,7 @@ package virualcontrol
 
 import (
 	"context"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"testing"
 	"time"
 
@@ -20,17 +21,18 @@ func TestVirtualRangeControlGetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := 42
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -47,17 +49,18 @@ func TestVirtualRangeControlSetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -77,6 +80,7 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
@@ -85,11 +89,11 @@ func TestVirtualRangeControlOnHandler(t *testing.T) {
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 		OnHandler: func(payload OnHandlerPayload[int]) {
@@ -119,17 +123,18 @@ func TestVirtualRangeControlAddWatcher(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -159,17 +164,18 @@ func TestVirtualRangeControlMetaType(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := 0
 
 	opt := RangeOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}

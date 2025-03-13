@@ -2,6 +2,7 @@ package virualcontrol
 
 import (
 	"context"
+	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"testing"
 	"time"
 
@@ -20,17 +21,18 @@ func TestVirtualTextControlGetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := "initial_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -47,17 +49,18 @@ func TestVirtualTextControlSetValue(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -78,6 +81,7 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
@@ -86,11 +90,11 @@ func TestVirtualTextControlOnHandler(t *testing.T) {
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 		OnHandler: func(payload TextHandlerPayload) {
@@ -120,17 +124,18 @@ func TestVirtualTextControlAddWatcher(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
@@ -160,17 +165,18 @@ func TestVirtualTextControlMetaType(t *testing.T) {
 	ctx := context.Background()
 	client := mqttmock.NewMockClient()
 	database := dbmock.NewDBMock()
+	q := db.NewQueries(database)
 
 	controlName := testutils.RandString(10)
 	defaultValue := "default_value"
 
 	opt := TextOptions{
 		BaseOptions: BaseOptions{
-			DB:     database,
-			Client: client,
-			Device: device,
-			Name:   controlName,
-			Meta:   control.Meta{},
+			Queries: q,
+			Client:  client,
+			Device:  device,
+			Name:    controlName,
+			Meta:    control.Meta{},
 		},
 		DefaultValue: defaultValue,
 	}
