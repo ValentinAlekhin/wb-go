@@ -2,6 +2,29 @@ package control
 
 import "time"
 
+type ControlInterface interface {
+	// GetValue returns the current value of the control as a string.
+	GetValue() string
+
+	// SetValue sets a new value for the control.
+	SetValue(value string)
+
+	// AddWatcher registers a callback function that will be invoked when
+	// the control's value changes.
+	AddWatcher(f func(payload WatcherPayloadString))
+
+	// GetInfo returns metadata and topic information about the control.
+	GetInfo() Info
+}
+
+type Converter[T any] interface {
+	// Encode converts a value of type T to its string representation.
+	Encode(value T) string
+
+	// Decode parses a string into a value of type T.
+	Decode(value string) (T, error)
+}
+
 // WatcherPayload represents a payload for watchers with a generic type T.
 // It contains the new value, old value, and the topic where the change occurred.
 type WatcherPayload[T any] struct {

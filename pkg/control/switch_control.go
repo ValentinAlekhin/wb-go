@@ -6,8 +6,8 @@ import (
 )
 
 type SwitchControl struct {
-	converter SwitchConverter
-	control   *Control
+	converter Converter[bool]
+	control   ControlInterface
 }
 
 func (c *SwitchControl) GetValue() bool {
@@ -54,5 +54,5 @@ func (c *SwitchControl) GetInfo() Info {
 
 func NewSwitchControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *SwitchControl {
 	c := NewControl(ctx, client, device, control, meta)
-	return &SwitchControl{control: c}
+	return &SwitchControl{control: c, converter: &SwitchConverter{}}
 }

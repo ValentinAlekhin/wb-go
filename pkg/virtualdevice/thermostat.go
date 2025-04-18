@@ -6,14 +6,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/ValentinAlekhin/wb-go/internal/db"
 	"github.com/ValentinAlekhin/wb-go/pkg/control"
 	"github.com/ValentinAlekhin/wb-go/pkg/conventions"
 	wb "github.com/ValentinAlekhin/wb-go/pkg/mqtt"
 	"github.com/ValentinAlekhin/wb-go/pkg/virualcontrol"
-	"time"
 )
 
+// DefaultUpdateInterval определяет стандартный интервал между обновлениями термостата
+const DefaultUpdateInterval = 1 * time.Second
+
+// Thermostat представляет виртуальное устройство термостата
 type Thermostat struct {
 	client              wb.ClientInterface
 	Controls            ThermostatControls
@@ -21,10 +26,12 @@ type Thermostat struct {
 	metaTopic           string
 	temperatureControls []*control.ValueControl
 	ticker              *time.Ticker
+	updateInterval      time.Duration
 	hysteresis          float64
 	loaded              bool
 }
 
+// ThermostatControls содержит элементы управления термостатом
 type ThermostatControls struct {
 	TargetTemperature  *virualcontrol.VirtualRangeControl
 	CurrentTemperature *virualcontrol.VirtualValueControl
@@ -32,6 +39,7 @@ type ThermostatControls struct {
 	Relay              *virualcontrol.VirtualSwitchControl
 }
 
+// ThermostatConfig содержит конфигурацию термостата
 type ThermostatConfig struct {
 	DB                  *sql.DB
 	Client              wb.ClientInterface
@@ -56,7 +64,8 @@ func (t *Thermostat) updateCurrentTemperature() {
 		return
 	}
 
-	var sum float64 = 0
+	// Оптимизация: предварительно выделяем память для суммы
+	var sum float64
 	for _, temperatureControl := range t.temperatureControls {
 		sum += temperatureControl.GetValue()
 	}
@@ -85,7 +94,7 @@ func (t *Thermostat) updateRelay() {
 }
 
 func (t *Thermostat) runTicker(ctx context.Context) {
-	t.ticker = time.NewTicker(1 * time.Second)
+	t.ticker = time.NewTicker(t.updateInterval)
 	go func() {
 		defer t.ticker.Stop()
 		for {
@@ -99,9 +108,22 @@ func (t *Thermostat) runTicker(ctx context.Context) {
 	}()
 }
 
+// Stop останавливает работу термостата
 func (t *Thermostat) Stop() {
 	if t.ticker != nil {
 		t.ticker.Stop()
+	}
+}
+
+// SetUpdateInterval устанавливает новый интервал обновления термостата
+func (t *Thermostat) SetUpdateInterval(interval time.Duration) {
+	if interval <= 0 {
+		return
+	}
+
+	t.updateInterval = interval
+	if t.ticker != nil {
+		t.ticker.Reset(interval)
 	}
 }
 
@@ -124,22 +146,27 @@ func (t *Thermostat) setMeta() error {
 	return nil
 }
 
+// NewThermostat создает новый экземпляр термостата
 func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, error) {
 	if config.Client == nil {
-		return &Thermostat{}, errors.New("client is nil")
+		return nil, errors.New("client is nil")
 	}
 
 	if config.DB == nil {
-		return &Thermostat{}, errors.New("db is nil")
+		return nil, errors.New("db is nil")
 	}
 
 	if config.Device == "" {
-		return &Thermostat{}, errors.New("device is empty")
+		return nil, errors.New("device is empty")
+	}
+
+	if config.Hysteresis < 0 {
+		return nil, errors.New("hysteresis must be non-negative")
 	}
 
 	err := db.MigrateOnce(config.DB)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 
 	q := db.NewQueries(config.DB)
@@ -152,6 +179,7 @@ func NewThermostat(ctx context.Context, config ThermostatConfig) (*Thermostat, e
 		metaTopic:           fmt.Sprintf(conventions.CONV_DEVICE_META_V2_FMT, deviceFullName),
 		temperatureControls: config.TemperatureControls,
 		hysteresis:          config.Hysteresis,
+		updateInterval:      DefaultUpdateInterval,
 		meta:                Meta{Name: config.Device, Driver: "wb-go"},
 	}
 

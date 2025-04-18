@@ -18,8 +18,8 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
-	// Подключение к базе данных
 	db, err := sql.Open("sqlite", "./testdb/sqlite.db")
+	defer db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}

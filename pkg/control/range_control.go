@@ -6,8 +6,8 @@ import (
 )
 
 type RangeControl struct {
-	converter RangeConverter
-	control   *Control
+	converter Converter[int]
+	control   ControlInterface
 }
 
 func (c *RangeControl) GetValue() int {

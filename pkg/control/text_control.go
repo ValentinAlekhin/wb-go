@@ -6,7 +6,7 @@ import (
 )
 
 type TextControl struct {
-	control *Control
+	control ControlInterface
 }
 
 func (c *TextControl) GetValue() string {

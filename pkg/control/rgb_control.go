@@ -7,8 +7,8 @@ import (
 )
 
 type RgbControl struct {
-	converter RGBConverter
-	control   *Control
+	converter Converter[RgbValue]
+	control   ControlInterface
 }
 
 func (c *RgbControl) GetValue() RgbValue {
@@ -49,5 +49,5 @@ func (c *RgbControl) GetInfo() Info {
 
 func NewRgbControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *RgbControl {
 	c := NewControl(ctx, client, device, control, meta)
-	return &RgbControl{RGBConverter{}, c}
+	return &RgbControl{&RGBConverter{}, c}
 }

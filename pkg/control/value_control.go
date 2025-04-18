@@ -6,8 +6,8 @@ import (
 )
 
 type ValueControl struct {
-	converter ValueConverter
-	control   *Control
+	converter Converter[float64]
+	control   ControlInterface
 }
 
 func (c *ValueControl) GetValue() float64 {
@@ -34,5 +34,5 @@ func (c *ValueControl) GetInfo() Info {
 
 func NewValueControl(ctx context.Context, client wb.ClientInterface, device, control string, meta Meta) *ValueControl {
 	c := NewControl(ctx, client, device, control, meta)
-	return &ValueControl{control: c}
+	return &ValueControl{control: c, converter: &ValueConverter{}}
 }

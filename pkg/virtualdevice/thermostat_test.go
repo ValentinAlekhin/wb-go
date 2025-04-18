@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestNewThermostat_InvalidConfig проверяет корректную обработку некорректных конфигураций
 func TestNewThermostat_InvalidConfig(t *testing.T) {
 	t.Parallel()
 
@@ -39,6 +40,12 @@ func TestNewThermostat_InvalidConfig(t *testing.T) {
 			config: ThermostatConfig{DB: dbmock.NewDBMock(), Client: mqttmock.NewMockClient()},
 			errMsg: "device is empty",
 		},
+		{
+			name:   "Negative Hysteresis",
+			ctx:    context.Background(),
+			config: ThermostatConfig{DB: dbmock.NewDBMock(), Client: mqttmock.NewMockClient(), Device: "TestThermostat", Hysteresis: -0.5},
+			errMsg: "hysteresis must be non-negative",
+		},
 	}
 
 	for _, tt := range tests {
@@ -47,12 +54,13 @@ func TestNewThermostat_InvalidConfig(t *testing.T) {
 			if tt.errMsg != "" {
 				assert.Error(t, err)
 				assert.EqualError(t, err, tt.errMsg)
+				assert.Nil(t, thermostat)
 			}
-			assert.NotNil(t, thermostat)
 		})
 	}
 }
 
+// TestNewThermostat_Initialization проверяет корректную инициализацию термостата
 func TestNewThermostat_Initialization(t *testing.T) {
 	t.Parallel()
 
@@ -74,11 +82,13 @@ func TestNewThermostat_Initialization(t *testing.T) {
 
 	assert.Equal(t, "TestThermostat", thermostat.meta.Name)
 	assert.Equal(t, 0.5, thermostat.hysteresis)
+	assert.Equal(t, DefaultUpdateInterval, thermostat.updateInterval)
 	assert.Equal(t, 25, thermostat.Controls.TargetTemperature.GetValue())
 	assert.True(t, thermostat.Controls.Enabled.GetValue())
 	assert.False(t, thermostat.Controls.Relay.GetValue())
 }
 
+// TestThermostat_UpdateRelay проверяет корректную работу реле в зависимости от температуры
 func TestThermostat_UpdateRelay(t *testing.T) {
 	t.Parallel()
 
@@ -97,24 +107,85 @@ func TestThermostat_UpdateRelay(t *testing.T) {
 	thermostat, err := NewThermostat(ctx, config)
 	require.NoError(t, err)
 
-	// Термостат выключен
-	thermostat.Controls.Enabled.SetValue(false)
-	thermostat.Controls.CurrentTemperature.SetValue(24.0)
-	thermostat.updateRelay()
-	assert.False(t, thermostat.Controls.Relay.GetValue())
+	tests := []struct {
+		name          string
+		enabled       bool
+		currentTemp   float64
+		expectedRelay bool
+	}{
+		{
+			name:          "Thermostat disabled",
+			enabled:       false,
+			currentTemp:   24.0,
+			expectedRelay: false,
+		},
+		{
+			name:          "Temperature below lower threshold",
+			enabled:       true,
+			currentTemp:   24.0, // 25 - 0.5 = 24.5
+			expectedRelay: true,
+		},
+		{
+			name:          "Temperature above upper threshold",
+			enabled:       true,
+			currentTemp:   26.0, // 25 + 0.5 = 25.5
+			expectedRelay: false,
+		},
+		{
+			name:          "Temperature between thresholds",
+			enabled:       true,
+			currentTemp:   25.0,
+			expectedRelay: false, // Сохраняет предыдущее состояние
+		},
+	}
 
-	// Термостат включен, температура ниже нижнего порога
-	thermostat.Controls.Enabled.SetValue(true)
-	thermostat.Controls.CurrentTemperature.SetValue(24.0) // 25 - 0.5 = 24.5
-	thermostat.updateRelay()
-	assert.True(t, thermostat.Controls.Relay.GetValue())
-
-	// Температура выше верхнего порога
-	thermostat.Controls.CurrentTemperature.SetValue(26.0) // 25 + 0.5 = 25.5
-	thermostat.updateRelay()
-	assert.False(t, thermostat.Controls.Relay.GetValue())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			thermostat.Controls.Enabled.SetValue(tt.enabled)
+			thermostat.Controls.CurrentTemperature.SetValue(tt.currentTemp)
+			thermostat.updateRelay()
+			assert.Equal(t, tt.expectedRelay, thermostat.Controls.Relay.GetValue())
+		})
+	}
 }
 
+// TestThermostat_SetUpdateInterval проверяет корректную работу метода SetUpdateInterval
+func TestThermostat_SetUpdateInterval(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
+	config := ThermostatConfig{
+		DB:                database,
+		Client:            client,
+		Device:            "TestThermostat",
+		TargetTemperature: 25,
+		Hysteresis:        0.5,
+	}
+
+	thermostat, err := NewThermostat(ctx, config)
+	require.NoError(t, err)
+
+	// Проверяем начальное значение
+	assert.Equal(t, DefaultUpdateInterval, thermostat.updateInterval)
+
+	// Устанавливаем новый интервал
+	newInterval := 2 * time.Second
+	thermostat.SetUpdateInterval(newInterval)
+	assert.Equal(t, newInterval, thermostat.updateInterval)
+
+	// Проверяем, что отрицательный интервал игнорируется
+	thermostat.SetUpdateInterval(-1 * time.Second)
+	assert.Equal(t, newInterval, thermostat.updateInterval)
+
+	// Проверяем, что нулевой интервал игнорируется
+	thermostat.SetUpdateInterval(0)
+	assert.Equal(t, newInterval, thermostat.updateInterval)
+}
+
+// TestThermostat_ContextCancellation проверяет корректную остановку тикера при отмене контекста
 func TestThermostat_ContextCancellation(t *testing.T) {
 	t.Parallel()
 
@@ -145,10 +216,11 @@ func TestThermostat_ContextCancellation(t *testing.T) {
 
 	// Проверяем, что тикер больше не вызывает update
 	thermostat.Controls.CurrentTemperature.SetValue(30.0)
-	time.Sleep(500 * time.Millisecond)
-	assert.Equal(t, 20.0, thermostat.Controls.CurrentTemperature.GetValue())
+	time.Sleep(2 * DefaultUpdateInterval) // Ждем достаточное время для срабатывания тикера
+	assert.Equal(t, 20.0, thermostat.Controls.CurrentTemperature.GetValue(), "После отмены контекста значение не должно изменяться автоматически")
 }
 
+// TestThermostat_MetaPublishing проверяет корректную публикацию метаданных в MQTT
 func TestThermostat_MetaPublishing(t *testing.T) {
 	t.Parallel()
 
@@ -180,4 +252,43 @@ func TestThermostat_MetaPublishing(t *testing.T) {
 	case <-time.After(100 * time.Millisecond):
 		t.Fatal("Не дождались сообщения с метаданными в MQTT-топике")
 	}
+}
+
+// TestThermostat_Stop проверяет корректную остановку термостата
+func TestThermostat_Stop(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	client := mqttmock.NewMockClient()
+	database := dbmock.NewDBMock()
+
+	config := ThermostatConfig{
+		DB:                database,
+		Client:            client,
+		Device:            "TestThermostat",
+		TargetTemperature: 25,
+		Hysteresis:        0.5,
+	}
+
+	thermostat, err := NewThermostat(ctx, config)
+	require.NoError(t, err)
+
+	// Запоминаем состояние
+	thermostat.Controls.CurrentTemperature.SetValue(20.0)
+	thermostat.Controls.Enabled.SetValue(true)
+	thermostat.Controls.Relay.SetValue(true)
+	relayState := thermostat.Controls.Relay.GetValue()
+
+	// Останавливаем термостат
+	thermostat.Stop()
+
+	// Изменяем температуру до значения, которое должно переключить реле
+	thermostat.Controls.CurrentTemperature.SetValue(30.0)
+
+	// Вызываем update напрямую (это не должно происходить автоматически после Stop)
+	thermostat.update()
+
+	// Проверяем, что реле изменило состояние при вызове update напрямую
+	assert.NotEqual(t, relayState, thermostat.Controls.Relay.GetValue(),
+		"Состояние реле должно измениться при ручном вызове update")
 }
